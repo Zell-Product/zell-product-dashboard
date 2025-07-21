@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zell Product Dashboard</title>
+    <!-- Tailwind CSS CDN for beautiful styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a modern, clean look (Inter is similar to Apple's San Francisco) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light, neutral background for the page */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+            padding: 1.5rem; /* Increased padding on smaller screens for better spacing */
+            overflow-x: hidden; /* Prevent horizontal scroll during transitions */
+        }
+
+        /* Container for the dashboard to center it and give it depth */
+        .dashboard-container {
+            background-color: #ffffff; /* White background for the dashboard itself */
+            padding: 3rem; /* More ample padding inside the container */
+            border-radius: 1.5rem; /* Consistent rounded corners */
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); /* Deeper, softer shadow */
+            width: 100%;
+            max-width: 1024px; /* Slightly wider for better layout on large screens */
+            position: relative; /* For absolute positioning of views */
+            min-height: 550px; /* Ensure container has a sufficient minimum height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Custom button styling with your specified color */
+        .btn-custom-purple {
+            background-color: #6c1e74; /* Your specified Zell hex code */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, min-height 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column; /* Stack content vertically */
+            align-items: center;
+            justify-content: center;
+            min-height: 140px; /* Initial height - slightly taller for better proportion */
+            padding: 1.5rem; /* Padding inside the button */
+            text-align: center;
+            overflow: hidden; /* Hide overflowing text initially */
+            position: relative; /* For positioning inner elements */
+            cursor: pointer; /* Explicitly show pointer on hover */
+            text-decoration: none; /* Remove underline from links */
+        }
+        /* Hover effects for an interactive, polished feel */
+        .btn-custom-purple:hover {
+            background-color: #5a1a63; /* Slightly darker on hover */
+            transform: translateY(-7px); /* Lift effect - slightly more pronounced */
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+            min-height: 190px; /* Expand height on hover - increased to accommodate text */
+        }
+        .btn-custom-purple:active {
+            transform: translateY(0); /* Press effect */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Reduced shadow on click */
+        }
+
+        /* Styles for the main button title */
+        .btn-title {
+            color: white;
+            font-size: 1.75rem; /* Larger for prominence */
+            font-weight: 600; /* Semi-bold for Apple-like clarity */
+            margin-bottom: 0; /* No bottom margin initially */
+            transition: margin-bottom 0.3s ease-in-out;
+            line-height: 1.2; /* Tighter line height for titles */
+            display: block; /* Ensure title is a block element */
+        }
+
+        /* Styles for the hover description */
+        .btn-description {
+            color: rgba(255, 255, 255, 0.8); /* Slightly transparent white for a softer look */
+            font-size: 1rem; /* Readable size */
+            font-weight: 400; /* Regular weight for body text */
+            line-height: 1.5; /* Good line height for readability */
+            max-height: 0; /* Hidden initially */
+            opacity: 0; /* Hidden initially */
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, transform 0.3s ease-out;
+            transform: translateY(15px); /* Initial position for slide-up effect, slightly more pronounced */
+            padding-top: 0; /* No padding initially */
+            display: block; /* Ensure description is a block element */
+        }
+
+        /* Show description on button hover */
+        .btn-custom-purple:hover .btn-description {
+            max-height: 100px; /* Sufficient height to reveal full text */
+            opacity: 1;
+            transform: translateY(0); /* Slide into view */
+            padding-top: 0.75rem; /* Add padding when visible */
+        }
+        .btn-custom-purple:hover .btn-title {
+             margin-bottom: 0.25rem; /* Small margin when description appears */
+        }
+
+        /* View transition styles (for page switching) */
+        .view {
+            position: absolute; /* Position views on top of each other */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 2.5rem; /* Match container padding */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .view.active {
+            opacity: 1;
+            visibility: visible;
+            position: relative; /* Active view takes up space */
+        }
+        .view:not(.active) {
+            pointer-events: none; /* Disable clicks on hidden views */
+        }
+
+        /* Initial page load animation */
+        body.initial-load .view#main-dashboard-view {
+            opacity: 0;
+            visibility: hidden;
+        }
+        body.initial-load .view#main-dashboard-view.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="initial-load">
+    <div class="dashboard-container">
+        <!-- Main Dashboard View -->
+        <div id="main-dashboard-view" class="view active">
+            <h1 class="text-5xl font-extrabold text-center text-gray-900 mb-12 leading-tight">
+                Zell Product Dashboard
+            </h1>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
+                <!-- Left Column Buttons (Daily Metrics, Weekly Batch Reports) -->
+                <div class="flex flex-col gap-8">
+                    <!-- Daily Metrics Button -->
+                    <a href="https://docs.google.com/spreadsheets/d/YOUR_DAILY_METRICS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                        <span class="btn-title">Daily Metrics</span>
+                        <span class="btn-description">View key daily performance indicators and trends across all products.</span>
+                    </a>
+
+                    <!-- Weekly Batch Reports Button (Triggers SPA navigation) -->
+                    <button id="weekly-reports-btn" class="btn-custom-purple rounded-xl shadow-lg w-full">
+                        <span class="btn-title">Weekly Batch Reports</span>
+                        <span class="btn-description">Access overall summary batch reports and explore the dedicated Batch Dashboard folders.</span>
+                    </button>
+                </div>
+
+                <!-- Right Column Buttons (Questions, Doubts, Batches Quality, One on One) -->
+                <div class="flex flex-col gap-8">
+                    <!-- Questions Button -->
+                    <a href="https://docs.google.com/spreadsheets/d/YOUR_QUESTIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                        <span class="btn-title">Questions</span>
+                        <span class="btn-description">Review a comprehensive log of questions and their resolutions.</span>
+                    </a>
+
+                    <!-- Doubts and Tickets Button -->
+                    <a href="https://docs.google.com/spreadsheets/d/YOUR_DOUBTS_AND_TICKETS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                        <span class="btn-title">Doubts and Tickets</span>
+                        <span class="btn-description">Efficiently manage and track all open doubts and support tickets.</span>
+                    </a>
+
+                    <!-- Batches Quality Check Button -->
+                    <a href="https://docs.google.com/spreadsheets/d/YOUR_BATCHES_QUALITY_CHECK_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                        <span class="btn-title">Batches Quality Check</span>
+                        <span class="btn-description">Detailed review of quality assurance metrics for all product batches.</span>
+                    </a>
+
+                    <!-- One on One Sessions Button -->
+                    <a href="https://docs.google.com/spreadsheets/d/YOUR_ONE_ON_ONE_SESSIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                        <span class="btn-title">One on One Sessions</span>
+                        <span class="btn-description">Schedule, track, and review individual session details and outcomes.</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Batch Reports View -->
+        <div id="weekly-reports-view" class="view">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-10 leading-tight">
+                Weekly Batch Reports
+            </h1>
+
+            <div class="grid grid-cols-1 gap-6 mb-10 w-full max-w-md">
+                <!-- View Reports Summary Button -->
+                <a href="https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?gid=1027966824#gid=1027966824" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                    <span class="btn-title">View Reports Summary</span>
+                    <span class="btn-description">Access the comprehensive summary of all batch reports.</span>
+                </a>
+
+                <!-- View Batch Dashboard Folder Button -->
+                <a href="https://drive.google.com/drive/folders/1FAqI-TB2HHElB7dZoW5jVuVOjL3UNUiB?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                    <span class="btn-title">View Batch Dashboard Folder</span>
+                    <span class="btn-description">Explore the Google Drive folder containing all batch dashboards.</span>
+                </a>
+            </div>
+
+            <!-- Back to Dashboard Button -->
+            <button id="back-to-dashboard-btn" class="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-full hover:bg-gray-300 transition-colors duration-200 mt-6">
+                &larr; Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the views and buttons
+        const mainDashboardView = document.getElementById('main-dashboard-view');
+        const weeklyReportsView = document.getElementById('weekly-reports-view');
+        const weeklyReportsBtn = document.getElementById('weekly-reports-btn');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+
+        // Function to show a specific view with a fade transition
+        function showView(viewToShow, viewToHide) {
+            // Hide the current view
+            if (viewToHide) {
+                viewToHide.classList.remove('active');
+            }
+            // Show the target view after a short delay to allow fade-out
+            setTimeout(() => {
+                viewToShow.classList.add('active');
+            }, 100); // Small delay for smooth transition
+        }
+
+        // Event listener for the Weekly Batch Reports button
+        weeklyReportsBtn.addEventListener('click', () => {
+            showView(weeklyReportsView, mainDashboardView);
+        });
+
+        // Event listener for the Back to Dashboard button
+        backToDashboardBtn.addEventListener('click', () => {
+            showView(mainDashboardView, weeklyReportsView);
+        });
+
+        // Remove initial-load class after page loads to enable transitions
+        document.body.classList.remove('initial-load');
+    </script>
+</body>
+</html>
