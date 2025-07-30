@@ -140,6 +140,81 @@
             opacity: 1;
             visibility: visible;
         }
+
+        /* Styles for insight cards - Apple iOS inspired */
+        .insight-card {
+            background-color: #fcfcfc; /* Slightly off-white for a premium feel */
+            border-radius: 1.5rem; /* More rounded corners */
+            padding: 1.75rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); /* Softer, more pronounced shadow */
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* Subtle inner glow/gradient for depth */
+            background-image: radial-gradient(circle at top left, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5), /* Very subtle inner white border */
+                        0 15px 40px rgba(0, 0, 0, 0.15); /* Main shadow */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .insight-card:hover {
+            transform: translateY(-4px); /* Slightly more pronounced lift on hover */
+            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6), /* Enhanced inner border */
+                        0 20px 55px rgba(0, 0, 0, 0.25); /* Enhanced main shadow */
+        }
+        .insight-card h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1e293b; /* Darker slate for strong contrast */
+            margin-bottom: 0.75rem;
+        }
+        .insight-card p {
+            font-size: 1.05rem;
+            color: #475569; /* Slate-600 */
+            line-height: 1.6;
+        }
+        .insight-card strong {
+            color: #0f172a; /* Even darker for emphasis */
+            font-weight: 700;
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #6c1e74;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Specific style for the "Open Daily Metrics Sheet" button on the insight page */
+        #open-daily-metrics-sheet-btn {
+            background-color: #6c1e74; /* Your specified Zell hex code */
+            color: white; /* White text for this specific button */
+            font-weight: 700; /* Bold text */
+            text-decoration: none; /* Remove underline */
+            display: inline-flex; /* Use flex for centering content */
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2.5rem; /* Ample padding */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Removed min-height transition */
+        }
+        #open-daily-metrics-sheet-btn:hover {
+            background-color: #5a1a63; /* Darker on hover */
+            transform: translateY(-2px); /* Slight lift */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Slightly more pronounced shadow */
+        }
+        #open-daily-metrics-sheet-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="initial-load">
@@ -153,11 +228,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
                 <!-- Left Column Buttons (Daily Metrics, Weekly Batch Reports) -->
                 <div class="flex flex-col gap-8">
-                    <!-- Daily Metrics Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
+                    <!-- Daily Metrics Button (Now triggers insight page) -->
+                    <button id="daily-metrics-btn" class="btn-custom-purple rounded-xl shadow-lg w-full">
                         <span class="btn-title">Daily Metrics</span>
                         <span class="btn-description">View key daily performance indicators and trends across all products.</span>
-                    </a>
+                    </button>
 
                     <!-- Weekly Batch Reports Button (Triggers SPA navigation) -->
                     <button id="weekly-reports-btn" class="btn-custom-purple rounded-xl shadow-lg w-full">
@@ -184,7 +259,7 @@
                     <a href="https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
                         <span class="btn-title">Batches Quality Check</span>
                         <span class="btn-description">Detailed LMS review of all our ongoing batches.</span>
-                    </a>
+                    </button>
 
                     <!-- One on One Sessions Button -->
                     <a href="https://docs.google.com/spreadsheets/d/YOUR_ONE_ON_ONE_SESSIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
@@ -193,6 +268,32 @@
                     </a>
                 </div>
             </div>
+        </div>
+
+        <!-- Daily Metrics Insight View -->
+        <div id="daily-metrics-insight-view" class="view">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-8 leading-tight text-center">
+                Daily Metrics Overview
+            </h1>
+            <p class="text-lg text-gray-700 mb-8 text-center max-w-2xl">
+                Here's a quick summary of today's key performance indicators. For full details, click the button below.
+            </p>
+
+            <div id="daily-metrics-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 w-full max-w-3xl">
+                <!-- Data will be loaded here dynamically -->
+                <div class="col-span-full flex flex-col items-center justify-center py-10">
+                    <div class="spinner"></div>
+                    <p class="text-gray-600">Loading daily metrics...</p>
+                </div>
+            </div>
+
+            <a id="open-daily-metrics-sheet-btn" href="https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg py-4 px-8 text-xl mt-6">
+                Open Daily Metrics Sheet &rarr;
+            </a>
+
+            <button id="back-from-daily-metrics-btn" class="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-full hover:bg-gray-300 transition-colors duration-200 mt-6">
+                &larr; Back to Dashboard
+            </button>
         </div>
 
         <!-- Weekly Batch Reports View -->
@@ -226,27 +327,219 @@
         // Get references to the views and buttons
         const mainDashboardView = document.getElementById('main-dashboard-view');
         const weeklyReportsView = document.getElementById('weekly-reports-view');
+        const dailyMetricsInsightView = document.getElementById('daily-metrics-insight-view');
+
+        const dailyMetricsBtn = document.getElementById('daily-metrics-btn');
         const weeklyReportsBtn = document.getElementById('weekly-reports-btn');
+
+        const backFromDailyMetricsBtn = document.getElementById('back-from-daily-metrics-btn');
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+
+        const dailyMetricsContentDiv = document.getElementById('daily-metrics-content');
+
+        // IMPORTANT: Replace this with the CSV URL you get from Google Sheets "Publish to web"
+        const DAILY_METRICS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv";
 
         // Function to show a specific view with a fade transition
         function showView(viewToShow, viewToHide) {
-            // Hide the current view
             if (viewToHide) {
                 viewToHide.classList.remove('active');
             }
-            // Show the target view after a short delay to allow fade-out
             setTimeout(() => {
                 viewToShow.classList.add('active');
-            }, 100); // Small delay for smooth transition
+            }, 100);
         }
 
-        // Event listener for the Weekly Batch Reports button
+        // Helper function to format numbers with commas
+        function formatNumber(num) {
+            if (typeof num === 'string' && num.includes(':')) { // For time formats like 0:40:47
+                return num;
+            }
+            const cleanedNum = String(num).replace(/,/g, ''); // Remove existing commas
+            if (!isNaN(parseFloat(cleanedNum)) && isFinite(cleanedNum)) {
+                return parseFloat(cleanedNum).toLocaleString('en-US');
+            }
+            return num; // Return as is if not a valid number
+        }
+
+        // Function to parse CSV data
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const result = {};
+
+            // Robust CSV parsing logic
+            const parseLine = (line) => {
+                const cells = [];
+                let inQuote = false;
+                let currentCell = '';
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (char === ',' && !inQuote) {
+                        cells.push(currentCell.trim());
+                        currentCell = '';
+                    } else {
+                        currentCell += char;
+                    }
+                }
+                cells.push(currentCell.trim()); // Add the last cell
+                return cells;
+            };
+
+            // Parse all lines, including the header to correctly determine subsequent data rows
+            const allParsedRows = lines.map(line => parseLine(line));
+
+            // The first row of the CSV is the header, so actual data starts from index 1.
+            // We'll use this `data` array for 0-indexed access to the *data rows*.
+            const data = allParsedRows.slice(1);
+
+            // Function to safely get data from the parsed 'data' array
+            const getCleanData = (rowIndex, colIndex) => {
+                // rowIndex here refers to the 0-indexed position within the 'data' array (after header is sliced)
+                // colIndex is 0 for A, 1 for B, 2 for C, 3 for D
+                if (data[rowIndex] && data[rowIndex][colIndex] !== undefined) {
+                    return data[rowIndex][colIndex];
+                }
+                return 'N/A';
+            };
+
+            // --- MAPPING BASED ON YOUR PROVIDED RAW CSV DATA ---
+            // The raw CSV data you provided:
+            // 0: Cumulative,WEB,ANDROID,iOS  <-- This is the header row, skipped by slice(1)
+            // 1: Rating,NA,4.05,             <-- data[0]
+            // 2: Number of Ratings,NA,40,    <-- data[1]
+            // 3: Downloads,NA,3,729,         <-- data[2]
+            // 4: Downloads(India),NA,3,560,  <-- data[3]
+            // 5: DAU,1,669,503,              <-- data[4]
+            // 6: MAU,5,667,2,951,            <-- data[5]
+            // 7: Active Users,17,192,,       <-- data[6]
+            // 8: Tests Taken,28,903,,        <-- data[7]
+            // 9: Total Visitors,184,833,,    <-- data[8]
+            // 10: Avg. Time Spent,0:40:47,,  <-- data[9]
+
+
+            // Sheet Row 3 (CSV Array Index 0)
+            result.ratingAndroid = getCleanData(0, 2); // C3
+            result.ratingiOS = getCleanData(0, 3);    // D3
+
+            // Sheet Row 4 (CSV Array Index 1)
+            result.numRatingsAndroid = getCleanData(1, 2); // C4
+            result.numRatingsiOS = getCleanData(1, 3);    // D4
+
+            // Sheet Row 5 (CSV Array Index 2)
+            result.downloadsTotalAndroid = getCleanData(2, 2); // C5
+            result.downloadsTotaliOS = getCleanData(2, 3);    // D5
+
+            // Sheet Row 6 (CSV Array Index 3)
+            result.downloadsIndiaAndroid = getCleanData(3, 2); // C6
+            result.downloadsIndiaiOS = getCleanData(3, 3);    // D6
+
+            // Sheet Row 7 (CSV Array Index 4)
+            result.dauWeb = getCleanData(4, 1);    // B7
+            result.dauAndroid = getCleanData(4, 2); // C7
+            result.dauiOS = getCleanData(4, 3);    // D7
+
+            // Sheet Row 8 (CSV Array Index 5)
+            result.mauWeb = getCleanData(5, 1);    // B8
+            result.mauAndroid = getCleanData(5, 2); // C8
+            result.mauiOS = getCleanData(5, 3);    // D8
+
+            // Sheet Row 9 (CSV Array Index 6)
+            result.totalActiveUsers = getCleanData(6, 1); // B9
+
+            // Sheet Row 10 (CSV Array Index 7)
+            result.testsTaken = getCleanData(7, 1); // B10
+
+            // Sheet Row 11 (CSV Array Index 8)
+            result.totalVisitors = getCleanData(8, 1); // B11
+
+            // Sheet Row 12 (CSV Array Index 9)
+            result.avgTimeSpent = getCleanData(9, 1); // B12
+
+            return result;
+        }
+
+
+        // Function to fetch and display daily metrics
+        async function fetchDailyMetrics() {
+            dailyMetricsContentDiv.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-10">
+                    <div class="spinner"></div>
+                    <p class="text-gray-600">Loading daily metrics...</p>
+                </div>
+            `; // Show loading spinner
+
+            try {
+                const response = await fetch(DAILY_METRICS_CSV_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                const metrics = parseCSV(csvText);
+
+                // Dynamically update the content based on fetched data
+                dailyMetricsContentDiv.innerHTML = `
+                    <div class="insight-card">
+                        <h3>App & Play Store Ratings</h3>
+                        <p><strong>Android (Play Store):</strong> ${formatNumber(metrics.ratingAndroid)} out of 5 stars from ${formatNumber(metrics.numRatingsAndroid)} ratings.</p>
+                        <p><strong>iOS (App Store):</strong> ${formatNumber(metrics.ratingiOS)} ${metrics.ratingiOS === 'N/A' ? '' : 'out of 5 stars from ' + formatNumber(metrics.numRatingsiOS) + ' ratings.'}</p>
+                    </div>
+                    <div class="insight-card">
+                        <h3>Downloads</h3>
+                        <p><strong>Android Total:</strong> ${formatNumber(metrics.downloadsTotalAndroid)}</p>
+                        <p><strong>Android (India):</strong> ${formatNumber(metrics.downloadsIndiaAndroid)}</p>
+                        <p><strong>iOS Total:</strong> ${formatNumber(metrics.downloadsTotaliOS)}</p>
+                        <p><strong>iOS (India):</strong> ${formatNumber(metrics.downloadsIndiaiOS)}</p>
+                    </div>
+                    <div class="insight-card">
+                        <h3>Daily Active Users (DAU)</h3>
+                        <p><strong>Web:</strong> ${formatNumber(metrics.dauWeb)} users</p>
+                        <p><strong>Android:</strong> ${formatNumber(metrics.dauAndroid)} users</p>
+                        <p><strong>iOS:</strong> ${formatNumber(metrics.dauiOS)} users</p>
+                    </div>
+                    <div class="insight-card">
+                        <h3>Monthly Active Users (MAU)</h3>
+                        <p><strong>Web:</strong> ${formatNumber(metrics.mauWeb)} users</p>
+                        <p><strong>Android:</strong> ${formatNumber(metrics.mauAndroid)} users</p>
+                        <p><strong>iOS:</strong> ${formatNumber(metrics.mauiOS)} users</p>
+                    </div>
+                    <div class="insight-card col-span-full">
+                        <h3>Overall Engagement (Web Data)</h3>
+                        <p><strong>Total Active Users:</strong> ${formatNumber(metrics.totalActiveUsers)}</p>
+                        <p><strong>Tests Taken:</strong> ${formatNumber(metrics.testsTaken)}</p>
+                        <p><strong>Total Visitors:</strong> ${formatNumber(metrics.totalVisitors)}</p>
+                        <p><strong>Average Time Spent:</strong> ${metrics.avgTimeSpent}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error("Failed to fetch daily metrics:", error);
+                dailyMetricsContentDiv.innerHTML = `
+                    <div class="col-span-full text-center text-red-600 py-10">
+                        <p>Failed to load daily metrics. Please ensure the Google Sheet is published to web as CSV and the URL is correct.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Event listener for Daily Metrics button on main dashboard
+        dailyMetricsBtn.addEventListener('click', () => {
+            showView(dailyMetricsInsightView, mainDashboardView);
+            fetchDailyMetrics(); // Fetch data when insight page is shown
+        });
+
+        // Event listener for Weekly Batch Reports button on main dashboard
         weeklyReportsBtn.addEventListener('click', () => {
             showView(weeklyReportsView, mainDashboardView);
         });
 
-        // Event listener for the Back to Dashboard button
+        // Event listener for Back to Dashboard button on Daily Metrics Insight page
+        backFromDailyMetricsBtn.addEventListener('click', () => {
+            showView(mainDashboardView, dailyMetricsInsightView);
+        });
+
+        // Event listener for Back to Dashboard button on Weekly Batch Reports page
         backToDashboardBtn.addEventListener('click', () => {
             showView(mainDashboardView, weeklyReportsView);
         });
