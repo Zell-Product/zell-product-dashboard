@@ -192,28 +192,78 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Specific style for the "Open Daily Metrics Sheet" button on the insight page */
-        #open-daily-metrics-sheet-btn {
-            background-color: #6c1e74; /* Your specified Zell hex code */
-            color: white; /* White text for this specific button */
-            font-weight: 700; /* Bold text */
-            text-decoration: none; /* Remove underline */
-            display: inline-flex; /* Use flex for centering content */
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 2.5rem; /* Ample padding */
+        /* New styles for the top-left and top-right action buttons on Daily Metrics page */
+        .top-nav-action-button {
+            font-weight: 600;
+            padding: 0.75rem 1.25rem; /* Slightly larger padding for better touch target and visual presence */
             border-radius: 0.75rem; /* Rounded corners */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Removed min-height transition */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem; /* More space between icon and text */
+            text-decoration: none; /* Remove underline for links */
+            font-size: 1rem; /* Standard readable font size */
+            color: white; /* Default white text for these buttons */
         }
-        #open-daily-metrics-sheet-btn:hover {
-            background-color: #5a1a63; /* Darker on hover */
-            transform: translateY(-2px); /* Slight lift */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Slightly more pronounced shadow */
+
+        .top-nav-action-button:hover {
+            transform: translateY(-1px); /* Subtle lift */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
         }
-        #open-daily-metrics-sheet-btn:active {
+        .top-nav-action-button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Specific styles for the Back button (Zell purple) */
+        .back-button-style {
+            background-color: #6c1e74; /* Zell purple */
+        }
+        .back-button-style:hover {
+            background-color: #5a1a63; /* Darker purple on hover */
+        }
+
+        /* Specific styles for the Open Sheet button (Google Green) */
+        .open-sheet-button-style {
+            background-color: #34A853; /* Google Green */
+        }
+        .open-sheet-button-style:hover {
+            background-color: #2b8c45; /* Darker green on hover */
+        }
+
+        /* Specific positioning for the top buttons within daily-metrics-insight-view */
+        #daily-metrics-insight-view {
+            position: relative; /* Ensure child absolute positioning is relative to this parent */
+            padding-top: 5rem; /* Add space for top buttons */
+            padding-bottom: 5rem; /* Add space for timestamp */
+        }
+        #back-from-daily-metrics-btn-top {
+            position: absolute;
+            top: 2.5rem; /* Adjusted from 3rem to match padding and give some space */
+            left: 2.5rem; /* Adjusted from 3rem */
+            z-index: 10; /* Ensure it's above other content */
+        }
+        #open-daily-metrics-sheet-btn-top {
+            position: absolute;
+            top: 2.5rem; /* Adjusted from 3rem */
+            right: 2.5rem; /* Adjusted from 3rem */
+            z-index: 10; /* Ensure it's above other content */
+        }
+
+        /* Style for the timestamp at the bottom */
+        .timestamp-footer {
+            position: absolute;
+            bottom: 2.5rem; /* Position from the bottom */
+            left: 50%;
+            transform: translateX(-50%); /* Center horizontally */
+            width: calc(100% - 6rem); /* Account for padding */
+            text-align: center;
+            font-size: 0.9rem; /* Smaller, subtle text */
+            color: #64748b; /* Slate-500 for a soft look */
+            margin-top: 2rem; /* Space from content above */
+            padding-top: 1rem; /* Padding above text */
+            border-top: 1px solid rgba(0, 0, 0, 0.05); /* Very light separator line */
         }
     </style>
 </head>
@@ -259,7 +309,7 @@
                     <a href="https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
                         <span class="btn-title">Batches Quality Check</span>
                         <span class="btn-description">Detailed LMS review of all our ongoing batches.</span>
-                    </button>
+                    </a>
 
                     <!-- One on One Sessions Button -->
                     <a href="https://docs.google.com/spreadsheets/d/YOUR_ONE_ON_ONE_SESSIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
@@ -272,6 +322,16 @@
 
         <!-- Daily Metrics Insight View -->
         <div id="daily-metrics-insight-view" class="view">
+            <!-- Top-Left Back Button -->
+            <button id="back-from-daily-metrics-btn-top" class="top-nav-action-button back-button-style">
+                &larr; Back
+            </button>
+
+            <!-- Top-Right Open Sheet Button -->
+            <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
+                Open Sheet &#x2197;
+            </a>
+
             <h1 class="text-4xl font-extrabold text-gray-900 mb-8 leading-tight text-center">
                 Daily Metrics Overview
             </h1>
@@ -287,13 +347,10 @@
                 </div>
             </div>
 
-            <a id="open-daily-metrics-sheet-btn" href="https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg py-4 px-8 text-xl mt-6">
-                Open Daily Metrics Sheet &rarr;
-            </a>
-
-            <button id="back-from-daily-metrics-btn" class="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-full hover:bg-gray-300 transition-colors duration-200 mt-6">
-                &larr; Back to Dashboard
-            </button>
+            <!-- Timestamp Footer -->
+            <div id="last-updated-timestamp" class="timestamp-footer">
+                <!-- Timestamp will be inserted here dynamically -->
+            </div>
         </div>
 
         <!-- Weekly Batch Reports View -->
@@ -332,10 +389,15 @@
         const dailyMetricsBtn = document.getElementById('daily-metrics-btn');
         const weeklyReportsBtn = document.getElementById('weekly-reports-btn');
 
-        const backFromDailyMetricsBtn = document.getElementById('back-from-daily-metrics-btn');
-        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        // New top-left and top-right buttons
+        const backFromDailyMetricsBtnTop = document.getElementById('back-from-daily-metrics-btn-top');
+        const openDailyMetricsSheetBtnTop = document.getElementById('open-daily-metrics-sheet-btn-top');
+
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn'); // This is for weekly reports view
 
         const dailyMetricsContentDiv = document.getElementById('daily-metrics-content');
+        const lastUpdatedTimestampDiv = document.getElementById('last-updated-timestamp');
+
 
         // IMPORTANT: Replace this with the CSV URL you get from Google Sheets "Publish to web"
         const DAILY_METRICS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv";
@@ -416,7 +478,7 @@
             // 7: Active Users,17,192,,       <-- data[6]
             // 8: Tests Taken,28,903,,        <-- data[7]
             // 9: Total Visitors,184,833,,    <-- data[8]
-            // 10: Avg. Time Spent,0:40:47,,  <-- data[9]
+            // 10: Avg. Time Spent,00:40:47,,  <-- data[9]
 
 
             // Sheet Row 3 (CSV Array Index 0)
@@ -512,6 +574,13 @@
                         <p><strong>Average Time Spent:</strong> ${metrics.avgTimeSpent}</p>
                     </div>
                 `;
+
+                // Update the timestamp
+                const now = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                const formattedDateTime = now.toLocaleString('en-US', options);
+                lastUpdatedTimestampDiv.textContent = `This page was updated last on ${formattedDateTime}.`;
+
             } catch (error) {
                 console.error("Failed to fetch daily metrics:", error);
                 dailyMetricsContentDiv.innerHTML = `
@@ -520,6 +589,7 @@
                         <p>Error: ${error.message}</p>
                     </div>
                 `;
+                lastUpdatedTimestampDiv.textContent = `Data sync failed. Last attempt: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
             }
         }
 
@@ -534,8 +604,8 @@
             showView(weeklyReportsView, mainDashboardView);
         });
 
-        // Event listener for Back to Dashboard button on Daily Metrics Insight page
-        backFromDailyMetricsBtn.addEventListener('click', () => {
+        // Event listener for Back to Dashboard button on Daily Metrics Insight page (new top-left button)
+        backFromDailyMetricsBtnTop.addEventListener('click', () => {
             showView(mainDashboardView, dailyMetricsInsightView);
         });
 
