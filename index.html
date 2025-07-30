@@ -309,7 +309,7 @@
                     <a href="https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
                         <span class="btn-title">Batches Quality Check</span>
                         <span class="btn-description">Detailed LMS review of all our ongoing batches.</span>
-                    </a>
+                    </button>
 
                     <!-- One on One Sessions Button -->
                     <a href="https://docs.google.com/spreadsheets/d/YOUR_ONE_ON_ONE_SESSIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
@@ -328,7 +328,7 @@
             </button>
 
             <!-- Top-Right Open Sheet Button -->
-            <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
+            <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
                 Open Sheet &#x2197;
             </a>
 
@@ -336,7 +336,7 @@
                 Daily Metrics Overview
             </h1>
             <p class="text-lg text-gray-700 mb-8 text-center max-w-2xl">
-                Here's a quick summary of today's key performance indicators. For full details, click the button below.
+                Here's a quick summary of today's key performance indicators. To view full details and trends, open the sheet.
             </p>
 
             <div id="daily-metrics-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 w-full max-w-3xl">
@@ -579,7 +579,7 @@
                 const now = new Date();
                 const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
                 const formattedDateTime = now.toLocaleString('en-US', options);
-                lastUpdatedTimestampDiv.textContent = `This page was updated last on ${formattedDateTime}.`;
+                lastUpdatedTimestampDiv.textContent = `Data on this page last fetched from Google Sheet on ${formattedDateTime}.`;
 
             } catch (error) {
                 console.error("Failed to fetch daily metrics:", error);
@@ -589,7 +589,7 @@
                         <p>Error: ${error.message}</p>
                     </div>
                 `;
-                lastUpdatedTimestampDiv.textContent = `Data sync failed. Last attempt: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                lastUpdatedTimestampDiv.textContent = `Data fetch failed. Last attempt: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
             }
         }
 
