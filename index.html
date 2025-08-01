@@ -37,8 +37,7 @@
             min-height: 550px; /* Ensure container has a sufficient minimum height */
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            /* REFINED FIX: The container itself will not center content. Each view will control its own alignment. */
         }
 
         /* Custom button styling with your specified color */
@@ -120,7 +119,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
         }
         .view.active {
             opacity: 1;
@@ -130,6 +128,13 @@
         .view:not(.active) {
             pointer-events: none; /* Disable clicks on hidden views */
         }
+
+        /* REFINED FIX: Explicitly set centering for the main dashboard view ONLY */
+        #main-dashboard-view.active {
+            justify-content: center;
+        }
+
+        /* REFINED FIX: Remove the specific 'justify-content: flex-start' from here as the default flex behavior now works as intended. */
 
         /* Initial page load animation */
         body.initial-load .view#main-dashboard-view {
@@ -192,7 +197,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* New styles for the top-left and top-right action buttons on Daily Metrics page */
+        /* New styles for the top-left and top-right action buttons */
         .top-nav-action-button {
             font-weight: 600;
             padding: 0.75rem 1.25rem; /* Slightly larger padding for better touch target and visual presence */
@@ -230,25 +235,6 @@
         }
         .open-sheet-button-style:hover {
             background-color: #2b8c45; /* Darker green on hover */
-        }
-
-        /* Specific positioning for the top buttons within daily-metrics-insight-view */
-        #daily-metrics-insight-view {
-            position: relative; /* Ensure child absolute positioning is relative to this parent */
-            padding-top: 5rem; /* Add space for top buttons */
-            padding-bottom: 5rem; /* Add space for timestamp */
-        }
-        #back-from-daily-metrics-btn-top {
-            position: absolute;
-            top: 2.5rem; /* Adjusted from 3rem to match padding and give some space */
-            left: 2.5rem; /* Adjusted from 3rem */
-            z-index: 10; /* Ensure it's above other content */
-        }
-        #open-daily-metrics-sheet-btn-top {
-            position: absolute;
-            top: 2.5rem; /* Adjusted from 3rem */
-            right: 2.5rem; /* Adjusted from 3rem */
-            z-index: 10; /* Ensure it's above other content */
         }
 
         /* Style for the timestamp at the bottom */
@@ -322,15 +308,17 @@
 
         <!-- Daily Metrics Insight View -->
         <div id="daily-metrics-insight-view" class="view">
-            <!-- Top-Left Back Button -->
-            <button id="back-from-daily-metrics-btn-top" class="top-nav-action-button back-button-style">
-                &larr; Back
-            </button>
-
-            <!-- Top-Right Open Sheet Button -->
-            <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
-                Open Sheet &#x2197;
-            </a>
+            <!-- Header for top buttons and title -->
+            <div class="flex justify-between items-center w-full mb-8">
+                <!-- Top-Left Back Button -->
+                <button id="back-from-daily-metrics-btn-top" class="top-nav-action-button back-button-style">
+                    &larr; Back
+                </button>
+                <!-- Top-Right Open Sheet Button -->
+                <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
+                    Open Sheet &#x2197;
+                </a>
+            </div>
 
             <h1 class="text-4xl font-extrabold text-gray-900 mb-8 leading-tight text-center">
                 Daily Metrics Overview
@@ -355,11 +343,18 @@
 
         <!-- Weekly Batch Reports View -->
         <div id="weekly-reports-view" class="view">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-10 leading-tight">
-                Weekly Batch Reports
-            </h1>
+            <!-- Header for top buttons and title -->
+            <div class="flex justify-start items-center w-full mb-8">
+                <!-- Back to Dashboard Button (moved to top-left) -->
+                <button id="back-to-dashboard-btn" class="top-nav-action-button back-button-style">
+                    &larr; Back
+                </button>
+                <h1 class="text-4xl font-extrabold text-gray-900 leading-tight ml-8">
+                    Weekly Batch Reports
+                </h1>
+            </div>
 
-            <div class="grid grid-cols-1 gap-6 mb-10 w-full max-w-md">
+            <div class="grid grid-cols-1 gap-6 w-full max-w-md">
                 <!-- View Reports Summary Button -->
                 <a href="https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?gid=1027966824#gid=1027966824" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
                     <span class="btn-title">View Reports Summary</span>
@@ -372,11 +367,6 @@
                     <span class="btn-description">Explore the Google Drive folder containing all batch dashboards.</span>
                 </a>
             </div>
-
-            <!-- Back to Dashboard Button -->
-            <button id="back-to-dashboard-btn" class="inline-block bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-full hover:bg-gray-300 transition-colors duration-200 mt-6">
-                &larr; Back to Dashboard
-            </button>
         </div>
     </div>
 
@@ -463,7 +453,7 @@
                 if (data[rowIndex] && data[rowIndex][colIndex] !== undefined) {
                     return data[rowIndex][colIndex];
                 }
-                return 'N/A';
+                return 'N/A'; // Return 'N/A' if row or column doesn't exist
             };
 
             // --- MAPPING BASED ON YOUR PROVIDED RAW CSV DATA ---
@@ -540,40 +530,87 @@
                 const csvText = await response.text();
                 const metrics = parseCSV(csvText);
 
-                // Dynamically update the content based on fetched data
-                dailyMetricsContentDiv.innerHTML = `
-                    <div class="insight-card">
-                        <h3>App & Play Store Ratings</h3>
-                        <p><strong>Android (Play Store):</strong> ${formatNumber(metrics.ratingAndroid)} out of 5 stars from ${formatNumber(metrics.numRatingsAndroid)} ratings.</p>
-                        <p><strong>iOS (App Store):</strong> ${formatNumber(metrics.ratingiOS)} ${metrics.ratingiOS === 'N/A' ? '' : 'out of 5 stars from ' + formatNumber(metrics.numRatingsiOS) + ' ratings.'}</p>
-                    </div>
-                    <div class="insight-card">
-                        <h3>Downloads</h3>
-                        <p><strong>Android Total:</strong> ${formatNumber(metrics.downloadsTotalAndroid)}</p>
-                        <p><strong>Android (India):</strong> ${formatNumber(metrics.downloadsIndiaAndroid)}</p>
-                        <p><strong>iOS Total:</strong> ${formatNumber(metrics.downloadsTotaliOS)}</p>
-                        <p><strong>iOS (India):</strong> ${formatNumber(metrics.downloadsIndiaiOS)}</p>
-                    </div>
-                    <div class="insight-card">
-                        <h3>Daily Active Users (DAU)</h3>
-                        <p><strong>Web:</strong> ${formatNumber(metrics.dauWeb)} users</p>
-                        <p><strong>Android:</strong> ${formatNumber(metrics.dauAndroid)} users</p>
-                        <p><strong>iOS:</strong> ${formatNumber(metrics.dauiOS)} users</p>
-                    </div>
-                    <div class="insight-card">
-                        <h3>Monthly Active Users (MAU)</h3>
-                        <p><strong>Web:</strong> ${formatNumber(metrics.mauWeb)} users</p>
-                        <p><strong>Android:</strong> ${formatNumber(metrics.mauAndroid)} users</p>
-                        <p><strong>iOS:</strong> ${formatNumber(metrics.mauiOS)} users</p>
-                    </div>
-                    <div class="insight-card col-span-full">
-                        <h3>Overall Engagement (Web Data)</h3>
-                        <p><strong>Total Active Users:</strong> ${formatNumber(metrics.totalActiveUsers)}</p>
-                        <p><strong>Tests Taken:</strong> ${formatNumber(metrics.testsTaken)}</p>
-                        <p><strong>Total Visitors:</strong> ${formatNumber(metrics.totalVisitors)}</p>
-                        <p><strong>Average Time Spent:</strong> ${metrics.avgTimeSpent}</p>
-                    </div>
-                `;
+                let htmlContent = '';
+
+                // App & Play Store Ratings Card
+                const hasRatingData = metrics.ratingAndroid !== 'N/A' || metrics.ratingiOS !== 'N/A' ||
+                                      metrics.numRatingsAndroid !== 'N/A' || metrics.numRatingsiOS !== 'N/A';
+                if (hasRatingData) {
+                    htmlContent += `
+                        <div class="insight-card">
+                            <h3>App & Play Store Ratings</h3>
+                            <p><strong>Android (Play Store):</strong> ${formatNumber(metrics.ratingAndroid)} out of 5 stars from ${formatNumber(metrics.numRatingsAndroid)} ratings.</p>
+                            <p><strong>iOS (App Store):</strong> ${formatNumber(metrics.ratingiOS)} ${metrics.ratingiOS === 'N/A' ? '' : 'out of 5 stars from ' + formatNumber(metrics.numRatingsiOS) + ' ratings.'}</p>
+                        </div>
+                    `;
+                }
+
+                // Downloads Card
+                const hasDownloadData = metrics.downloadsTotalAndroid !== 'N/A' || metrics.downloadsTotaliOS !== 'N/A' ||
+                                        metrics.downloadsIndiaAndroid !== 'N/A' || metrics.downloadsIndiaiOS !== 'N/A';
+                if (hasDownloadData) {
+                    htmlContent += `
+                        <div class="insight-card">
+                            <h3>Downloads</h3>
+                            <p><strong>Android Total:</strong> ${formatNumber(metrics.downloadsTotalAndroid)}</p>
+                            <p><strong>Android (India):</strong> ${formatNumber(metrics.downloadsIndiaAndroid)}</p>
+                            <p><strong>iOS Total:</strong> ${formatNumber(metrics.downloadsTotaliOS)}</p>
+                            <p><strong>iOS (India):</strong> ${formatNumber(metrics.downloadsIndiaiOS)}</p>
+                        </div>
+                    `;
+                }
+
+                // Daily Active Users (DAU) Card
+                const hasDauData = metrics.dauWeb !== 'N/A' || metrics.dauAndroid !== 'N/A' || metrics.dauiOS !== 'N/A';
+                if (hasDauData) {
+                    htmlContent += `
+                        <div class="insight-card">
+                            <h3>Daily Active Users (DAU)</h3>
+                            <p><strong>Web:</strong> ${formatNumber(metrics.dauWeb)} users</p>
+                            <p><strong>Android:</strong> ${formatNumber(metrics.dauAndroid)} users</p>
+                            <p><strong>iOS:</strong> ${formatNumber(metrics.dauiOS)} users</p>
+                        </div>
+                    `;
+                }
+
+                // Monthly Active Users (MAU) Card
+                const hasMauData = metrics.mauWeb !== 'N/A' || metrics.mauAndroid !== 'N/A' || metrics.mauiOS !== 'N/A';
+                if (hasMauData) {
+                    htmlContent += `
+                        <div class="insight-card">
+                            <h3>Monthly Active Users (MAU)</h3>
+                            <p><strong>Web:</strong> ${formatNumber(metrics.mauWeb)} users</p>
+                            <p><strong>Android:</strong> ${formatNumber(metrics.mauAndroid)} users</p>
+                            <p><strong>iOS:</strong> ${formatNumber(metrics.mauiOS)} users</p>
+                        </div>
+                    `;
+                }
+
+                // Overall Engagement (Web Data) Card
+                const hasOverallEngagementData = metrics.totalActiveUsers !== 'N/A' || metrics.testsTaken !== 'N/A' ||
+                                                 metrics.totalVisitors !== 'N/A' || metrics.avgTimeSpent !== 'N/A';
+                if (hasOverallEngagementData) {
+                    htmlContent += `
+                        <div class="insight-card col-span-full">
+                            <h3>Overall Engagement (Web Data)</h3>
+                            <p><strong>Total Active Users:</strong> ${formatNumber(metrics.totalActiveUsers)}</p>
+                            <p><strong>Tests Taken:</strong> ${formatNumber(metrics.testsTaken)}</p>
+                            <p><strong>Total Visitors:</strong> ${formatNumber(metrics.totalVisitors)}</p>
+                            <p><strong>Average Time Spent:</strong> ${metrics.avgTimeSpent}</p>
+                        </div>
+                    `;
+                }
+
+                if (htmlContent === '') {
+                    dailyMetricsContentDiv.innerHTML = `
+                        <div class="col-span-full text-center text-gray-600 py-10">
+                            <p>No daily metrics data available from the sheet.</p>
+                        </div>
+                    `;
+                } else {
+                    dailyMetricsContentDiv.innerHTML = htmlContent;
+                }
+
 
                 // Update the timestamp
                 const now = new Date();
