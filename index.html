@@ -3,656 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zell Product Dashboard</title>
-    <!-- Favicon link -->
-    <link rel="icon" href="favicon.png" type="image/png">
-    <!-- If you have an .ico file, you can also add: -->
-    <!-- <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"> -->
-
-    <!-- Tailwind CSS CDN for beautiful styling -->
+    <title>Product Dashboard</title>
+    
+    <link rel="icon" href="https://raw.githubusercontent.com/YashShah20F/Dashboard-V3/main/favicon%20BW.png" type="image/png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
-        /* Custom font for a modern, clean look (Inter is similar to Apple's San Francisco) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            /* Dark Mode (Default) - Apple TV Theme */
+            --bg-color: #000000;
+            --text-color: #f5f5f7;
+            --text-muted-color: #a1a1a6;
+            --card-bg: rgba(29, 29, 31, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --card-hover-bg: rgba(40, 40, 42, 0.8);
+            --card-hover-shadow: 0 0 25px rgba(200, 200, 255, 0.1);
+            --header-bg: rgba(29, 29, 31, 0.7);
+            --header-border: rgba(255, 255, 255, 0.1);
+            --icon-color: #ffffff;
+            --nav-text-color: #a1a1a6;
+            --nav-text-hover: #ffffff;
+            --nav-active-bg: rgba(255, 255, 255, 0.1);
+            --nav-active-text: #ffffff;
+            --footer-bg: #1d1d1f;
+        }
+
+        body.light-mode {
+            /* Light Mode */
+            --bg-color: #f5f5f7;
+            --text-color: #1d1d1f;
+            --text-muted-color: #515154;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.1);
+            --card-hover-bg: rgba(230, 230, 235, 0.9);
+            --card-hover-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+            --header-bg: rgba(255, 255, 255, 0.7);
+            --header-border: rgba(0, 0, 0, 0.1);
+            --icon-color: #000000;
+            --nav-text-color: #515154;
+            --nav-text-hover: #000000;
+            --nav-active-bg: rgba(0, 0, 0, 0.05);
+            --nav-active-text: #000000;
+            --footer-bg: #e5e5e7;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Light, neutral background for the page */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh; /* Ensure it takes full viewport height */
-            padding: 1.5rem; /* Increased padding on smaller screens for better spacing */
-            overflow-x: hidden; /* Prevent horizontal scroll during transitions */
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
+        
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-track { background: transparent; }
+        .main-content::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        body.light-mode .main-content::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .hidden { display: none; }
 
-        /* Container for the dashboard to center it and give it depth */
-        .dashboard-container {
-            background-color: #ffffff; /* White background for the dashboard itself */
-            padding: 3rem; /* More ample padding inside the container */
-            border-radius: 1.5rem; /* Consistent rounded corners */
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); /* Deeper, softer shadow */
-            width: 100%;
-            max-width: 1024px; /* Slightly wider for better layout on large screens */
-            position: relative; /* For absolute positioning of views */
-            min-height: 550px; /* Ensure container has a sufficient minimum height */
-            display: flex;
-            flex-direction: column;
-            /* REFINED FIX: The container itself will not center content. Each view will control its own alignment. */
+        /* --- NAVIGATION STYLES --- */
+        #navigation-bar {
+            max-width: 48rem; /* Resized to a more elegant width */
         }
-
-        /* Custom button styling with your specified color */
-        .btn-custom-purple {
-            background-color: #6c1e74; /* Your specified Zell hex code */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, min-height 0.3s ease-in-out;
-            display: flex;
-            flex-direction: column; /* Stack content vertically */
-            align-items: center;
-            justify-content: center;
-            min-height: 140px; /* Initial height - slightly taller for better proportion */
-            padding: 1.5rem; /* Padding inside the button */
-            text-align: center;
-            overflow: hidden; /* Hide overflowing text initially */
-            position: relative; /* For positioning inner elements */
-            cursor: pointer; /* Explicitly show pointer on hover */
-            text-decoration: none; /* Remove underline from links */
-        }
-        /* Hover effects for an interactive, polished feel */
-        .btn-custom-purple:hover {
-            background-color: #5a1a63; /* Slightly darker on hover */
-            transform: translateY(-7px); /* Lift effect - slightly more pronounced */
-            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
-            min-height: 190px; /* Expand height on hover - increased to accommodate text */
-        }
-        .btn-custom-purple:active {
-            transform: translateY(0); /* Press effect */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Reduced shadow on click */
-        }
-
-        /* Styles for the main button title */
-        .btn-title {
-            color: white;
-            font-size: 1.75rem; /* Larger for prominence */
-            font-weight: 600; /* Semi-bold for Apple-like clarity */
-            margin-bottom: 0; /* No bottom margin initially */
-            transition: margin-bottom 0.3s ease-in-out;
-            line-height: 1.2; /* Tighter line height for titles */
-            display: block; /* Ensure title is a block element */
-        }
-
-        /* Styles for the hover description */
-        .btn-description {
-            color: rgba(255, 255, 255, 0.8); /* Slightly transparent white for a softer look */
-            font-size: 1rem; /* Readable size */
-            font-weight: 400; /* Regular weight for body text */
-            line-height: 1.5; /* Good line height for readability */
-            max-height: 0; /* Hidden initially */
-            opacity: 0; /* Hidden initially */
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, transform 0.3s ease-out;
-            transform: translateY(15px); /* Initial position for slide-up effect, slightly more pronounced */
-            padding-top: 0; /* No padding initially */
-            display: block; /* Ensure description is a block element */
-        }
-
-        /* Show description on button hover */
-        .btn-custom-purple:hover .btn-description {
-            max-height: 100px; /* Sufficient height to reveal full text */
-            opacity: 1;
-            transform: translateY(0); /* Slide into view */
-            padding-top: 0.75rem; /* Add padding when visible */
-        }
-        .btn-custom-purple:hover .btn-title {
-             margin-bottom: 0.25rem; /* Small margin when description appears */
-        }
-
-        /* View transition styles (for page switching) */
-        .view {
-            position: absolute; /* Position views on top of each other */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 2.5rem; /* Match container padding */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .view.active {
-            opacity: 1;
-            visibility: visible;
-            position: relative; /* Active view takes up space */
-        }
-        .view:not(.active) {
-            pointer-events: none; /* Disable clicks on hidden views */
-        }
-
-        /* REFINED FIX: Explicitly set centering for the main dashboard view ONLY */
-        #main-dashboard-view.active {
-            justify-content: center;
-        }
-
-        /* REFINED FIX: Remove the specific 'justify-content: flex-start' from here as the default flex behavior now works as intended. */
-
-        /* Initial page load animation */
-        body.initial-load .view#main-dashboard-view {
-            opacity: 0;
-            visibility: hidden;
-        }
-        body.initial-load .view#main-dashboard-view.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Styles for insight cards - Apple iOS inspired */
-        .insight-card {
-            background-color: #fcfcfc; /* Slightly off-white for a premium feel */
-            border-radius: 1.5rem; /* More rounded corners */
-            padding: 1.75rem;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); /* Softer, more pronounced shadow */
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            /* Subtle inner glow/gradient for depth */
-            background-image: radial-gradient(circle at top left, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5), /* Very subtle inner white border */
-                        0 15px 40px rgba(0, 0, 0, 0.15); /* Main shadow */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .insight-card:hover {
-            transform: translateY(-4px); /* Slightly more pronounced lift on hover */
-            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6), /* Enhanced inner border */
-                        0 20px 55px rgba(0, 0, 0, 0.25); /* Enhanced main shadow */
-        }
-        .insight-card h3 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #1e293b; /* Darker slate for strong contrast */
-            margin-bottom: 0.75rem;
-        }
-        .insight-card p {
-            font-size: 1.05rem;
-            color: #475569; /* Slate-600 */
-            line-height: 1.6;
-        }
-        .insight-card strong {
-            color: #0f172a; /* Even darker for emphasis */
-            font-weight: 700;
-        }
-
-        /* Loading spinner styles */
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #6c1e74;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* New styles for the top-left and top-right action buttons */
-        .top-nav-action-button {
+        .nav-item {
+            padding: 0.75rem 1.5rem; /* Resized for a sleeker feel */
+            font-size: 1rem; /* Resized font */
             font-weight: 600;
-            padding: 0.75rem 1.25rem; /* Slightly larger padding for better touch target and visual presence */
-            border-radius: 0.75rem; /* Rounded corners */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
-            transition: all 0.2s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem; /* More space between icon and text */
-            text-decoration: none; /* Remove underline for links */
-            font-size: 1rem; /* Standard readable font size */
-            color: white; /* Default white text for these buttons */
+            transition: all 0.3s ease;
+            color: var(--nav-text-color);
+            border-radius: 9999px;
+        }
+        .nav-item:hover {
+            color: var(--nav-text-hover);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        body.light-mode .nav-item:hover { background-color: rgba(0, 0, 0, 0.03); }
+        .nav-item.active {
+            background-color: var(--nav-active-bg);
+            color: var(--nav-active-text);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         }
 
-        .top-nav-action-button:hover {
-            transform: translateY(-1px); /* Subtle lift */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
+        .metric-card {
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
         }
-        .top-nav-action-button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        .metric-card:hover {
+            background-color: var(--card-hover-bg);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: var(--card-hover-shadow);
         }
-
-        /* Specific styles for the Back button (Zell purple) */
-        .back-button-style {
-            background-color: #6c1e74; /* Zell purple */
-        }
-        .back-button-style:hover {
-            background-color: #5a1a63; /* Darker purple on hover */
-        }
-
-        /* Specific styles for the Open Sheet button (Google Green) */
-        .open-sheet-button-style {
-            background-color: #34A853; /* Google Green */
-        }
-        .open-sheet-button-style:hover {
-            background-color: #2b8c45; /* Darker green on hover */
+        body.light-mode .metric-card:hover { border-color: rgba(0, 0, 0, 0.2); }
+        .metric-value { transition: transform 0.3s ease; }
+        .metric-card:hover .metric-value { transform: scale(1.2); }
+        
+        .report-button {
+            border-radius: 1.5rem;
         }
 
-        /* Style for the timestamp at the bottom */
-        .timestamp-footer {
-            position: absolute;
-            bottom: 2.5rem; /* Position from the bottom */
-            left: 50%;
-            transform: translateX(-50%); /* Center horizontally */
-            width: calc(100% - 6rem); /* Account for padding */
+        /* --- Apple TV Inspired Footer --- */
+        #page-footer {
+            background-color: var(--footer-bg);
+            color: var(--text-muted-color);
+            padding: 1.5rem;
             text-align: center;
-            font-size: 0.9rem; /* Smaller, subtle text */
-            color: #64748b; /* Slate-500 for a soft look */
-            margin-top: 2rem; /* Space from content above */
-            padding-top: 1rem; /* Padding above text */
-            border-top: 1px solid rgba(0, 0, 0, 0.05); /* Very light separator line */
+            font-size: 0.8rem;
+            width: 100%;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        #page-footer.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #refresh-button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+            transition: all 0.2s ease;
+        }
+        #refresh-button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        body.light-mode #refresh-button {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        body.light-mode #refresh-button:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            #navigation-bar { width: 100%; max-width: 100%; padding: 0.25rem; }
+            .nav-item { padding: 0.75rem 0.5rem; font-size: 0.875rem; flex-grow: 1; text-align: center; }
+            #theme-toggle { flex-grow: 0; }
+            .page-content { padding-top: 1rem; }
+            .card-grid { flex-direction: column; }
+            .card-grid .flex-grow { min-width: 0; }
         }
     </style>
 </head>
-<body class="initial-load">
-    <div class="dashboard-container">
-        <!-- Main Dashboard View -->
-        <div id="main-dashboard-view" class="view active">
-            <h1 class="text-5xl font-extrabold text-center text-gray-900 mb-12 leading-tight">
-                Zell Product Dashboard
-            </h1>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
-                <!-- Left Column Buttons (Daily Metrics, Weekly Batch Reports) -->
-                <div class="flex flex-col gap-8">
-                    <!-- Daily Metrics Button (Now triggers insight page) -->
-                    <button id="daily-metrics-btn" class="btn-custom-purple rounded-xl shadow-lg w-full">
-                        <span class="btn-title">Daily Metrics</span>
-                        <span class="btn-description">View key daily performance indicators and trends across all products.</span>
-                    </button>
-
-                    <!-- Weekly Batch Reports Button (Triggers SPA navigation) -->
-                    <button id="weekly-reports-btn" class="btn-custom-purple rounded-xl shadow-lg w-full">
-                        <span class="btn-title">Weekly Batch Reports</span>
-                        <span class="btn-description">Access overall summary batch reports and explore the dedicated Batch Dashboard folders.</span>
-                    </button>
-                </div>
-
-                <!-- Right Column Buttons (Question Library, Doubts & Tickets, Batches Quality Check, One on One) -->
-                <div class="flex flex-col gap-8">
-                    <!-- Question Library Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/195XkhREyrh329AtiWItixWUm-J019vf7NzKyCBQvIYw/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                        <span class="btn-title">Question Library</span>
-                        <span class="btn-description">Access reports for our Question Repository.</span>
-                    </a>
-
-                    <!-- Doubts & Tickets Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                        <span class="btn-title">Doubts & Tickets</span>
-                        <span class="btn-description">Summary for all open doubts and support tickets.</span>
-                    </a>
-
-                    <!-- Batches Quality Check Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                        <span class="btn-title">Batches Quality Check</span>
-                        <span class="btn-description">Detailed LMS review of all our ongoing batches.</span>
-                    </button>
-
-                    <!-- One on One Sessions Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/YOUR_ONE_ON_ONE_SESSIONS_SHEET_ID/edit" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                        <span class="btn-title">One on One Sessions</span>
-                        <span class="btn-description">View our SME tracker sheet.</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Metrics Insight View -->
-        <div id="daily-metrics-insight-view" class="view">
-            <!-- Header for top buttons and title -->
-            <div class="flex justify-between items-center w-full mb-8">
-                <!-- Top-Left Back Button -->
-                <button id="back-from-daily-metrics-btn-top" class="top-nav-action-button back-button-style">
-                    &larr; Back
+<body class="h-screen flex flex-col">
+    <header class="w-full z-50 p-4 flex-shrink-0">
+        <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 mx-auto flex justify-center items-center gap-1 md:gap-2">
+            <button data-tab="overview" class="nav-item">Overview</button>
+            <button data-tab="reports" class="nav-item">Other Reports</button>
+            <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
+                <i class="fas fa-sun"></i>
+            </button>
+        </nav>
+    </header>
+    
+    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
+        <div id="overview-section" class="page-content pt-8"></div>
+        <div id="daily-section" class="page-content hidden pt-8"></div>
+        <div id="reports-section" class="page-content hidden pt-8"></div>
+        
+        <footer id="page-footer">
+            <div class="flex justify-center items-center">
+                <span id="last-updated-text"></span>
+                <button id="refresh-button">
+                    <i class="fas fa-sync-alt"></i> Refresh
                 </button>
-                <!-- Top-Right Open Sheet Button -->
-                <a id="open-daily-metrics-sheet-btn-top" href="https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv" target="_blank" rel="noopener noreferrer" class="top-nav-action-button open-sheet-button-style">
-                    Open Sheet &#x2197;
-                </a>
             </div>
-
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-8 leading-tight text-center">
-                Daily Metrics Overview
-            </h1>
-            <p class="text-lg text-gray-700 mb-8 text-center max-w-2xl">
-                Here's a quick summary of today's key performance indicators. To view full details and trends, open the sheet.
-            </p>
-
-            <div id="daily-metrics-content" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 w-full max-w-3xl">
-                <!-- Data will be loaded here dynamically -->
-                <div class="col-span-full flex flex-col items-center justify-center py-10">
-                    <div class="spinner"></div>
-                    <p class="text-gray-600">Loading daily metrics...</p>
-                </div>
-            </div>
-
-            <!-- Timestamp Footer -->
-            <div id="last-updated-timestamp" class="timestamp-footer">
-                <!-- Timestamp will be inserted here dynamically -->
-            </div>
-        </div>
-
-        <!-- Weekly Batch Reports View -->
-        <div id="weekly-reports-view" class="view">
-            <!-- Header for top buttons and title -->
-            <div class="flex justify-start items-center w-full mb-8">
-                <!-- Back to Dashboard Button (moved to top-left) -->
-                <button id="back-to-dashboard-btn" class="top-nav-action-button back-button-style">
-                    &larr; Back
-                </button>
-                <h1 class="text-4xl font-extrabold text-gray-900 leading-tight ml-8">
-                    Weekly Batch Reports
-                </h1>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6 w-full max-w-md">
-                <!-- View Reports Summary Button -->
-                <a href="https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?gid=1027966824#gid=1027966824" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                    <span class="btn-title">View Reports Summary</span>
-                    <span class="btn-description">Access the comprehensive summary of all batch reports.</span>
-                </a>
-
-                <!-- View Batch Dashboard Folder Button -->
-                <a href="https://drive.google.com/drive/folders/1FAqI-TB2HHElB7dZoW5jVuVOjL3UNUiB?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-custom-purple rounded-xl shadow-lg">
-                    <span class="btn-title">View Batch Dashboard Folder</span>
-                    <span class="btn-description">Explore the Google Drive folder containing all batch dashboards.</span>
-                </a>
-            </div>
-        </div>
-    </div>
+        </footer>
+    </main>
 
     <script>
-        // Get references to the views and buttons
-        const mainDashboardView = document.getElementById('main-dashboard-view');
-        const weeklyReportsView = document.getElementById('weekly-reports-view');
-        const dailyMetricsInsightView = document.getElementById('daily-metrics-insight-view');
+        document.addEventListener('DOMContentLoaded', () => {
+            const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
+            const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
 
-        const dailyMetricsBtn = document.getElementById('daily-metrics-btn');
-        const weeklyReportsBtn = document.getElementById('weekly-reports-btn');
+            const dataCache = { overview: null, daily: null };
 
-        // New top-left and top-right buttons
-        const backFromDailyMetricsBtnTop = document.getElementById('back-from-daily-metrics-btn-top');
-        const openDailyMetricsSheetBtnTop = document.getElementById('open-daily-metrics-sheet-btn-top');
+            const mainContent = document.getElementById('main-content');
+            const navButtons = document.querySelectorAll('.nav-item');
+            const pageContents = document.querySelectorAll('.page-content');
 
-        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn'); // This is for weekly reports view
-
-        const dailyMetricsContentDiv = document.getElementById('daily-metrics-content');
-        const lastUpdatedTimestampDiv = document.getElementById('last-updated-timestamp');
-
-
-        // IMPORTANT: Replace this with the CSV URL you get from Google Sheets "Publish to web"
-        const DAILY_METRICS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv";
-
-        // Function to show a specific view with a fade transition
-        function showView(viewToShow, viewToHide) {
-            if (viewToHide) {
-                viewToHide.classList.remove('active');
-            }
-            setTimeout(() => {
-                viewToShow.classList.add('active');
-            }, 100);
-        }
-
-        // Helper function to format numbers with commas
-        function formatNumber(num) {
-            if (typeof num === 'string' && num.includes(':')) { // For time formats like 0:40:47
-                return num;
-            }
-            const cleanedNum = String(num).replace(/,/g, ''); // Remove existing commas
-            if (!isNaN(parseFloat(cleanedNum)) && isFinite(cleanedNum)) {
-                return parseFloat(cleanedNum).toLocaleString('en-US');
-            }
-            return num; // Return as is if not a valid number
-        }
-
-        // Function to parse CSV data
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            const result = {};
-
-            // Robust CSV parsing logic
-            const parseLine = (line) => {
-                const cells = [];
-                let inQuote = false;
-                let currentCell = '';
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    if (char === '"') {
-                        inQuote = !inQuote;
-                    } else if (char === ',' && !inQuote) {
-                        cells.push(currentCell.trim());
-                        currentCell = '';
-                    } else {
-                        currentCell += char;
+            const parseCSV = (csv) => {
+                if (!csv) return [];
+                const lines = csv.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
+                if (lines.length < 2) return [];
+                const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+                const data = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    const values = line.match(/(?:"[^"]*"|[^,]+)/g) || [];
+                     if (values.length > 0) {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            let value = values[index] ? values[index].trim().replace(/"/g, '') : '';
+                            if (value === '#NAME?') value = '...';
+                            obj[header] = value;
+                        });
+                        data.push(obj);
                     }
                 }
-                cells.push(currentCell.trim()); // Add the last cell
-                return cells;
+                return data;
             };
 
-            // Parse all lines, including the header to correctly determine subsequent data rows
-            const allParsedRows = lines.map(line => parseLine(line));
-
-            // The first row of the CSV is the header, so actual data starts from index 1.
-            // We'll use this `data` array for 0-indexed access to the *data rows*.
-            const data = allParsedRows.slice(1);
-
-            // Function to safely get data from the parsed 'data' array
-            const getCleanData = (rowIndex, colIndex) => {
-                // rowIndex here refers to the 0-indexed position within the 'data' array (after header is sliced)
-                // colIndex is 0 for A, 1 for B, 2 for C, 3 for D
-                if (data[rowIndex] && data[rowIndex][colIndex] !== undefined) {
-                    return data[rowIndex][colIndex];
+            const fetchAndParseData = async (url) => {
+                try {
+                    const response = await fetch(`${url}&t=${new Date().getTime()}`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const text = await response.text();
+                    if (text.includes("Sorry, the file you have requested does not exist.")) throw new Error("Data source not found.");
+                    return parseCSV(text);
+                } catch (error) {
+                    console.error("Could not fetch or parse data:", error);
+                    return null;
                 }
-                return 'N/A'; // Return 'N/A' if row or column doesn't exist
             };
 
-            // --- MAPPING BASED ON YOUR PROVIDED RAW CSV DATA ---
-            // The raw CSV data you provided:
-            // 0: Cumulative,WEB,ANDROID,iOS  <-- This is the header row, skipped by slice(1)
-            // 1: Rating,NA,4.05,             <-- data[0]
-            // 2: Number of Ratings,NA,40,    <-- data[1]
-            // 3: Downloads,NA,3,729,         <-- data[2]
-            // 4: Downloads(India),NA,3,560,  <-- data[3]
-            // 5: DAU,1,669,503,              <-- data[4]
-            // 6: MAU,5,667,2,951,            <-- data[5]
-            // 7: Active Users,17,192,,       <-- data[6]
-            // 8: Tests Taken,28,903,,        <-- data[7]
-            // 9: Total Visitors,184,833,,    <-- data[8]
-            // 10: Avg. Time Spent,00:40:47,,  <-- data[9]
+            const getIconForMetric = (label) => {
+                const lowerLabel = label.toLowerCase();
+                if (lowerLabel.includes('dau')) return 'fas fa-users';
+                if (lowerLabel.includes('mau')) return 'fas fa-calendar-week';
+                if (lowerLabel.includes('rating')) return 'fas fa-star';
+                if (lowerLabel.includes('doubts')) return 'fas fa-question-circle';
+                if (lowerLabel.includes('tickets')) return 'fas fa-ticket-alt';
+                if (lowerLabel.includes('batch')) return 'fas fa-layer-group';
+                if (lowerLabel.includes('user analytics')) return 'fas fa-chart-pie';
+                if (lowerLabel.includes('student support')) return 'fas fa-hands-helping';
+                if (lowerLabel.includes('daily metrics')) return 'fas fa-chart-line';
+                if (lowerLabel.includes('web')) return 'fab fa-chrome';
+                if (lowerLabel.includes('android')) return 'fab fa-android';
+                if (lowerLabel.includes('ios')) return 'fab fa-apple';
+                return 'fas fa-chart-bar';
+            };
 
+            const showLoading = (container) => {
+                container.innerHTML = `<div class="flex justify-center items-center h-64"><div class="w-16 h-16 border-4 border-[var(--text-muted-color)] border-t-[var(--text-color)] rounded-full animate-spin"></div></div>`;
+            };
 
-            // Sheet Row 3 (CSV Array Index 0)
-            result.ratingAndroid = getCleanData(0, 2); // C3
-            result.ratingiOS = getCleanData(0, 3);    // D3
+            const showError = (container, message) => {
+                container.innerHTML = `<div class="bg-red-900/50 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto"><h3 class="font-bold text-lg mb-2">Error Loading Data</h3><p>${message}</p></div>`;
+            };
 
-            // Sheet Row 4 (CSV Array Index 1)
-            result.numRatingsAndroid = getCleanData(1, 2); // C4
-            result.numRatingsiOS = getCleanData(1, 3);    // D4
-
-            // Sheet Row 5 (CSV Array Index 2)
-            result.downloadsTotalAndroid = getCleanData(2, 2); // C5
-            result.downloadsTotaliOS = getCleanData(2, 3);    // D5
-
-            // Sheet Row 6 (CSV Array Index 3)
-            result.downloadsIndiaAndroid = getCleanData(3, 2); // C6
-            result.downloadsIndiaiOS = getCleanData(3, 3);    // D6
-
-            // Sheet Row 7 (CSV Array Index 4)
-            result.dauWeb = getCleanData(4, 1);    // B7
-            result.dauAndroid = getCleanData(4, 2); // C7
-            result.dauiOS = getCleanData(4, 3);    // D7
-
-            // Sheet Row 8 (CSV Array Index 5)
-            result.mauWeb = getCleanData(5, 1);    // B8
-            result.mauAndroid = getCleanData(5, 2); // C8
-            result.mauiOS = getCleanData(5, 3);    // D8
-
-            // Sheet Row 9 (CSV Array Index 6)
-            result.totalActiveUsers = getCleanData(6, 1); // B9
-
-            // Sheet Row 10 (CSV Array Index 7)
-            result.testsTaken = getCleanData(7, 1); // B10
-
-            // Sheet Row 11 (CSV Array Index 8)
-            result.totalVisitors = getCleanData(8, 1); // B11
-
-            // Sheet Row 12 (CSV Array Index 9)
-            result.avgTimeSpent = getCleanData(9, 1); // B12
-
-            return result;
-        }
-
-
-        // Function to fetch and display daily metrics
-        async function fetchDailyMetrics() {
-            dailyMetricsContentDiv.innerHTML = `
-                <div class="col-span-full flex flex-col items-center justify-center py-10">
-                    <div class="spinner"></div>
-                    <p class="text-gray-600">Loading daily metrics...</p>
-                </div>
-            `; // Show loading spinner
-
-            try {
-                const response = await fetch(DAILY_METRICS_CSV_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            const renderOverviewPage = (container, data) => {
+                if (!data) {
+                    showError(container, "Could not load overview data.");
+                    return;
                 }
-                const csvText = await response.text();
-                const metrics = parseCSV(csvText);
+                const groupedData = data.reduce((acc, row) => {
+                    const topLevel = row['Top-Level Box'];
+                    const subHeader = row['Sub-Box Header'];
+                    if (topLevel && subHeader) {
+                        if (!acc[topLevel]) acc[topLevel] = {};
+                        if (!acc[topLevel][subHeader]) acc[topLevel][subHeader] = [];
+                        acc[topLevel][subHeader].push(row);
+                    }
+                    return acc;
+                }, {});
 
-                let htmlContent = '';
-
-                // App & Play Store Ratings Card
-                const hasRatingData = metrics.ratingAndroid !== 'N/A' || metrics.ratingiOS !== 'N/A' ||
-                                      metrics.numRatingsAndroid !== 'N/A' || metrics.numRatingsiOS !== 'N/A';
-                if (hasRatingData) {
-                    htmlContent += `
-                        <div class="insight-card">
-                            <h3>App & Play Store Ratings</h3>
-                            <p><strong>Android (Play Store):</strong> ${formatNumber(metrics.ratingAndroid)} out of 5 stars from ${formatNumber(metrics.numRatingsAndroid)} ratings.</p>
-                            <p><strong>iOS (App Store):</strong> ${formatNumber(metrics.ratingiOS)} ${metrics.ratingiOS === 'N/A' ? '' : 'out of 5 stars from ' + formatNumber(metrics.numRatingsiOS) + ' ratings.'}</p>
-                        </div>
-                    `;
-                }
-
-                // Downloads Card
-                const hasDownloadData = metrics.downloadsTotalAndroid !== 'N/A' || metrics.downloadsTotaliOS !== 'N/A' ||
-                                        metrics.downloadsIndiaAndroid !== 'N/A' || metrics.downloadsIndiaiOS !== 'N/A';
-                if (hasDownloadData) {
-                    htmlContent += `
-                        <div class="insight-card">
-                            <h3>Downloads</h3>
-                            <p><strong>Android Total:</strong> ${formatNumber(metrics.downloadsTotalAndroid)}</p>
-                            <p><strong>Android (India):</strong> ${formatNumber(metrics.downloadsIndiaAndroid)}</p>
-                            <p><strong>iOS Total:</strong> ${formatNumber(metrics.downloadsTotaliOS)}</p>
-                            <p><strong>iOS (India):</strong> ${formatNumber(metrics.downloadsIndiaiOS)}</p>
-                        </div>
-                    `;
-                }
-
-                // Daily Active Users (DAU) Card
-                const hasDauData = metrics.dauWeb !== 'N/A' || metrics.dauAndroid !== 'N/A' || metrics.dauiOS !== 'N/A';
-                if (hasDauData) {
-                    htmlContent += `
-                        <div class="insight-card">
-                            <h3>Daily Active Users (DAU)</h3>
-                            <p><strong>Web:</strong> ${formatNumber(metrics.dauWeb)} users</p>
-                            <p><strong>Android:</strong> ${formatNumber(metrics.dauAndroid)} users</p>
-                            <p><strong>iOS:</strong> ${formatNumber(metrics.dauiOS)} users</p>
-                        </div>
-                    `;
-                }
-
-                // Monthly Active Users (MAU) Card
-                const hasMauData = metrics.mauWeb !== 'N/A' || metrics.mauAndroid !== 'N/A' || metrics.mauiOS !== 'N/A';
-                if (hasMauData) {
-                    htmlContent += `
-                        <div class="insight-card">
-                            <h3>Monthly Active Users (MAU)</h3>
-                            <p><strong>Web:</strong> ${formatNumber(metrics.mauWeb)} users</p>
-                            <p><strong>Android:</strong> ${formatNumber(metrics.mauAndroid)} users</p>
-                            <p><strong>iOS:</strong> ${formatNumber(metrics.mauiOS)} users</p>
-                        </div>
-                    `;
-                }
-
-                // Overall Engagement (Web Data) Card
-                const hasOverallEngagementData = metrics.totalActiveUsers !== 'N/A' || metrics.testsTaken !== 'N/A' ||
-                                                 metrics.totalVisitors !== 'N/A' || metrics.avgTimeSpent !== 'N/A';
-                if (hasOverallEngagementData) {
-                    htmlContent += `
-                        <div class="insight-card col-span-full">
-                            <h3>Overall Engagement (Web Data)</h3>
-                            <p><strong>Total Active Users:</strong> ${formatNumber(metrics.totalActiveUsers)}</p>
-                            <p><strong>Tests Taken:</strong> ${formatNumber(metrics.testsTaken)}</p>
-                            <p><strong>Total Visitors:</strong> ${formatNumber(metrics.totalVisitors)}</p>
-                            <p><strong>Average Time Spent:</strong> ${metrics.avgTimeSpent}</p>
-                        </div>
-                    `;
-                }
-
-                if (htmlContent === '') {
-                    dailyMetricsContentDiv.innerHTML = `
-                        <div class="col-span-full text-center text-gray-600 py-10">
-                            <p>No daily metrics data available from the sheet.</p>
-                        </div>
-                    `;
-                } else {
-                    dailyMetricsContentDiv.innerHTML = htmlContent;
-                }
-
-
-                // Update the timestamp
-                const now = new Date();
-                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-                const formattedDateTime = now.toLocaleString('en-US', options);
-                lastUpdatedTimestampDiv.textContent = `Data on this page last fetched from Google Sheet on ${formattedDateTime}.`;
-
-            } catch (error) {
-                console.error("Failed to fetch daily metrics:", error);
-                dailyMetricsContentDiv.innerHTML = `
-                    <div class="col-span-full text-center text-red-600 py-10">
-                        <p>Failed to load daily metrics. Please ensure the Google Sheet is published to web as CSV and the URL is correct.</p>
-                        <p>Error: ${error.message}</p>
+                container.innerHTML = `
+                    <div class="space-y-12">
+                        ${Object.entries(groupedData).map(([title, subBoxes]) => `
+                            <section>
+                                <h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8">
+                                    <i class="${getIconForMetric(title)}"></i>
+                                    <span>${title}</span>
+                                </h2>
+                                <div class="space-y-8">
+                                    ${Object.entries(subBoxes).map(([subTitle, metrics]) => `
+                                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] mb-8">
+                                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
+                                            <div class="card-grid flex flex-wrap justify-center gap-6">
+                                                ${metrics.sort((a, b) => a.Order - b.Order).map(metric => `
+                                                    <div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]">
+                                                        <div class="text-3xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                                        <div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                        <div class="text-sm text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        `).join('')}
                     </div>
                 `;
-                lastUpdatedTimestampDiv.textContent = `Data fetch failed. Last attempt: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
-            }
-        }
+            };
 
-        // Event listener for Daily Metrics button on main dashboard
-        dailyMetricsBtn.addEventListener('click', () => {
-            showView(dailyMetricsInsightView, mainDashboardView);
-            fetchDailyMetrics(); // Fetch data when insight page is shown
+            const renderDailyMetricsPage = (container, data) => {
+                if (!data) {
+                    showError(container, "Could not load daily metrics data.");
+                    return;
+                }
+                const getLatestMetric = (metricName) => {
+                    const entries = data.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName);
+                    if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' };
+                    return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0];
+                };
+
+                const dau = getLatestMetric('DAU');
+                const mau = getLatestMetric('MAU');
+                const rating = getLatestMetric('Rating');
+                const numRatings = getLatestMetric('Number of Ratings');
+
+                const createMetricCard = (label, value, icon) => `
+                    <div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]">
+                        <div class="text-3xl text-[var(--icon-color)]"><i class="${icon}"></i></div>
+                        <div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${value || 'N/A'}</div>
+                        <div class="text-sm text-[var(--text-muted-color)]">${label}</div>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                    <div class="mb-6 flex">
+                        <button id="back-to-reports" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--card-border)] rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 hover:bg-[var(--card-hover-bg)]">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                        </button>
+                    </div>
+                    <div class="space-y-8">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('dau')}"></i>Daily Active Users (DAU)</h3>
+                            <div class="card-grid flex flex-wrap justify-center gap-6">
+                                ${createMetricCard('Web', dau.WEB, getIconForMetric('web'))}
+                                ${createMetricCard('Android', dau.ANDROID, getIconForMetric('android'))}
+                                ${createMetricCard('iOS', dau.iOS, getIconForMetric('ios'))}
+                            </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('mau')}"></i>Monthly Active Users (MAU)</h3>
+                            <div class="card-grid flex flex-wrap justify-center gap-6">
+                                ${createMetricCard('Web', mau.WEB, getIconForMetric('web'))}
+                                ${createMetricCard('Android', mau.ANDROID, getIconForMetric('android'))}
+                                ${createMetricCard('iOS', mau.iOS, getIconForMetric('ios'))}
+                            </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Ratings</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">Android</h4>
+                                    <div class="flex justify-center gap-6">
+                                        ${createMetricCard('Rating', rating.ANDROID, getIconForMetric('android rating'))}
+                                        ${createMetricCard('# of Ratings', numRatings.ANDROID, getIconForMetric('android'))}
+                                    </div>
+                                </div>
+                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">iOS</h4>
+                                    <div class="flex justify-center gap-6">
+                                        ${createMetricCard('Rating', rating.iOS, getIconForMetric('ios rating'))}
+                                        ${createMetricCard('# of Ratings', numRatings.iOS, getIconForMetric('ios'))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const renderReportsPage = (container) => {
+                const reports = [
+                    { title: 'Daily Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
+                    { title: 'Question Repository', icon: 'fas fa-book-open', link: 'https://docs.google.com/spreadsheets/d/195XkhREyrh329AtiWItixWUm-J019vf7NzKyCBQvIYw/edit?usp=sharing' },
+                    { title: 'Course Checks', icon: 'fas fa-clipboard-check', link: 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing' },
+                    { title: 'Ask a Doubt + Tickets', icon: 'fas fa-ticket-alt', link: 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing' },
+                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', link: 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing' },
+                ];
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        ${reports.map(report => {
+                            const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";
+                            const contentHtml = `
+                                <i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>
+                                <div class="relative z-10 report-content">
+                                    <i class="${report.icon} text-5xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i>
+                                    <span class="text-xl font-semibold">${report.title}</span>
+                                </div>
+                            `;
+
+                            if (report.link) {
+                                return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;
+                            } else {
+                                // Use a button for in-page navigation
+                                return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;
+                            }
+                        }).join('')}
+                    </div>
+                `;
+            };
+            
+            const switchTab = async (tabId) => {
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabId);
+                });
+
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const activeContent = document.getElementById(`${tabId}-section`);
+                activeContent.classList.remove('hidden');
+
+                if (tabId === 'overview' && !dataCache.overview) {
+                    showLoading(activeContent);
+                    dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
+                    renderOverviewPage(activeContent, dataCache.overview);
+                }
+            };
+            
+            navButtons.forEach(button => {
+                if (button.dataset.tab) { // Ensure it's a tab button
+                    button.addEventListener('click', () => switchTab(button.dataset.tab));
+                }
+            });
+            
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                const icon = themeToggle.querySelector('i');
+                icon.className = document.body.classList.contains('light-mode') ? 'fas fa-moon' : 'fas fa-sun';
+            });
+            
+            const initialLoad = async () => {
+                switchTab('overview'); 
+                renderReportsPage(document.getElementById('reports-section'));
+            };
+            
+            const refreshData = async () => {
+                const overviewSection = document.getElementById('overview-section');
+                const dailySection = document.getElementById('daily-section');
+
+                // Check which section is currently visible to refresh its data
+                if (!overviewSection.classList.contains('hidden')) {
+                    showLoading(overviewSection);
+                    dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
+                    renderOverviewPage(overviewSection, dataCache.overview);
+                } else if (!dailySection.classList.contains('hidden')) {
+                    showLoading(dailySection);
+                    dataCache.daily = await fetchAndParseData(DAILY_METRICS_URL);
+                    renderDailyMetricsPage(dailySection, dataCache.daily);
+                }
+                // No action needed for the reports list as it's static
+            };
+            
+            const lastUpdatedEl = document.getElementById('last-updated-text');
+            const refreshButton = document.getElementById('refresh-button');
+            
+            const updateLastUpdatedTime = () => {
+                 const now = new Date();
+                const formattedTime = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                lastUpdatedEl.textContent = `Data synced from Google Sheets at ${formattedTime} (IST).`;
+            };
+
+            refreshButton.addEventListener('click', () => {
+                refreshData().then(updateLastUpdatedTime);
+            });
+            
+            initialLoad().then(updateLastUpdatedTime);
+
+            const footer = document.getElementById('page-footer');
+            mainContent.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = mainContent;
+                if (scrollHeight - scrollTop <= clientHeight + 50) {
+                    footer.classList.add('visible');
+                } else {
+                    footer.classList.remove('visible');
+                }
+            });
+
+            // --- New Event Handling for Reports Sub-Navigation ---
+            const showDailyMetrics = async () => {
+                const reportsSection = document.getElementById('reports-section');
+                const dailySection = document.getElementById('daily-section');
+                
+                reportsSection.classList.add('hidden');
+                dailySection.classList.remove('hidden');
+
+                if (!dataCache.daily) {
+                    showLoading(dailySection);
+                    dataCache.daily = await fetchAndParseData(DAILY_METRICS_URL);
+                    renderDailyMetricsPage(dailySection, dataCache.daily);
+                }
+            };
+
+            const showReportsList = () => {
+                document.getElementById('reports-section').classList.remove('hidden');
+                document.getElementById('daily-section').classList.add('hidden');
+            };
+            
+            // Delegated event listener for dynamically added buttons
+            mainContent.addEventListener('click', (event) => {
+                if (event.target.closest('#show-daily-metrics-btn')) {
+                    showDailyMetrics();
+                } else if (event.target.closest('#back-to-reports')) {
+                    showReportsList();
+                }
+            });
+
+            setInterval(() => {
+                refreshData().then(updateLastUpdatedTime);
+            }, 300000); // 5 minutes
         });
-
-        // Event listener for Weekly Batch Reports button on main dashboard
-        weeklyReportsBtn.addEventListener('click', () => {
-            showView(weeklyReportsView, mainDashboardView);
-        });
-
-        // Event listener for Back to Dashboard button on Daily Metrics Insight page (new top-left button)
-        backFromDailyMetricsBtnTop.addEventListener('click', () => {
-            showView(mainDashboardView, dailyMetricsInsightView);
-        });
-
-        // Event listener for Back to Dashboard button on Weekly Batch Reports page
-        backToDashboardBtn.addEventListener('click', () => {
-            showView(mainDashboardView, weeklyReportsView);
-        });
-
-        // Remove initial-load class after page loads to enable transitions
-        document.body.classList.remove('initial-load');
     </script>
 </body>
 </html>
