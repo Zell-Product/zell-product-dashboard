@@ -244,7 +244,10 @@
                 const lowerLabel = label.toLowerCase();
                 if (lowerLabel.includes('dau')) return 'fas fa-users';
                 if (lowerLabel.includes('mau')) return 'fas fa-calendar-week';
-                // ... (other icons)
+                if (lowerLabel.includes('web')) return 'fas fa-globe';
+                if (lowerLabel.includes('android')) return 'fab fa-android';
+                if (lowerLabel.includes('ios')) return 'fab fa-apple';
+                if (lowerLabel.includes('rating')) return 'fas fa-star';
                 return 'fas fa-chart-bar';
             };
 
@@ -254,15 +257,77 @@
             const renderOverviewPage = (container, data) => {
                 if (!data) { showError(container, "Could not load overview data."); return; }
                 const groupedData = data.reduce((acc, row) => { const topLevel = row['Top-Level Box']; const subHeader = row['Sub-Box Header']; if (topLevel && subHeader) { if (!acc[topLevel]) acc[topLevel] = {}; if (!acc[topLevel][subHeader]) acc[topLevel][subHeader] = []; acc[topLevel][subHeader].push(row); } return acc; }, {});
-                container.innerHTML = `<div class="space-y-12">${Object.entries(groupedData).map(([title, subBoxes]) => `<section><h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8"><i class="${getIconForMetric(title)}"></i><span>${title}</span></h2><div class="space-y-8">${Object.entries(subBoxes).map(([subTitle, metrics]) => `<div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] mb-8"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3><div class="card-grid flex flex-wrap justify-center gap-6">${metrics.sort((a, b) => a.Order - b.Order).map(metric => `<div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]"><div class="text-3xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div><div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div><div class="text-sm text-[var(--text-muted-color)]">${metric['Data Header']}</div></div>`).join('')}</div></div>`).join('')}</div></section>`).join('')}</div>`;
+                container.innerHTML = `<div class="space-y-12">${Object.entries(groupedData).map(([title, subBoxes]) => `<section><h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8"><i class="${getIconForMetric(title)}"></i><span>${title}</span></h2><div class="space-y-8">${Object.entries(subBoxes).map(([subTitle, metrics]) => `<div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3><div class="card-grid flex flex-wrap justify-center gap-4">${metrics.sort((a, b) => a.Order - b.Order).map(metric => `<div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[160px]"><div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div><div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div><div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div></div>`).join('')}</div></div>`).join('')}</div></section>`).join('')}</div>`;
             };
 
             const renderDailyMetricsPage = (container, data) => {
-                 if (!data) { showError(container, "Could not load daily metrics data."); return; }
+                if (!data) { showError(container, "Could not load daily metrics data."); return; }
                 const getLatestMetric = (metricName) => { const entries = data.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName); if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' }; return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0]; };
-                const dau = getLatestMetric('DAU'); const mau = getLatestMetric('MAU'); const rating = getLatestMetric('Rating'); const numRatings = getLatestMetric('Number of Ratings');
-                const createMetricCard = (label, value, icon) => `<div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]"><div class="text-3xl text-[var(--icon-color)]"><i class="${icon}"></i></div><div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${value || 'N/A'}</div><div class="text-sm text-[var(--text-muted-color)]">${label}</div></div>`;
-                container.innerHTML = `<div class="space-y-8"><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('dau')}"></i>Daily Active Users (DAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', dau.WEB, getIconForMetric('web'))}${createMetricCard('Android', dau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', dau.iOS, getIconForMetric('ios'))}</div></div><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('mau')}"></i>Monthly Active Users (MAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', mau.WEB, getIconForMetric('web'))}${createMetricCard('Android', mau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', mau.iOS, getIconForMetric('ios'))}</div></div><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Ratings</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">Android</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.ANDROID, getIconForMetric('android rating'))}${createMetricCard('# of Ratings', numRatings.ANDROID, getIconForMetric('android'))}</div></div><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">iOS</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.iOS, getIconForMetric('ios rating'))}${createMetricCard('# of Ratings', numRatings.iOS, getIconForMetric('ios'))}</div></div></div></div></div>`;
+                const dau = getLatestMetric('DAU');
+                const mau = getLatestMetric('MAU');
+                const rating = getLatestMetric('Rating');
+                const numRatings = getLatestMetric('Number of Ratings');
+
+                const createPlatformCard = (label, value) => `
+                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
+                        <div class="value text-2xl md:text-3xl font-semibold tracking-tight">${value || 'N/A'}</div>
+                        <div class="text-xs text-[var(--text-muted-color)]">${label}</div>
+                    </div>
+                `;
+                
+                const createRatingCard = (label, value, icon) => `
+                    <div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2">
+                        <div class="text-2xl text-[var(--icon-color)]"><i class="${icon}"></i></div>
+                        <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${value || 'N/A'}</div>
+                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                    <div class="space-y-8">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-users"></i>Active Users</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- DAU Card -->
+                                <div class="bg-black/10 p-4 rounded-xl border border-white/10">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Daily Active (DAU)</h4>
+                                    <div class="flex justify-center gap-4">
+                                        ${createPlatformCard('Web', dau.WEB)}
+                                        ${createPlatformCard('Android', dau.ANDROID)}
+                                        ${createPlatformCard('iOS', dau.iOS)}
+                                    </div>
+                                </div>
+                                <!-- MAU Card -->
+                                <div class="bg-black/10 p-4 rounded-xl border border-white/10">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
+                                    <div class="flex justify-center gap-4">
+                                        ${createPlatformCard('Web', mau.WEB)}
+                                        ${createPlatformCard('Android', mau.ANDROID)}
+                                        ${createPlatformCard('iOS', mau.iOS)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Store Ratings</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('android')}"></i>Android</h4>
+                                    <div class="flex justify-center gap-6">
+                                        ${createRatingCard('Avg. Rating', rating.ANDROID, 'fas fa-star')}
+                                        ${createRatingCard('# of Ratings', numRatings.ANDROID, 'fas fa-user-edit')}
+                                    </div>
+                                </div>
+                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('ios')}"></i>iOS</h4>
+                                    <div class="flex justify-center gap-6">
+                                        ${createRatingCard('Avg. Rating', rating.iOS, 'fas fa-star')}
+                                        ${createRatingCard('# of Ratings', numRatings.iOS, 'fas fa-user-edit')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
             };
 
             const renderQuestionRepoPage = (container, data) => {
@@ -286,15 +351,15 @@
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                                     <div class="space-y-4">
-                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-transparent hover:border-white/10">
+                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                             <span class="value text-3xl font-semibold text-[var(--text-color)]">${groupData.draft || 'N/A'}</span>
                                         </div>
-                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-transparent hover:border-white/10">
+                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
                                             <span class="value text-3xl font-semibold text-[var(--text-color)]">${groupData.approved || 'N/A'}</span>
                                         </div>
-                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-transparent hover:border-white/10">
+                                        <div class="qrf-scorecard bg-black/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
                                             <span class="value text-3xl font-semibold text-[var(--text-color)]">${groupData.total || 'N/A'}</span>
                                         </div>
@@ -307,7 +372,6 @@
                             </div>
                         `;
                     }
-                    // *** THIS IS THE MODIFIED CODE BLOCK FOR ACCA & CFA ***
                     return `
                         <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col">
                              <div class="border-b border-[var(--card-border)] pb-3 mb-5">
@@ -315,15 +379,15 @@
                              </div>
                              <div class="flex-grow flex flex-col justify-between">
                                 <div class="flex justify-center gap-4 mb-6">
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-transparent hover:border-white/10 flex-1">
+                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.draft || 'N/A'}</div>
                                         <div class="text-xs text-[var(--text-muted-color)]">Draft</div>
                                     </div>
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-transparent hover:border-white/10 flex-1">
+                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.approved || 'N/A'}</div>
                                         <div class="text-xs text-[var(--text-muted-color)]">Approved</div>
                                     </div>
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-transparent hover:border-white/10 flex-1">
+                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.total || 'N/A'}</div>
                                         <div class="text-xs text-[var(--text-muted-color)]">Total</div>
                                     </div>
@@ -361,7 +425,7 @@
                     { title: 'Ask a Doubt + Tickets', icon: 'fas fa-ticket-alt', link: 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing' },
                     { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', link: 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing' },
                 ];
-                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i><div class="relative z-10 report-content"><i class="${report.icon} text-5xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-xl font-semibold">${report.title}</span></div>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
+                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<div class="relative z-10 report-content flex flex-col items-center justify-center"><i class="${report.icon} text-4xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-lg font-semibold">${report.title}</span></div><i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
             };
 
             const switchTab = async (tabId) => {
