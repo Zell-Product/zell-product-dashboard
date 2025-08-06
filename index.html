@@ -201,9 +201,8 @@
             // --- DATA SOURCES ---
             const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
             const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
-            
-            // !!! IMPORTANT: REPLACE THIS PLACEHOLDER WITH THE CORRECT PUBLISHED LINK FOR YOUR "Dashboard Data" SUB-SHEET !!!
-            const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=0&output=csv';
+            // This link assumes "Dashboard Data" is the first tab (gid=0). If not, please update it with the correct published link for that specific sub-sheet.
+            const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?output=csv';
 
             const dataCache = { overview: null, daily: null, questionRepo: null };
 
@@ -323,12 +322,35 @@
             };
 
             const renderDailyMetricsPage = (container, data) => {
-                // ... This function remains unchanged ...
+                if (!data) {
+                    showError(container, "Could not load daily metrics data.");
+                    return;
+                }
+                const getLatestMetric = (metricName) => {
+                    const entries = data.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName);
+                    if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' };
+                    return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0];
+                };
+
+                const dau = getLatestMetric('DAU');
+                const mau = getLatestMetric('MAU');
+                const rating = getLatestMetric('Rating');
+                const numRatings = getLatestMetric('Number of Ratings');
+
+                const createMetricCard = (label, value, icon) => `<div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]"><div class="text-3xl text-[var(--icon-color)]"><i class="${icon}"></i></div><div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${value || 'N/A'}</div><div class="text-sm text-[var(--text-muted-color)]">${label}</div></div>`;
+
+                container.innerHTML = `
+                    <div class="space-y-8">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('dau')}"></i>Daily Active Users (DAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', dau.WEB, getIconForMetric('web'))}${createMetricCard('Android', dau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', dau.iOS, getIconForMetric('ios'))}</div></div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('mau')}"></i>Monthly Active Users (MAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', mau.WEB, getIconForMetric('web'))}${createMetricCard('Android', mau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', mau.iOS, getIconForMetric('ios'))}</div></div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Ratings</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">Android</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.ANDROID, getIconForMetric('android rating'))}${createMetricCard('# of Ratings', numRatings.ANDROID, getIconForMetric('android'))}</div></div><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">iOS</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.iOS, getIconForMetric('ios rating'))}${createMetricCard('# of Ratings', numRatings.iOS, getIconForMetric('ios'))}</div></div></div></div>
+                    </div>
+                `;
             };
 
             const renderQuestionRepoPage = (container, data) => {
                 if (!data) {
-                    showError(container, "Could not load Question Repository data.");
+                    showError(container, "Could not load Question Repository data. Please ensure the 'Dashboard Data' sheet is the first tab in the Google Sheet or provide the correct published link.");
                     return;
                 }
 
@@ -383,15 +405,14 @@
             };
             
             const renderReportsPage = (container) => {
-                 const reports = [
+                const reports = [
                     { title: 'Daily Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
                     { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn' },
                     { title: 'Course Checks', icon: 'fas fa-clipboard-check', link: 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing' },
                     { title: 'Ask a Doubt + Tickets', icon: 'fas fa-ticket-alt', link: 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing' },
                     { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', link: 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing' },
                 ];
-                // This function remains largely unchanged, it just uses the new reports array
-                container.innerHTML = `...`; // The existing logic for this function is fine
+                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i><div class="relative z-10 report-content"><i class="${report.icon} text-5xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-xl font-semibold">${report.title}</span></div>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
             };
 
             // --- NAVIGATION AND EVENT HANDLING ---
@@ -470,75 +491,25 @@
                 }
             };
             
+            const lastUpdatedEl = document.getElementById('last-updated-text');
+            const refreshButton = document.getElementById('refresh-button');
+            
+            const updateLastUpdatedTime = () => {
+                const now = new Date();
+                const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const formattedTime = now.toLocaleString('en-IN', options);
+                lastUpdatedEl.textContent = `Data synced from Google Sheets at ${formattedTime}.`;
+            };
+
             // --- INITIALIZATION AND LISTENERS ---
-            const initialLoad = async () => {
+            const initialLoad = () => {
                 switchTab('overview'); 
                 renderReportsPage(document.getElementById('reports-section'));
-                // Make sure renderDailyMetricsPage is defined before it's called
-                // This is a simplified version, assuming renderDailyMetricsPage is defined elsewhere as it was before
+                updateLastUpdatedTime();
             };
 
-            // Re-define renderDailyMetricsPage to avoid undefined errors.
-            const originalRenderDailyMetricsPage = (container, data) => {
-                if (!data) {
-                    showError(container, "Could not load daily metrics data.");
-                    return;
-                }
-                const getLatestMetric = (metricName) => {
-                    const entries = data.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName);
-                    if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' };
-                    return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0];
-                };
-
-                const dau = getLatestMetric('DAU');
-                const mau = getLatestMetric('MAU');
-                const rating = getLatestMetric('Rating');
-                const numRatings = getLatestMetric('Number of Ratings');
-
-                const createMetricCard = (label, value, icon) => `<div class="metric-card flex-grow bg-black/5 p-6 border border-white/10 flex flex-col items-center text-center space-y-3 min-w-[200px]"><div class="text-3xl text-[var(--icon-color)]"><i class="${icon}"></i></div><div class="metric-value text-4xl font-bold text-[var(--text-color)] tracking-tight">${value || 'N/A'}</div><div class="text-sm text-[var(--text-muted-color)]">${label}</div></div>`;
-
-                container.innerHTML = `<div class="space-y-8"><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('dau')}"></i>Daily Active Users (DAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', dau.WEB, getIconForMetric('web'))}${createMetricCard('Android', dau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', dau.iOS, getIconForMetric('ios'))}</div></div><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('mau')}"></i>Monthly Active Users (MAU)</h3><div class="card-grid flex flex-wrap justify-center gap-6">${createMetricCard('Web', mau.WEB, getIconForMetric('web'))}${createMetricCard('Android', mau.ANDROID, getIconForMetric('android'))}${createMetricCard('iOS', mau.iOS, getIconForMetric('ios'))}</div></div><div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Ratings</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">Android</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.ANDROID, getIconForMetric('android rating'))}${createMetricCard('# of Ratings', numRatings.ANDROID, getIconForMetric('android'))}</div></div><div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4"><h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)]">iOS</h4><div class="flex justify-center gap-6">${createMetricCard('Rating', rating.iOS, getIconForMetric('ios rating'))}${createMetricCard('# of Ratings', numRatings.iOS, getIconForMetric('ios'))}</div></div></div></div></div>`;
-            };
-            renderDailyMetricsPage = originalRenderDailyMetricsPage; // Assign it to the variable used by other functions.
-
-
-            // Re-define renderReportsPage to avoid undefined errors
-            const originalRenderReportsPage = (container) => {
-                 const reports = [
-                    { title: 'Daily Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
-                    { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn' },
-                    { title: 'Course Checks', icon: 'fas fa-clipboard-check', link: 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing' },
-                    { title: 'Ask a Doubt + Tickets', icon: 'fas fa-ticket-alt', link: 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing' },
-                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', link: 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing' },
-                ];
-                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i><div class="relative z-10 report-content"><i class="${report.icon} text-5xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-xl font-semibold">${report.title}</span></div>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
-            };
-            renderReportsPage = originalRenderReportsPage;
-
-
-            // Event Listeners
-            navButtons.forEach(button => {
-                if (button.dataset.tab) {
-                    button.addEventListener('click', () => switchTab(button.dataset.tab));
-                }
-            });
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-mode');
-                const icon = themeToggle.querySelector('i');
-                icon.className = document.body.classList.contains('light-mode') ? 'fas fa-moon' : 'fas fa-sun';
-            });
-            refreshButton.addEventListener('click', () => {
-                refreshData().then(updateLastUpdatedTime);
-            });
-            footer.addEventListener('scroll', () => { // Corrected from mainContent
-                const { scrollTop, scrollHeight, clientHeight } = mainContent;
-                if (scrollHeight - scrollTop <= clientHeight + 50) {
-                    document.getElementById('page-footer').classList.add('visible');
-                } else {
-                    document.getElementById('page-footer').classList.remove('visible');
-                }
-            });
             headerBackButton.addEventListener('click', showReportsList);
+            
             mainContent.addEventListener('click', (event) => {
                 if (event.target.closest('#show-daily-metrics-btn')) {
                     showDailyMetrics();
@@ -547,8 +518,32 @@
                 }
             });
 
-            // Initial Load
-            initialLoad().then(updateLastUpdatedTime);
+            navButtons.forEach(button => {
+                if (button.dataset.tab) {
+                    button.addEventListener('click', () => switchTab(button.dataset.tab));
+                }
+            });
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                const icon = themeToggle.querySelector('i');
+                icon.className = document.body.classList.contains('light-mode') ? 'fas fa-moon' : 'fas fa-sun';
+            });
+            
+            refreshButton.addEventListener('click', () => {
+                refreshData().then(updateLastUpdatedTime);
+            });
+            
+            mainContent.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = mainContent;
+                if (scrollHeight - scrollTop <= clientHeight + 50) {
+                    document.getElementById('page-footer').classList.add('visible');
+                } else {
+                    document.getElementById('page-footer').classList.remove('visible');
+                }
+            });
+
+            initialLoad();
             setInterval(() => {
                 refreshData().then(updateLastUpdatedTime);
             }, 300000); // 5 minutes
