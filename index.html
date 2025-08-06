@@ -172,7 +172,7 @@
         </div>
     </header>
     
-    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
+    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-24 main-content">
         <div id="overview-section" class="page-content pt-8"></div>
         <div id="daily-section" class="page-content hidden pt-8"></div>
         <div id="reports-section" class="page-content hidden pt-8"></div>
@@ -248,16 +248,54 @@
                 if (lowerLabel.includes('android')) return 'fab fa-android';
                 if (lowerLabel.includes('ios')) return 'fab fa-apple';
                 if (lowerLabel.includes('rating')) return 'fas fa-star';
+                if (lowerLabel.includes('doubt')) return 'fas fa-question-circle';
+                if (lowerLabel.includes('ticket')) return 'fas fa-ticket-alt';
+                if (lowerLabel.includes('batch')) return 'fas fa-chalkboard-teacher';
+                if (lowerLabel.includes('user')) return 'fas fa-user-friends';
                 return 'fas fa-chart-bar';
             };
 
             const showLoading = (container) => { container.innerHTML = `<div class="flex justify-center items-center h-64"><div class="w-16 h-16 border-4 border-[var(--text-muted-color)] border-t-[var(--text-color)] rounded-full animate-spin"></div></div>`; };
             const showError = (container, message) => { container.innerHTML = `<div class="bg-red-900/50 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto"><h3 class="font-bold text-lg mb-2">Error Loading Data</h3><p>${message}</p></div>`; };
 
+            // Helper function to create pairs from an array for grid layout
+            const chunkArray = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+
             const renderOverviewPage = (container, data) => {
                 if (!data) { showError(container, "Could not load overview data."); return; }
                 const groupedData = data.reduce((acc, row) => { const topLevel = row['Top-Level Box']; const subHeader = row['Sub-Box Header']; if (topLevel && subHeader) { if (!acc[topLevel]) acc[topLevel] = {}; if (!acc[topLevel][subHeader]) acc[topLevel][subHeader] = []; acc[topLevel][subHeader].push(row); } return acc; }, {});
-                container.innerHTML = `<div class="space-y-12">${Object.entries(groupedData).map(([title, subBoxes]) => `<section><h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8"><i class="${getIconForMetric(title)}"></i><span>${title}</span></h2><div class="space-y-8">${Object.entries(subBoxes).map(([subTitle, metrics]) => `<div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl"><h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3><div class="card-grid flex flex-wrap justify-center gap-4">${metrics.sort((a, b) => a.Order - b.Order).map(metric => `<div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[160px]"><div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div><div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div><div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div></div>`).join('')}</div></div>`).join('')}</div></section>`).join('')}</div>`;
+                
+                container.innerHTML = `<div class="space-y-12">${Object.entries(groupedData).map(([title, subBoxesData]) => {
+                    const subBoxes = Object.entries(subBoxesData).map(([subTitle, metrics]) => ({ subTitle, metrics }));
+                    // Create pairs of sub-boxes to display in a 2-column grid
+                    const chunkedSubBoxes = chunkArray(subBoxes, 2);
+
+                    return `<section>
+                        <h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8">
+                            <i class="${getIconForMetric(title)}"></i><span>${title}</span>
+                        </h2>
+                        <div class="space-y-8">
+                            ${chunkedSubBoxes.map(row => `
+                                <div class="grid grid-cols-1 md:grid-cols-${row.length} gap-8">
+                                    ${row.map(({ subTitle, metrics }) => `
+                                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
+                                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
+                                            <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                                ${metrics.sort((a, b) => a.Order - b.Order).map(metric => `
+                                                    <div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[160px]">
+                                                        <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                                        <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>`;
+                }).join('')}</div>`;
             };
 
             const renderDailyMetricsPage = (container, data) => {
@@ -288,7 +326,6 @@
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-users"></i>Active Users</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <!-- DAU Card -->
                                 <div class="bg-black/10 p-4 rounded-xl border border-white/10">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Daily Active (DAU)</h4>
                                     <div class="flex justify-center gap-4">
@@ -297,7 +334,6 @@
                                         ${createPlatformCard('iOS', dau.iOS)}
                                     </div>
                                 </div>
-                                <!-- MAU Card -->
                                 <div class="bg-black/10 p-4 rounded-xl border border-white/10">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
                                     <div class="flex justify-center gap-4">
@@ -378,25 +414,25 @@
                                  <h3 class="text-2xl font-bold text-center text-[var(--text-color)]">${title}</h3>
                              </div>
                              <div class="flex-grow flex flex-col justify-between">
-                                <div class="flex justify-center gap-4 mb-6">
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
-                                        <div class="value text-3xl font-semibold tracking-tight">${groupData.draft || 'N/A'}</div>
-                                        <div class="text-xs text-[var(--text-muted-color)]">Draft</div>
-                                    </div>
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
-                                        <div class="value text-3xl font-semibold tracking-tight">${groupData.approved || 'N/A'}</div>
-                                        <div class="text-xs text-[var(--text-muted-color)]">Approved</div>
-                                    </div>
-                                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
-                                        <div class="value text-3xl font-semibold tracking-tight">${groupData.total || 'N/A'}</div>
-                                        <div class="text-xs text-[var(--text-muted-color)]">Total</div>
-                                    </div>
-                                </div>
-                                <div class="qrf-scorecard bg-black/10 p-4 rounded-lg text-center border border-transparent hover:border-white/10">
-                                    <div class="value text-5xl font-bold text-[var(--text-color)] tracking-tighter">${groupData.completion || 'N/A'}</div>
-                                    <div class="text-sm text-[var(--text-muted-color)]">Completion</div>
-                                </div>
-                             </div>
+                                 <div class="flex justify-center gap-4 mb-6">
+                                     <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
+                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.draft || 'N/A'}</div>
+                                         <div class="text-xs text-[var(--text-muted-color)]">Draft</div>
+                                     </div>
+                                     <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
+                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.approved || 'N/A'}</div>
+                                         <div class="text-xs text-[var(--text-muted-color)]">Approved</div>
+                                     </div>
+                                     <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
+                                         <div class="value text-3xl font-semibold tracking-tight">${groupData.total || 'N/A'}</div>
+                                         <div class="text-xs text-[var(--text-muted-color)]">Total</div>
+                                     </div>
+                                 </div>
+                                 <div class="qrf-scorecard bg-black/10 p-4 rounded-lg text-center border border-transparent hover:border-white/10">
+                                     <div class="value text-5xl font-bold text-[var(--text-color)] tracking-tighter">${groupData.completion || 'N/A'}</div>
+                                     <div class="text-sm text-[var(--text-muted-color)]">Completion</div>
+                                 </div>
+                               </div>
                         </div>
                     `;
                 };
