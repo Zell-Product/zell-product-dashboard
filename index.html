@@ -8,6 +8,7 @@
     <link rel="icon" href="https://raw.githubusercontent.com/YashShah20F/Dashboard-V3/main/favicon%20BW.png" type="image/png">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -31,6 +32,8 @@
             --nav-active-bg: rgba(255, 255, 255, 0.1);
             --nav-active-text: #ffffff;
             --footer-bg: #1d1d1f;
+            --chart-grid-color: rgba(255, 255, 255, 0.1);
+            --chart-tick-color: #a1a1a6;
         }
 
         body.light-mode {
@@ -50,6 +53,8 @@
             --nav-active-bg: rgba(0, 0, 0, 0.05);
             --nav-active-text: #000000;
             --footer-bg: #e5e5e7;
+            --chart-grid-color: rgba(0, 0, 0, 0.1);
+            --chart-tick-color: #515154;
         }
 
         body {
@@ -149,6 +154,7 @@
             #theme-toggle { flex-grow: 0; }
             .page-content { padding-top: 1rem; }
             .card-grid { flex-direction: column; }
+            .card-grid.force-row { flex-direction: row; }
             .card-grid .flex-grow { min-width: 0; }
         }
     </style>
@@ -156,15 +162,23 @@
 <body class="h-screen flex flex-col">
     <header class="w-full z-50 p-4 flex-shrink-0">
         <div class="w-full max-w-7xl mx-auto flex items-center justify-center h-14 relative">
-            <div id="header-back-container" class="absolute left-0 top-0 h-full flex items-center">
-                <button id="header-back-button" class="hidden text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] text-lg font-medium transition-colors duration-300 flex items-center px-3 py-2 rounded-lg">
-                    <i class="fas fa-chevron-left mr-2" style="font-size: 0.9em; line-height: inherit;"></i>
-                    <span>Back</span>
+            
+            <div id="page-header" class="hidden w-full h-full items-center justify-center relative">
+                 <button id="header-back-button" class="absolute left-0 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
+                    <i class="fas fa-chevron-left text-xl"></i>
                 </button>
+                <div class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-8 py-3">
+                    <h1 id="page-header-title" class="text-2xl font-bold text-[var(--text-color)]"></h1>
+                </div>
+                 <a id="open-sheet-button" href="#" target="_blank" rel="noopener noreferrer" class="absolute right-0 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] h-12 px-5 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
+                    <span class="mr-2 hidden md:inline">Open Sheet</span>
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
             </div>
+
             <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1 md:gap-2">
                 <button data-tab="overview" class="nav-item">Overview</button>
-                <button data-tab="reports" class="nav-item">Other Reports</button>
+                <button data-tab="reports" class="nav-item">Reports</button>
                 <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
                     <i class="fas fa-sun"></i>
                 </button>
@@ -172,11 +186,14 @@
         </div>
     </header>
     
-    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-24 main-content">
-        <div id="overview-section" class="page-content pt-8"></div>
-        <div id="daily-section" class="page-content hidden pt-8"></div>
-        <div id="reports-section" class="page-content hidden pt-8"></div>
-        <div id="question-repo-section" class="page-content hidden"></div>
+    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
+        <div id="overview-section" class="page-content pt-8 pb-16"></div>
+        <div id="daily-section" class="page-content hidden pt-8 pb-16"></div>
+        <div id="reports-section" class="page-content hidden pt-8 pb-16"></div>
+        <div id="question-repo-section" class="page-content hidden pt-8 pb-16"></div>
+        <div id="course-checks-section" class="page-content hidden pt-8 pb-16"></div>
+        <div id="batch-reports-section" class="page-content hidden pt-8 pb-16"></div>
+        <div id="ask-a-doubt-section" class="page-content hidden pt-8 pb-16"></div>
         
         <footer id="page-footer">
             <div class="flex justify-center items-center">
@@ -193,22 +210,34 @@
             const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
             const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
             const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
+            const COURSE_CHECKS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTo2_1ighNkAxsTHM-9kCcKcOaMHRdojOqI_5wVVHTjJA_K80HdvzHtga5XRwStdlK7sYCbYRxRhGbV/pub?gid=1674961572&single=true&output=csv';
 
-            const dataCache = { overview: null, daily: null, questionRepo: null };
+            const SHEET_URLS = {
+                'course-checks-section': 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing',
+                'question-repo-section': 'https://docs.google.com/spreadsheets/d/195XkhREyrh329AtiWItixWUm-J019vf7NzKyCBQvIYw/edit?usp=sharing',
+                'ask-a-doubt-section': 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing',
+                'batch-reports-section': 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing'
+            };
+
+            const dataCache = { overview: null, daily: null, questionRepo: null, courseChecks: null };
+            let courseChecksChart = null;
 
             const mainContent = document.getElementById('main-content');
             const navButtons = document.querySelectorAll('.nav-item');
             const pageContents = document.querySelectorAll('.page-content');
             const navigationBar = document.getElementById('navigation-bar');
             const headerBackButton = document.getElementById('header-back-button');
+            const pageHeader = document.getElementById('page-header');
+            const pageHeaderTitle = document.getElementById('page-header-title');
+            const openSheetButton = document.getElementById('open-sheet-button');
             const themeToggle = document.getElementById('theme-toggle');
             const lastUpdatedEl = document.getElementById('last-updated-text');
             const refreshButton = document.getElementById('refresh-button');
 
             const parseCSV = (csv) => {
-                if (!csv) return [];
+                if (!csv) return { parsed: [], raw: [] };
                 const lines = csv.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
-                if (lines.length < 2) return [];
+                if (lines.length < 1) return { parsed: [], raw: lines };
                 const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
                 const data = [];
                 for (let i = 1; i < lines.length; i++) {
@@ -224,7 +253,7 @@
                         data.push(obj);
                     }
                 }
-                return data;
+                return { parsed: data, raw: lines };
             };
 
             const fetchAndParseData = async (url) => {
@@ -258,49 +287,83 @@
             const showLoading = (container) => { container.innerHTML = `<div class="flex justify-center items-center h-64"><div class="w-16 h-16 border-4 border-[var(--text-muted-color)] border-t-[var(--text-color)] rounded-full animate-spin"></div></div>`; };
             const showError = (container, message) => { container.innerHTML = `<div class="bg-red-900/50 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto"><h3 class="font-bold text-lg mb-2">Error Loading Data</h3><p>${message}</p></div>`; };
 
-            // Helper function to create pairs from an array for grid layout
-            const chunkArray = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-
             const renderOverviewPage = (container, data) => {
                 if (!data) { showError(container, "Could not load overview data."); return; }
-                const groupedData = data.reduce((acc, row) => { const topLevel = row['Top-Level Box']; const subHeader = row['Sub-Box Header']; if (topLevel && subHeader) { if (!acc[topLevel]) acc[topLevel] = {}; if (!acc[topLevel][subHeader]) acc[topLevel][subHeader] = []; acc[topLevel][subHeader].push(row); } return acc; }, {});
+                const groupedData = data.parsed.reduce((acc, row) => { const topLevel = row['Top-Level Box']; if (topLevel) { if (!acc[topLevel]) acc[topLevel] = []; acc[topLevel].push(row); } return acc; }, {});
                 
-                container.innerHTML = `<div class="space-y-12">${Object.entries(groupedData).map(([title, subBoxesData]) => {
-                    const subBoxes = Object.entries(subBoxesData).map(([subTitle, metrics]) => ({ subTitle, metrics }));
-                    // Create pairs of sub-boxes to display in a 2-column grid
-                    const chunkedSubBoxes = chunkArray(subBoxes, 2);
-
-                    return `<section>
+                let content = '';
+                for (const [title, rows] of Object.entries(groupedData)) {
+                    content += `<section class="space-y-8">
                         <h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4 mb-8">
                             <i class="${getIconForMetric(title)}"></i><span>${title}</span>
-                        </h2>
-                        <div class="space-y-8">
-                            ${chunkedSubBoxes.map(row => `
-                                <div class="grid grid-cols-1 md:grid-cols-${row.length} gap-8">
-                                    ${row.map(({ subTitle, metrics }) => `
-                                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
-                                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
-                                            <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
-                                                ${metrics.sort((a, b) => a.Order - b.Order).map(metric => `
-                                                    <div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[160px]">
-                                                        <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                        <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
-                                                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
+                        </h2>`;
+
+                    if (title.trim() === 'Batches Information') {
+                        const generalData = rows.filter(r => r['Sub-Box Header'] === 'General');
+                        const performanceData = rows.filter(r => r['Sub-Box Header'] === 'Performance Data');
+                        content += `
+                            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                                <div class="lg:col-span-2 sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
+                                    <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
+                                    <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                        ${generalData.map(metric => `
+                                            <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px]">
+                                                <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                                <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                            </div>`).join('')}
+                                    </div>
                                 </div>
-                            `).join('')}
-                        </div>
-                    </section>`;
-                }).join('')}</div>`;
+                                <div class="lg:col-span-3 sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
+                                    <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
+                                    <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                        ${performanceData.map(metric => `
+                                            <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px]">
+                                                <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                                <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                            </div>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const subBoxes = rows.reduce((acc, row) => { const subHeader = row['Sub-Box Header']; if (subHeader) { if (!acc[subHeader]) acc[subHeader] = []; acc[subHeader].push(row); } return acc; }, {});
+                        const chunkedSubBoxes = Object.entries(subBoxes).reduce((resultArray, item, index) => { 
+                            const chunkIndex = Math.floor(index/2);
+                            if(!resultArray[chunkIndex]) { resultArray[chunkIndex] = [] }
+                            resultArray[chunkIndex].push(item);
+                            return resultArray;
+                        }, []);
+
+                        content += chunkedSubBoxes.map(row => `
+                            <div class="grid grid-cols-1 ${row.length > 1 ? 'md:grid-cols-2' : ''} gap-8">
+                                ${row.map(([subTitle, metrics]) => `
+                                    <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
+                                        <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
+                                        <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                            ${metrics.sort((a, b) => a.Order - b.Order).map(metric => `
+                                                <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px]">
+                                                    <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                                    <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                    <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `).join('');
+                    }
+                    content += '</section>';
+                }
+                container.innerHTML = `<div class="space-y-12">${content}</div>`;
             };
 
             const renderDailyMetricsPage = (container, data) => {
                 if (!data) { showError(container, "Could not load daily metrics data."); return; }
-                const getLatestMetric = (metricName) => { const entries = data.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName); if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' }; return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0]; };
+                const latestData = data.parsed;
+                const getLatestMetric = (metricName) => { const entries = latestData.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName); if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' }; return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0]; };
                 const dau = getLatestMetric('DAU');
                 const mau = getLatestMetric('MAU');
                 const rating = getLatestMetric('Rating');
@@ -366,9 +429,116 @@
                     </div>`;
             };
 
+            const getSuccessRateColor = (rateStr) => {
+                const rate = parseFloat(rateStr);
+                if (isNaN(rate)) return 'text-[var(--text-color)]';
+                if (rate <= 35) return 'text-red-500';
+                if (rate > 35 && rate <= 75) return 'text-amber-500';
+                return 'text-green-500';
+            };
+
+            const renderCourseChecksPage = (container, data) => {
+                if (!data || !data.raw || data.raw.length < 1) { showError(container, "Could not load Course Checks data."); return; }
+                
+                const firstLine = data.raw[0].split(',');
+                const successRate = firstLine.length > 2 ? firstLine[2].trim().replace(/"/g, '') : 'N/A';
+                const successRateColor = getSuccessRateColor(successRate);
+
+                const chartData = data.parsed
+                    .filter(row => row['Pass %'] && row['Pass %'].trim() !== '' && !isNaN(parseFloat(row['Pass %'])))
+                    .map(row => ({
+                        date: row['Date'],
+                        value: parseFloat(row['Pass %'])
+                    }));
+
+                container.innerHTML = `
+                    <div class="space-y-8">
+                        <div class="bg-[var(--card-bg)] backdrop-blur-xl p-8 rounded-3xl text-center border border-[var(--card-border)]">
+                            <h3 class="text-lg font-medium text-[var(--text-muted-color)] uppercase tracking-widest">Success Rate</h3>
+                            <div class="text-8xl font-bold my-2 tracking-tighter ${successRateColor}">${successRate}</div>
+                            <i class="fas fa-check-circle text-lg ${successRateColor}"></i>
+                        </div>
+                        <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl min-h-[400px]">
+                             <canvas id="courseChecksChartCanvas"></canvas>
+                        </div>
+                    </div>
+                `;
+
+                const ctx = document.getElementById('courseChecksChartCanvas').getContext('2d');
+                if (courseChecksChart) {
+                    courseChecksChart.destroy();
+                }
+
+                const isLightMode = document.body.classList.contains('light-mode');
+                const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+                const tickColor = isLightMode ? '#515154' : '#a1a1a6';
+                const bodyFont = "'Inter', sans-serif";
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(45, 212, 191, 0.4)');
+                gradient.addColorStop(1, 'rgba(45, 212, 191, 0)');
+
+                courseChecksChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.map(d => d.date),
+                        datasets: [{
+                            label: 'Pass %',
+                            data: chartData.map(d => d.value),
+                            borderColor: '#2DD4BF',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#2DD4BF',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                titleFont: { family: bodyFont, size: 14, weight: 'bold' },
+                                bodyFont: { family: bodyFont, size: 12 },
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Pass Rate: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: { 
+                                    color: tickColor, 
+                                    font: { family: bodyFont },
+                                    callback: function(value) { return value + '%'; }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: tickColor, font: { family: bodyFont } }
+                            }
+                        }
+                    }
+                });
+            };
+
             const renderQuestionRepoPage = (container, data) => {
                 if (!data) { showError(container, "Could not load Question Repository data."); return; }
-                const processedData = data.reduce((acc, row) => {
+                const processedData = data.parsed.reduce((acc, row) => {
                     const group = row['Sub-Box Header'];
                     if (group && !acc[group]) acc[group] = {};
                     if(group) {
@@ -452,21 +622,105 @@
                     </div>
                 `;
             };
+
+            const renderBatchReportsPage = (container, data) => {
+                if (!data || !data.parsed) { showError(container, "Could not load Batch Reports data."); return; }
+                
+                const batchSectionData = data.parsed.filter(row => row['Top-Level Box'] && row['Top-Level Box'].trim() === 'Batches Information');
+                const generalData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'General');
+                const performanceData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'Performance Data');
+
+                const createMetricCard = (metric) => `
+                    <div class="bg-black/5 p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center space-y-2">
+                        <i class="${getIconForMetric(metric['Data Header'])} text-3xl text-[var(--icon-color)] opacity-80"></i>
+                        <div class="text-4xl font-bold text-[var(--text-color)] tracking-tight">${metric.Value || 'N/A'}</div>
+                        <div class="text-sm font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                    <div class="space-y-10">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                ${generalData.map(createMetricCard).join('')}
+                            </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                ${performanceData.map(createMetricCard).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const renderAskADoubtPage = (container, data) => {
+                if (!data || !data.parsed) { showError(container, "Could not load Support data."); return; }
+
+                const supportSectionData = data.parsed.filter(row => row['Top-Level Box'] && row['Top-Level Box'].trim() === 'Ask a Doubt + Tickets');
+                const doubtsData = supportSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'Doubts');
+                const ticketsData = supportSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'Support Tickets');
+
+                const createSupportMetricCard = (metric) => `
+                    <div class="flex justify-between items-center bg-black/10 p-4 rounded-xl border border-white/10">
+                        <span class="text-lg font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</span>
+                        <span class="text-3xl font-semibold text-[var(--text-color)]">${metric.Value || 'N/A'}</span>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3"><i class="fas fa-question-circle"></i>Doubts</h3>
+                             <div class="space-y-4">
+                                ${doubtsData.map(createSupportMetricCard).join('')}
+                             </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3"><i class="fas fa-ticket-alt"></i>Support Tickets</h3>
+                             <div class="space-y-4">
+                                ${ticketsData.map(createSupportMetricCard).join('')}
+                             </div>
+                        </div>
+                    </div>
+                `;
+            };
             
             const renderReportsPage = (container) => {
                 const reports = [
                     { title: 'Daily Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
+                    { title: 'LMS Checks', icon: 'fas fa-clipboard-check', id: 'show-course-checks-btn' },
                     { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn' },
-                    { title: 'Course Checks', icon: 'fas fa-clipboard-check', link: 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing' },
-                    { title: 'Ask a Doubt + Tickets', icon: 'fas fa-ticket-alt', link: 'https://docs.google.com/spreadsheets/d/101pxzW4-A1nuoazXwWi0XFx61iLc9QhcRA-8AbkW2UM/edit?usp=sharing' },
-                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', link: 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing' },
+                    { title: 'Ask a Doubt + Tickets', icon: 'fas fa-headset', id: 'show-ask-a-doubt-btn' },
+                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', id: 'show-batch-reports-btn' },
                 ];
                 container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<div class="relative z-10 report-content flex flex-col items-center justify-center"><i class="${report.icon} text-4xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-lg font-semibold">${report.title}</span></div><i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
             };
 
+            const setPageHeader = (title, sheetUrl) => {
+                if (title) {
+                    pageHeaderTitle.textContent = title;
+                    pageHeader.classList.remove('hidden');
+                    pageHeader.classList.add('flex');
+                    navigationBar.classList.add('hidden');
+                    if (sheetUrl) {
+                        openSheetButton.href = sheetUrl;
+                        openSheetButton.classList.remove('hidden');
+                    } else {
+                        openSheetButton.classList.add('hidden');
+                    }
+                } else {
+                    pageHeader.classList.add('hidden');
+                    pageHeader.classList.remove('flex');
+                    navigationBar.classList.remove('hidden');
+                    openSheetButton.classList.add('hidden');
+                }
+            };
+            
             const switchTab = async (tabId) => {
-                navigationBar.classList.remove('hidden');
-                headerBackButton.classList.add('hidden');
+                setPageHeader(null);
                 navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const activeContent = document.getElementById(`${tabId}-section`);
@@ -482,8 +736,7 @@
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const dailySection = document.getElementById('daily-section');
                 dailySection.classList.remove('hidden');
-                navigationBar.classList.add('hidden');
-                headerBackButton.classList.remove('hidden');
+                setPageHeader('Daily Metrics');
                 if (!dataCache.daily) {
                     showLoading(dailySection);
                     dataCache.daily = await fetchAndParseData(DAILY_METRICS_URL);
@@ -491,42 +744,87 @@
                 }
             };
 
+            const showCourseChecksPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const courseChecksSection = document.getElementById('course-checks-section');
+                courseChecksSection.classList.remove('hidden');
+                setPageHeader('LMS Checks', SHEET_URLS['course-checks-section']);
+                if (!dataCache.courseChecks) {
+                    showLoading(courseChecksSection);
+                    dataCache.courseChecks = await fetchAndParseData(COURSE_CHECKS_URL);
+                    renderCourseChecksPage(courseChecksSection, dataCache.courseChecks);
+                }
+            };
+
             const showQuestionRepo = async () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const questionRepoSection = document.getElementById('question-repo-section');
                 questionRepoSection.classList.remove('hidden');
-                navigationBar.classList.add('hidden');
-                headerBackButton.classList.remove('hidden');
+                setPageHeader('Question Repository', SHEET_URLS['question-repo-section']);
                 if (!dataCache.questionRepo) {
                     showLoading(questionRepoSection);
                     dataCache.questionRepo = await fetchAndParseData(QUESTION_REPO_URL);
                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo);
                 }
             };
+
+            const showBatchReportsPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const batchReportsSection = document.getElementById('batch-reports-section');
+                batchReportsSection.classList.remove('hidden');
+                setPageHeader('Batch Reports', SHEET_URLS['batch-reports-section']);
+                if (!dataCache.overview) {
+                    showLoading(batchReportsSection);
+                    dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
+                }
+                renderBatchReportsPage(batchReportsSection, dataCache.overview);
+            };
+
+            const showAskADoubtPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const askADoubtSection = document.getElementById('ask-a-doubt-section');
+                askADoubtSection.classList.remove('hidden');
+                setPageHeader('Support Center', SHEET_URLS['ask-a-doubt-section']);
+                if (!dataCache.overview) {
+                    showLoading(askADoubtSection);
+                    dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
+                }
+                renderAskADoubtPage(askADoubtSection, dataCache.overview);
+            };
             
             const showReportsList = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 document.getElementById('reports-section').classList.remove('hidden');
-                navigationBar.classList.remove('hidden');
-                headerBackButton.classList.add('hidden');
+                setPageHeader(null);
             };
 
             const refreshData = async () => {
-                const overviewSection = document.getElementById('overview-section');
-                const dailySection = document.getElementById('daily-section');
-                const questionRepoSection = document.getElementById('question-repo-section');
-                if (!overviewSection.classList.contains('hidden')) {
-                    showLoading(overviewSection);
+                const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
+                if (!activeSection) return;
+
+                const sectionId = activeSection.id;
+                showLoading(activeSection);
+                
+                const needsOverviewData = ['overview-section', 'batch-reports-section', 'ask-a-doubt-section'].includes(sectionId);
+                
+                if (needsOverviewData && !dataCache.overview) {
                     dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
-                    renderOverviewPage(overviewSection, dataCache.overview);
-                } else if (!dailySection.classList.contains('hidden')) {
-                    showLoading(dailySection);
+                }
+                if (sectionId === 'daily-section' && !dataCache.daily) {
                     dataCache.daily = await fetchAndParseData(DAILY_METRICS_URL);
-                    renderDailyMetricsPage(dailySection, dataCache.daily);
-                } else if (!questionRepoSection.classList.contains('hidden')) {
-                    showLoading(questionRepoSection);
+                } else if (sectionId === 'course-checks-section' && !dataCache.courseChecks) {
+                    dataCache.courseChecks = await fetchAndParseData(COURSE_CHECKS_URL);
+                } else if (sectionId === 'question-repo-section' && !dataCache.questionRepo) {
                     dataCache.questionRepo = await fetchAndParseData(QUESTION_REPO_URL);
-                    renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo);
+                }
+
+                switch (sectionId) {
+                    case 'overview-section': renderOverviewPage(activeSection, dataCache.overview); break;
+                    case 'batch-reports-section': renderBatchReportsPage(activeSection, dataCache.overview); break;
+                    case 'ask-a-doubt-section': renderAskADoubtPage(activeSection, dataCache.overview); break;
+                    case 'daily-section': renderDailyMetricsPage(activeSection, dataCache.daily); break;
+                    case 'course-checks-section': renderCourseChecksPage(activeSection, dataCache.courseChecks); break;
+                    case 'question-repo-section': renderQuestionRepoPage(activeSection, dataCache.questionRepo); break;
                 }
             };
             
@@ -551,18 +849,22 @@
 
             themeToggle.addEventListener('click', () => {
                 document.body.classList.toggle('light-mode');
-                const icon = themeToggle.querySelector('i');
-                icon.className = document.body.classList.contains('light-mode') ? 'fas fa-moon' : 'fas fa-sun';
+                if (courseChecksChart && !document.getElementById('course-checks-section').classList.contains('hidden')) {
+                    renderCourseChecksPage(document.getElementById('course-checks-section'), dataCache.courseChecks);
+                }
             });
             
             headerBackButton.addEventListener('click', showReportsList);
             
             mainContent.addEventListener('click', (event) => {
-                if (event.target.closest('#show-daily-metrics-btn')) {
-                    showDailyMetrics();
-                } else if (event.target.closest('#show-question-repo-btn')) {
-                    showQuestionRepo();
-                }
+                const target = event.target.closest('button');
+                if (!target) return;
+
+                if (target.id === 'show-daily-metrics-btn') showDailyMetrics();
+                else if (target.id === 'show-question-repo-btn') showQuestionRepo();
+                else if (target.id === 'show-course-checks-btn') showCourseChecksPage();
+                else if (target.id === 'show-batch-reports-btn') showBatchReportsPage();
+                else if (target.id === 'show-ask-a-doubt-btn') showAskADoubtPage();
             });
             
             refreshButton.addEventListener('click', () => {
