@@ -74,11 +74,11 @@
 
         /* --- NAVIGATION STYLES --- */
         #navigation-bar {
-            max-width: 48rem; /* Resized to a more elegant width */
+            max-width: 48rem;
         }
         .nav-item {
-            padding: 0.75rem 1.5rem; /* Resized for a sleeker feel */
-            font-size: 1rem; /* Resized font */
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s ease;
             color: var(--nav-text-color);
@@ -169,7 +169,6 @@
                     <span>Back</span>
                 </button>
             </div>
-
             <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1 md:gap-2">
                 <button data-tab="overview" class="nav-item">Overview</button>
                 <button data-tab="reports" class="nav-item">Other Reports</button>
@@ -201,8 +200,8 @@
             // --- DATA SOURCES ---
             const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
             const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
-            // This link assumes "Dashboard Data" is the first tab (gid=0). If not, please update it with the correct published link for that specific sub-sheet.
-            const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?output=csv';
+            // FINAL FIX: Using the correct, specific URL for the "Dashboard Data" sub-sheet.
+            const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
 
             const dataCache = { overview: null, daily: null, questionRepo: null };
 
@@ -212,7 +211,7 @@
             const pageContents = document.querySelectorAll('.page-content');
             const navigationBar = document.getElementById('navigation-bar');
             const headerBackButton = document.getElementById('header-back-button');
-            const themeToggle = document.getElementById('theme-toggle'); // CRITICAL FIX: This line was missing.
+            const themeToggle = document.getElementById('theme-toggle');
             const lastUpdatedEl = document.getElementById('last-updated-text');
             const refreshButton = document.getElementById('refresh-button');
 
@@ -353,7 +352,7 @@
 
             const renderQuestionRepoPage = (container, data) => {
                 if (!data) {
-                    showError(container, "Could not load Question Repository data. Please ensure the 'Dashboard Data' sheet is the first tab in the Google Sheet or provide the correct published link.");
+                    showError(container, "Could not load Question Repository data.");
                     return;
                 }
 
@@ -471,8 +470,6 @@
             const showReportsList = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 document.getElementById('reports-section').classList.remove('hidden');
-                document.getElementById('daily-section').classList.add('hidden');
-                document.getElementById('question-repo-section').classList.add('hidden');
 
                 navigationBar.classList.remove('hidden');
                 headerBackButton.classList.add('hidden');
@@ -538,7 +535,7 @@
                 refreshData().then(updateLastUpdatedTime);
             });
             
-            mainContent.addEventListener('scroll', () => { // CRITICAL FIX: Listener attached to the correct element.
+            mainContent.addEventListener('scroll', () => {
                 const { scrollTop, scrollHeight, clientHeight } = mainContent;
                 if (scrollHeight - scrollTop <= clientHeight + 50) {
                     document.getElementById('page-footer').classList.add('visible');
