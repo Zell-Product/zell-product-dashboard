@@ -162,13 +162,22 @@
 </head>
 <body class="h-screen flex flex-col">
     <header class="w-full z-50 p-4 flex-shrink-0">
-        <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 mx-auto flex justify-center items-center gap-1 md:gap-2">
-            <button data-tab="overview" class="nav-item">Overview</button>
-            <button data-tab="reports" class="nav-item">Other Reports</button>
-            <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
-                <i class="fas fa-sun"></i>
-            </button>
-        </nav>
+        <div class="w-full max-w-7xl mx-auto flex items-center justify-center h-14 relative">
+            <div id="header-back-container" class="absolute left-0 top-0 h-full flex items-center">
+                <button id="header-back-button" class="hidden text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] text-lg font-medium transition-colors duration-300 flex items-center px-3 py-2 rounded-lg">
+                    <i class="fas fa-chevron-left mr-2" style="font-size: 0.9em; line-height: inherit;"></i>
+                    <span>Back</span>
+                </button>
+            </div>
+
+            <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1 md:gap-2">
+                <button data-tab="overview" class="nav-item">Overview</button>
+                <button data-tab="reports" class="nav-item">Other Reports</button>
+                <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
+                    <i class="fas fa-sun"></i>
+                </button>
+            </nav>
+        </div>
     </header>
     
     <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
@@ -196,6 +205,8 @@
             const mainContent = document.getElementById('main-content');
             const navButtons = document.querySelectorAll('.nav-item');
             const pageContents = document.querySelectorAll('.page-content');
+            const navigationBar = document.getElementById('navigation-bar');
+            const headerBackButton = document.getElementById('header-back-button');
 
             const parseCSV = (csv) => {
                 if (!csv) return [];
@@ -327,12 +338,8 @@
                     </div>
                 `;
 
+                // NO back button here. This solves the "empty space" issue.
                 container.innerHTML = `
-                    <div class="mb-6 flex">
-                        <button id="back-to-reports" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--card-border)] rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 hover:bg-[var(--card-hover-bg)]">
-                            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
-                        </button>
-                    </div>
                     <div class="space-y-8">
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)]">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('dau')}"></i>Daily Active Users (DAU)</h3>
@@ -396,7 +403,6 @@
                             if (report.link) {
                                 return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;
                             } else {
-                                // Use a button for in-page navigation
                                 return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;
                             }
                         }).join('')}
@@ -405,6 +411,9 @@
             };
             
             const switchTab = async (tabId) => {
+                navigationBar.classList.remove('hidden');
+                headerBackButton.classList.add('hidden');
+
                 navButtons.forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.tab === tabId);
                 });
@@ -421,7 +430,7 @@
             };
             
             navButtons.forEach(button => {
-                if (button.dataset.tab) { // Ensure it's a tab button
+                if (button.dataset.tab) {
                     button.addEventListener('click', () => switchTab(button.dataset.tab));
                 }
             });
@@ -442,7 +451,6 @@
                 const overviewSection = document.getElementById('overview-section');
                 const dailySection = document.getElementById('daily-section');
 
-                // Check which section is currently visible to refresh its data
                 if (!overviewSection.classList.contains('hidden')) {
                     showLoading(overviewSection);
                     dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
@@ -452,7 +460,6 @@
                     dataCache.daily = await fetchAndParseData(DAILY_METRICS_URL);
                     renderDailyMetricsPage(dailySection, dataCache.daily);
                 }
-                // No action needed for the reports list as it's static
             };
             
             const lastUpdatedEl = document.getElementById('last-updated-text');
@@ -480,13 +487,16 @@
                 }
             });
 
-            // --- New Event Handling for Reports Sub-Navigation ---
+            // --- CONTEXTUAL NAVIGATION LOGIC ---
             const showDailyMetrics = async () => {
                 const reportsSection = document.getElementById('reports-section');
                 const dailySection = document.getElementById('daily-section');
                 
                 reportsSection.classList.add('hidden');
                 dailySection.classList.remove('hidden');
+
+                navigationBar.classList.add('hidden');
+                headerBackButton.classList.remove('hidden');
 
                 if (!dataCache.daily) {
                     showLoading(dailySection);
@@ -498,14 +508,16 @@
             const showReportsList = () => {
                 document.getElementById('reports-section').classList.remove('hidden');
                 document.getElementById('daily-section').classList.add('hidden');
+
+                navigationBar.classList.remove('hidden');
+                headerBackButton.classList.add('hidden');
             };
             
-            // Delegated event listener for dynamically added buttons
+            headerBackButton.addEventListener('click', showReportsList);
+            
             mainContent.addEventListener('click', (event) => {
                 if (event.target.closest('#show-daily-metrics-btn')) {
                     showDailyMetrics();
-                } else if (event.target.closest('#back-to-reports')) {
-                    showReportsList();
                 }
             });
 
