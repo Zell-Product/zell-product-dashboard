@@ -723,16 +723,14 @@
                 const cfaDraft = parseNumericValue(cfaData.draft);
                 const cfaApproved = parseNumericValue(cfaData.approved);
                 
-                // FIX #2: Correct the logic for completion status color based on new thresholds.
                 const getCompletionColorState = (valueStr) => {
                     const value = parseFloat(valueStr);
                     if (isNaN(value)) return 'neutral';
-                    if (value <= 35) return 'bad';      // 0-35 is red
-                    if (value < 70) return 'medium';     // 36-69 is yellow
-                    return 'good';                       // 70+ is green
+                    if (value <= 35) return 'bad';
+                    if (value < 70) return 'medium';
+                    return 'good';
                 };
-
-                // FIX #3: Removed nav bar from here. It's now created in showQuestionRepo and placed in the header.
+                
                 container.innerHTML = `
                     <div class="space-y-8">
                         <div id="acca-qrf-content" class="qrf-content-section space-y-12">
@@ -928,20 +926,30 @@
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
+                                // FIX: Updated tooltip configuration for correct formatting
                                 tooltip: { 
                                     enabled: true, 
                                     mode: 'index', 
                                     intersect: false, 
-                                    bodyFont: { family: bodyFont }, 
-                                    titleFont: { family: bodyFont }, 
-                                    backgroundColor: 'rgba(0,0,0,0.8)', 
-                                    padding: 12, 
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    titleFont: { family: bodyFont, size: 14, weight: 'bold' },
+                                    bodyFont: { family: bodyFont, size: 12 },
+                                    padding: 12,
                                     cornerRadius: 8,
-                                    // FIX #1: Added a tooltip title callback to format the date correctly as "29 July".
+                                    displayColors: true,
                                     callbacks: {
                                         title: function(tooltipItems) {
+                                            if (!tooltipItems.length) return '';
                                             const date = tooltipItems[0].parsed.x;
                                             return Chart.adapters.date.format(date, 'd MMMM');
+                                        },
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) label += ': ';
+                                            if (context.parsed.y !== null) {
+                                                label += new Intl.NumberFormat('en-US').format(context.parsed.y);
+                                            }
+                                            return label;
                                         }
                                     }
                                 }
@@ -1099,12 +1107,12 @@
             };
 
             const setPageHeader = (title, sheetUrl) => {
-                // Reset header to default state first
+                // Reset header to default title-displaying state first
                 pageHeaderCenterContent.innerHTML = `<h1 id="page-header-title" class="text-2xl font-bold text-[var(--text-color)]"></h1>`;
                 pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-8 py-3';
-
+                
                 headerRefreshButton.classList.add('hidden');
-                if (title || title === '') { // Allow empty title to show the header frame
+                if (title !== null) { // Allow empty title to show the header frame
                     document.getElementById('page-header-title').textContent = title;
                     pageHeader.classList.remove('hidden');
                     pageHeader.classList.add('flex');
@@ -1192,11 +1200,11 @@
                 const questionRepoSection = document.getElementById('question-repo-section');
                 questionRepoSection.classList.remove('hidden');
                 
-                // FIX #3: Show the header frame but with no title, and then inject the QRF nav bar.
+                // Show the header frame but with no title, and then inject the QRF nav bar.
                 setPageHeader('', SHEET_URLS['question-repo-section']);
                 
                 const qrfNav = document.createElement('nav');
-                qrfNav.id = 'qrf-navigation-bar';
+                qrfNav.id = 'qrf-navigation-bar-sticky';
                 qrfNav.className = 'flex justify-center items-center gap-2';
                 qrfNav.innerHTML = `
                     <button data-qrf-tab="acca" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
@@ -1210,12 +1218,13 @@
                 const qrfNavItems = qrfNav.querySelectorAll('.qrf-nav-item');
                 const switchQrfTab = (tabId) => {
                     document.querySelectorAll('.qrf-content-section').forEach(sec => sec.classList.add('hidden'));
-                    document.getElementById(`${tabId}-qrf-content`).classList.remove('hidden');
+                    const activeContent = document.getElementById(`${tabId}-qrf-content`);
+                    if (activeContent) activeContent.classList.remove('hidden');
                     
                     qrfNavItems.forEach(item => {
-                        item.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        item.classList.remove('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
                         if(item.dataset.qrfTab === tabId) {
-                           item.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                           item.classList.add('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
                         }
                     });
                 };
@@ -1300,9 +1309,10 @@
 
                 const sectionId = activeSection.id;
                 
-                // For QRF page, we need a special refresh to re-inject the nav
                 if (sectionId === 'question-repo-section') {
                     dataCache.questionRepo = null; // Force refetch
+                    dataCache.accaDaily = null;
+                    dataCache.cfaDaily = null;
                     showQuestionRepo();
                     return;
                 }
