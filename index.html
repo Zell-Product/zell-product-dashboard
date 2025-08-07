@@ -931,11 +931,12 @@
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                // FIX: Updated tooltip configuration for precise, on-point interaction.
+                                // FIX: Updated tooltip for precise, on-point interaction and intelligent positioning.
                                 tooltip: { 
                                     enabled: true, 
                                     mode: 'nearest',
                                     intersect: true,
+                                    position: 'nearest',
                                     backgroundColor: 'rgba(29, 29, 31, 0.95)',
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
                                     borderWidth: 1,
@@ -946,7 +947,6 @@
                                     padding: 10,
                                     cornerRadius: 8,
                                     displayColors: true,
-                                    yAlign: 'bottom',
                                     caretSize: 6,
                                     caretPadding: 10,
                                     callbacks: {
