@@ -912,10 +912,9 @@
                         })
                         .slice(-days);
 
-                    // FIX: Replicating the LMS chart logic. Using simple string labels instead of Date objects.
                     const chartLabels = chartData.map(d => {
                         const date = new Date(d.Date);
-                        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); // e.g., "7 Aug"
+                        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                     });
 
                     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -932,28 +931,32 @@
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                // FIX: Updated tooltip configuration to be robust and match desired style.
+                                // FIX: Updated tooltip configuration for precise, on-point interaction.
                                 tooltip: { 
                                     enabled: true, 
-                                    mode: 'index', 
-                                    intersect: false, 
-                                    backgroundColor: 'rgba(29, 29, 31, 0.9)',
+                                    mode: 'nearest',
+                                    intersect: true,
+                                    backgroundColor: 'rgba(29, 29, 31, 0.95)',
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
                                     borderWidth: 1,
                                     titleColor: '#f5f5f7',
                                     bodyColor: '#a1a1a6',
-                                    titleFont: { family: bodyFont, size: 14, weight: 'bold' },
+                                    titleFont: { family: bodyFont, size: 13, weight: 'bold' },
                                     bodyFont: { family: bodyFont, size: 12 },
-                                    padding: 12,
+                                    padding: 10,
                                     cornerRadius: 8,
                                     displayColors: true,
+                                    yAlign: 'bottom',
+                                    caretSize: 6,
+                                    caretPadding: 10,
                                     callbacks: {
-                                        // Title callback is now unnecessary as the simple label is used by default.
+                                        title: function(tooltipItems) {
+                                            if (!tooltipItems.length) return '';
+                                            return tooltipItems[0].label;
+                                        },
                                         label: function(context) {
                                             let label = context.dataset.label || '';
-                                            if (label) {
-                                                label += ': ';
-                                            }
+                                            if (label) label += ': ';
                                             if (context.parsed.y !== null) {
                                                 label += new Intl.NumberFormat('en-US').format(context.parsed.y);
                                             }
@@ -964,7 +967,6 @@
                             },
                             scales: { 
                                 y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
-                                // FIX: Removed the complex 'time' scale, now uses the default 'category' scale.
                                 x: { 
                                     grid: { display: false }, 
                                     ticks: { color: tickColor, font: { family: bodyFont } } 
