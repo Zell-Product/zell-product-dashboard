@@ -24,7 +24,7 @@
             --card-bg: rgba(29, 29, 31, 0.7);
             --card-border: rgba(255, 255, 255, 0.1);
             --card-hover-bg: rgba(40, 40, 42, 0.8);
-            --card-hover-shadow: 0 0 25px rgba(200, 200, 255, 0.1);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
             --header-bg: rgba(29, 29, 31, 0.7);
             --header-border: rgba(255, 255, 255, 0.1);
             --icon-color: #ffffff;
@@ -32,6 +32,7 @@
             --nav-text-hover: #ffffff;
             --nav-active-bg: rgba(255, 255, 255, 0.1);
             --nav-active-text: #ffffff;
+            --sub-box-bg: rgba(0,0,0,0.1);
             --footer-bg: #1d1d1f;
             --chart-grid-color: rgba(255, 255, 255, 0.1);
             --chart-tick-color: #a1a1a6;
@@ -41,21 +42,22 @@
         }
 
         body.light-mode {
-            /* Light Mode */
+            /* NEW Light Mode - Apple Inspired */
             --bg-color: #f5f5f7;
             --text-color: #1d1d1f;
-            --text-muted-color: #515154;
+            --text-muted-color: #6e6e73;
             --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(0, 0, 0, 0.1);
-            --card-hover-bg: rgba(230, 230, 235, 0.9);
-            --card-hover-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
-            --header-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --card-hover-bg: rgba(255, 255, 255, 0.9);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --header-bg: rgba(247, 247, 247, 0.8);
             --header-border: rgba(0, 0, 0, 0.1);
             --icon-color: #000000;
             --nav-text-color: #515154;
             --nav-text-hover: #000000;
-            --nav-active-bg: rgba(0, 0, 0, 0.05);
+            --nav-active-bg: #e5e5e7;
             --nav-active-text: #000000;
+            --sub-box-bg: rgba(0,0,0,0.03);
             --footer-bg: #e5e5e7;
             --chart-grid-color: rgba(0, 0, 0, 0.1);
             --chart-tick-color: #515154;
@@ -76,14 +78,18 @@
         .main-content::-webkit-scrollbar { width: 8px; }
         .main-content::-webkit-scrollbar-track { background: transparent; }
         .main-content::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
-        body.light-mode .main-content::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.2);
+        body:not(.light-mode) .main-content::-webkit-scrollbar-thumb {
+             background-color: rgba(255, 255, 255, 0.2);
         }
         .hidden { display: none; }
-        .fa-sync-alt { transition: transform 0.5s ease; }
+        .fa-sync-alt.animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 
         #navigation-bar { max-width: 48rem; }
         .nav-item {
@@ -105,16 +111,16 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         }
 
-        .metric-card { border-radius: 1.5rem; transition: all 0.3s ease; }
+        .metric-card { border-radius: 1.5rem; transition: all 0.3s ease; border: 1px solid var(--card-border); background-color: var(--card-bg); backdrop-filter: blur(10px); }
         .metric-card:hover {
             background-color: var(--card-hover-bg);
             border-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
+            transform: translateY(-4px) scale(1.03);
             box-shadow: var(--card-hover-shadow);
         }
         body.light-mode .metric-card:hover { border-color: rgba(0, 0, 0, 0.2); }
         .metric-value { transition: transform 0.3s ease; }
-        .metric-card:hover .metric-value { transform: scale(1.2); }
+        .metric-card:hover .metric-value { transform: scale(1.1); }
         
         .metric-card[data-color-state="good"]:hover { background-color: var(--good-hover-tint); }
         .metric-card[data-color-state="medium"]:hover { background-color: var(--medium-hover-tint); }
@@ -168,6 +174,7 @@
             background-color: rgba(0, 0, 0, 0.05);
         }
 
+
         #page-footer {
             background-color: var(--footer-bg);
             color: var(--text-muted-color);
@@ -191,6 +198,7 @@
             }
              #page-header {
                 gap: 0.5rem; /* 8px */
+                justify-content: space-between;
             }
             #page-header-center-content {
                 flex-grow: 1;
@@ -204,12 +212,9 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            #main-header-refresh-button {
-                right: 0.5rem;
-            }
-            #navigation-bar { width: 100%; max-width: 100%; padding: 0.25rem; }
+            #navigation-bar { width: auto; flex-grow: 1; margin: 0 0.5rem; }
             .nav-item { padding: 0.75rem 0.25rem; font-size: 0.8rem; flex-grow: 1; text-align: center; }
-            #theme-toggle { flex-grow: 0; padding-left: 1rem; padding-right: 1rem; }
+            #theme-toggle { flex-shrink: 0; padding-left: 1rem; padding-right: 1rem; }
             .page-content { padding-top: 1rem; }
             .card-grid { flex-direction: column; }
             .card-grid.force-row { flex-direction: row; }
@@ -221,7 +226,8 @@
     <header class="w-full z-50 p-2 md:p-4 flex-shrink-0">
         <div class="w-full max-w-7xl mx-auto flex items-center justify-center header-container relative">
             
-            <div id="main-header" class="w-full h-full flex items-center justify-center relative">
+            <div id="main-header" class="w-full h-full flex items-center justify-between md:justify-center relative">
+                <div class="w-12 h-12 flex-shrink-0 md:absolute md:left-0"></div>
                 <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1">
                     <button data-tab="overview" class="nav-item">Overview</button>
                     <button data-tab="reports" class="nav-item">Reports</button>
@@ -229,23 +235,23 @@
                         <i class="fas fa-sun"></i>
                     </button>
                 </nav>
-                 <div class="absolute right-0 top-1/2 -translate-y-1/2">
+                 <div class="w-12 h-12 flex-shrink-0 md:absolute md:right-0 flex items-center justify-center">
                      <button id="main-header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                          <i class="fas fa-sync-alt"></i>
                      </button>
                 </div>
             </div>
 
-            <div id="page-header" class="hidden w-full h-full items-center justify-between relative">
-                <div class="flex-shrink-0">
+            <div id="page-header" class="hidden w-full h-full items-center justify-center relative">
+                <div class="absolute left-0 top-1/2 -translate-y-1/2">
                     <button id="header-back-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                         <i class="fas fa-chevron-left text-xl"></i>
                     </button>
                 </div>
-                <div id="page-header-center-content" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3">
+                <div id="page-header-center-content" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3 mx-auto">
                     <h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)]"></h1>
                 </div>
-                <div class="flex-shrink-0 flex items-center gap-2">
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <button id="header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10 hidden">
                         <i class="fas fa-sync-alt"></i>
                     </button>
@@ -448,12 +454,12 @@
                         const performanceData = rows.filter(r => r['Sub-Box Header'] === 'Performance Data');
                         content += `
                             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                                <div class="lg:col-span-2 sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
+                                <div class="lg:col-span-2 sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
                                     <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
                                     <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                         ${generalData.map(metric => `
                                             <div class="metric-card" data-color-state="neutral">
-                                                <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
+                                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                     <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
                                                     <div class="metric-value text-2xl md:text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                     <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
@@ -461,14 +467,14 @@
                                             </div>`).join('')}
                                     </div>
                                 </div>
-                                <div class="lg:col-span-3 sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
+                                <div class="lg:col-span-3 sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
                                     <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
                                     <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                         ${performanceData.map(metric => {
                                             const colorState = getPerformanceColorState(metric['Data Header'], metric.Value);
                                             const colorClass = getPerformanceColorClass(colorState);
                                             return `<div class="metric-card" data-color-state="${colorState}">
-                                                <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
+                                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                     <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
                                                     <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                     <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
@@ -491,7 +497,7 @@
                         content += chunkedSubBoxes.map(row => `
                             <div class="grid grid-cols-1 ${row.length > 1 ? 'md:grid-cols-2' : ''} gap-8">
                                 ${row.map(([subTitle, metrics]) => `
-                                    <div class="sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
+                                    <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
                                         <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
                                         <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                             ${metrics.sort((a, b) => a.Order - b.Order).map(metric => {
@@ -503,7 +509,7 @@
                                                     colorClass = getPerformanceColorClass(colorState);
                                                 }
                                                 return `<div class="metric-card" data-color-state="${colorState}">
-                                                    <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
+                                                    <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                         <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
                                                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
@@ -537,14 +543,14 @@
                 };
 
                 const createPlatformCard = (label, value) => `
-                    <div class="qrf-scorecard bg-black/10 p-3 rounded-lg text-center border border-white/10 flex-1">
+                    <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-3 rounded-lg text-center border border-[var(--card-border)] flex-1">
                         <div class="value text-2xl md:text-3xl font-semibold tracking-tight">${value || 'N/A'}</div>
                         <div class="text-xs text-[var(--text-muted-color)]">${label}</div>
                     </div>
                 `;
                 
                 const createRatingCard = (label, value, icon, colorClass = 'text-[var(--text-color)]') => `
-                    <div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 rounded-3xl" data-color-state="${colorClass.includes('green') ? 'good' : 'neutral'}">
+                    <div class="metric-card flex-grow p-4 flex flex-col items-center text-center space-y-2 rounded-3xl" data-color-state="${colorClass.includes('green') ? 'good' : 'neutral'}">
                         <div class="text-2xl text-[var(--icon-color)]"><i class="${icon}"></i></div>
                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value || 'N/A'}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
@@ -556,7 +562,7 @@
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-users"></i>Active Users</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-black/10 p-4 rounded-xl border border-white/10">
+                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)]">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Daily Active (DAU)</h4>
                                     <div class="flex justify-center gap-4">
                                         ${createPlatformCard('Web', dau.WEB)}
@@ -564,7 +570,7 @@
                                         ${createPlatformCard('iOS', dau.iOS)}
                                     </div>
                                 </div>
-                                <div class="bg-black/10 p-4 rounded-xl border border-white/10">
+                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)]">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
                                     <div class="flex justify-center gap-4">
                                         ${createPlatformCard('Web', mau.WEB)}
@@ -577,14 +583,14 @@
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Store Ratings</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] space-y-4">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('android')}"></i>Android</h4>
                                     <div class="flex justify-center gap-6">
                                         ${createRatingCard('Avg. Rating', rating.ANDROID, 'fas fa-star', getRatingColor(rating.ANDROID))}
                                         ${createRatingCard('# of Ratings', numRatings.ANDROID, 'fas fa-user-edit')}
                                     </div>
                                 </div>
-                                <div class="bg-black/10 p-6 rounded-2xl border border-white/10 space-y-4">
+                                <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] space-y-4">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('ios')}"></i>iOS</h4>
                                     <div class="flex justify-center gap-6">
                                         ${createRatingCard('Avg. Rating', rating.iOS, 'fas fa-star', getRatingColor(rating.iOS))}
@@ -631,14 +637,14 @@
 
                 container.innerHTML = `
                     <div class="space-y-8">
-                        <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-8 rounded-3xl text-center border border-[var(--card-border)]" data-color-state="${successRateState}">
+                        <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-8 rounded-3xl text-center" data-color-state="${successRateState}">
                             <h3 class="text-lg font-medium text-[var(--text-muted-color)] uppercase tracking-widest">Success Rate</h3>
                             <div class="text-7xl sm:text-8xl font-bold my-2 tracking-tighter ${successRateColor}">${successRate}</div>
                         </div>
                          <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                              <div class="flex flex-col sm:flex-row justify-center mb-6 items-center gap-2 sm:gap-4">
                                  <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Previous:</h4>
-                                 <div id="timeline-toggle" class="timeline-toggle bg-black/20 rounded-full p-1 flex flex-wrap justify-center gap-1">
+                                 <div id="timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
                                      <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
                                      <button data-days="10" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">10 Days</button>
                                      <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
@@ -808,14 +814,14 @@
                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                    <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
                                    <div class="flex flex-col justify-center space-y-4">
-                                        <div class="pie-legend-item flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                        <div class="pie-legend-item flex items-center justify-between bg-[var(--sub-box-bg)] p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                             </div>
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${accaDraft.toLocaleString()}</span>
                                         </div>
-                                        <div class="pie-legend-item flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                        <div class="pie-legend-item flex items-center justify-between bg-[var(--sub-box-bg)] p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
@@ -823,12 +829,12 @@
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
                                         </div>
                                    </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaData.completion)}">
+                                   <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(accaData.completion)}">
                                        <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
-                               <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                               <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
                                        <div class="flex items-center gap-2 md:gap-4">
                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
@@ -845,7 +851,7 @@
                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                     <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div class="split-box bg-black/10 p-6 rounded-2xl border border-white/10">
+                                        <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
                                             <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
                                             <div class="flex justify-around items-center">
                                                 <div class="text-center">
@@ -858,7 +864,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="split-box bg-black/10 p-6 rounded-2xl border border-white/10">
+                                        <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
                                             <div class="flex justify-around items-center">
                                                 <div class="text-center">
@@ -872,7 +878,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="bg-black/10 p-6 rounded-2xl border border-white/10 mt-8 flex justify-center items-center gap-6">
+                                    <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] mt-8 flex justify-center items-center gap-6">
                                         <h3 class="text-xl sm:text-2xl font-bold">Total Questions</h3>
                                         <div class="text-4xl sm:text-5xl font-bold">${accaSplitData.totalQuestions}</div>
                                     </div>
@@ -886,14 +892,14 @@
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                     <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
                                     <div class="flex flex-col justify-center space-y-4">
-                                        <div class="pie-legend-item flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                        <div class="pie-legend-item flex items-center justify-between bg-[var(--sub-box-bg)] p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                             </div>
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaDraft.toLocaleString()}</span>
                                         </div>
-                                        <div class="pie-legend-item flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                        <div class="pie-legend-item flex items-center justify-between bg-[var(--sub-box-bg)] p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
@@ -901,12 +907,12 @@
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
                                         </div>
                                    </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaData.completion)}">
+                                   <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(cfaData.completion)}">
                                        <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
-                               <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                               <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
                                        <div class="flex items-center gap-2 md:gap-4">
                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
@@ -930,20 +936,20 @@
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                                     <div class="space-y-4">
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                        <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                             <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
                                         </div>
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                        <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
                                             <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
                                         </div>
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                        <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
                                             <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
                                         </div>
                                     </div>
-                                    <div class="qrf-scorecard bg-black/20 p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
+                                    <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
                                         <div class="value text-6xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
                                         <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                     </div>
@@ -1108,7 +1114,7 @@
                         legendContainer.innerHTML = '';
                         chartInstance.data.datasets.forEach((dataset, index) => {
                             const button = document.createElement('button');
-                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:scale-105`;
+                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105`;
                             button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
                             
                             button.onclick = () => {
@@ -1167,7 +1173,9 @@
                             updateChart(parseInt(e.target.dataset.days));
                         });
                     });
-
+                    
+                    timelineToggle.querySelector('.active')?.classList.remove('active');
+                    timelineToggle.querySelector(`[data-days="${currentDays}"]`)?.classList.add('active');
                     updateChart(currentDays);
                 };
                 setupSubPage('acca', accaDailyData);
@@ -1184,7 +1192,7 @@
                 const createMetricCard = (metric, isPerformance = false) => {
                     const colorState = isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
                     const colorClass = isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
-                    return `<div class="metric-card bg-black/5 p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center space-y-2" data-color-state="${colorState}">
+                    return `<div class="metric-card p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-2" data-color-state="${colorState}">
                         <i class="${getIconForMetric(metric['Data Header'])} text-2xl md:text-3xl text-[var(--icon-color)] opacity-80"></i>
                         <div class="text-3xl md:text-4xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
                         <div class="text-sm font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
@@ -1234,7 +1242,7 @@
                 }
 
                 const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
-                    <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl" data-color-state="${state}">
+                    <div class="metric-card flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl" data-color-state="${state}">
                         <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
@@ -1290,7 +1298,7 @@
 
             const setPageHeader = (title, sheetUrl) => {
                 pageHeaderCenterContent.innerHTML = `<h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)] truncate"></h1>`;
-                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3';
+                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3 mx-auto';
                 
                 if (title !== null) { 
                     document.getElementById('page-header-title').textContent = title;
