@@ -694,41 +694,34 @@
 
                     const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
                     
-                    const getSummaryValue = (header, subHeader, data = summaryData) => {
-                        const row = data.parsed.find(r => r['Sub-Box Header'] === subHeader && r['Data Header'] === header);
+                    const getSummaryValue = (subHeader, dataHeader) => {
+                        const row = summaryData.parsed.find(r => r['Sub-Box Header'] === subHeader && r['Data Header'] === dataHeader);
                         return row ? row.Value : '0';
                     };
                     
-                    const getCellValueByHeader = (data, subHeader, targetHeader, columnIndex) => {
-                        const rowIndex = data.raw.findIndex(row => row.includes(subHeader));
-                        if (rowIndex === -1) return '0';
-                        const targetRow = data.raw.find((row, index) => index > rowIndex && row.includes(targetHeader));
-                        return targetRow ? targetRow.split(',')[columnIndex] : '0';
-                    };
-
-                    const accaDraft = parseNumericValue(getSummaryValue('Draft', 'ACCA'));
-                    const accaInReview = parseNumericValue(getCellValueByHeader(summaryData, 'ACCA', 'In Review', 4));
-                    const accaApproved = parseNumericValue(getSummaryValue('Approved', 'ACCA'));
-                    const accaCompletion = getSummaryValue('Completion %', 'ACCA');
+                    const accaDraft = parseNumericValue(getSummaryValue('ACCA', 'Draft'));
+                    const accaInReview = parseNumericValue(getSummaryValue('ACCA', 'In Review'));
+                    const accaApproved = parseNumericValue(getSummaryValue('ACCA', 'Approved'));
+                    const accaCompletion = getSummaryValue('ACCA', 'Completion %');
                     
-                    const cfaDraft = parseNumericValue(getSummaryValue('Draft', 'CFA'));
-                    const cfaInReview = parseNumericValue(getCellValueByHeader(summaryData, 'CFA', 'In Review', 4));
-                    const cfaApproved = parseNumericValue(getSummaryValue('Approved', 'CFA'));
-                    const cfaCompletion = getSummaryValue('Completion %', 'CFA');
+                    const cfaDraft = parseNumericValue(getSummaryValue('CFA', 'Draft'));
+                    const cfaInReview = parseNumericValue(getSummaryValue('CFA', 'In Review'));
+                    const cfaApproved = parseNumericValue(getSummaryValue('CFA', 'Approved'));
+                    const cfaCompletion = getSummaryValue('CFA', 'Completion %');
 
                     const accaSplitData = {
-                        subjectiveCount: getSummaryValue('Count', 'ACCA Question Split'),
-                        subjectivePercent: getSummaryValue('Percentage', 'ACCA Question Split'),
-                        nonSubjectiveCount: getSummaryValue('Count', 'ACCA Question Split Non-Subjective'),
-                        nonSubjectivePercent: getSummaryValue('Percentage', 'ACCA Question Split Non-Subjective'),
-                        total: getSummaryValue('Total Questions', 'ACCA Question Split')
+                        subjectiveCount: getSummaryValue('ACCA Question Split', 'Count'),
+                        subjectivePercent: getSummaryValue('ACCA Question Split', 'Percentage'),
+                        nonSubjectiveCount: getSummaryValue('ACCA Question Split Non-Subjective', 'Count'),
+                        nonSubjectivePercent: getSummaryValue('ACCA Question Split Non-Subjective', 'Percentage'),
+                        total: getSummaryValue('ACCA Question Split', 'Total Questions')
                     };
 
                     const overallData = {
-                        draft: getSummaryValue('Draft', 'Overall'),
-                        approved: getSummaryValue('Approved', 'Overall'),
-                        total: getSummaryValue('Total', 'Overall'),
-                        completion: getSummaryValue('Completion %', 'Overall')
+                        draft: getSummaryValue('Overall', 'Draft'),
+                        approved: getSummaryValue('Overall', 'Approved'),
+                        total: getSummaryValue('Overall', 'Total'),
+                        completion: getSummaryValue('Overall', 'Completion %')
                     };
                     
                     const getCompletionColorState = (valueStr) => {
@@ -740,15 +733,19 @@
                     };
 
                     container.innerHTML = `
-                        <div class="space-y-8">
-                            <div class="w-full flex justify-center">
+                        <div id="qrf-page-container" class="space-y-4">
+                            <div class="sticky top-4 z-40 w-full flex justify-center">
                                 <nav id="qrf-navigation-bar" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-2">
+                                    <button id="qrf-back-button" class="bg-transparent hover:bg-white/10 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300">
+                                        <i class="fas fa-arrow-left text-lg"></i>
+                                    </button>
                                     <button data-qrf-tab="acca" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
                                     <button data-qrf-tab="cfa" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
                                     <button data-qrf-tab="overall" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
                                 </nav>
                             </div>
-                            <div id="acca-qrf-content" class="qrf-content-section space-y-12">
+
+                            <div id="acca-qrf-content" class="qrf-content-section space-y-12 pt-4">
                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                 <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
@@ -811,7 +808,7 @@
                                  </div>
                                 </div>
                             </div>
-                            <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden">
+                            <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden pt-4">
                                  <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                    <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
@@ -851,7 +848,7 @@
                                    </div>
                                 </div>
                             </div>
-                            <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
+                            <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden pt-4">
                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl">
                                     <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
                                         <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
@@ -888,7 +885,8 @@
                     const tickColor = isLightMode ? '#515154' : '#a1a1a6';
 
                     const renderPieChart = (canvasId, data, total) => {
-                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        const ctx = document.getElementById(canvasId)?.getContext('2d');
+                        if (!ctx) return null;
                         return new Chart(ctx, {
                             type: 'doughnut',
                             data: {
@@ -933,23 +931,16 @@
                     cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
                     
                     const parseAndValidateDate = (dateStr) => {
-                        const parts = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+                        const parts = String(dateStr).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
                         if (!parts) return null;
                         
-                        let day, month, year;
-                        // Heuristic to guess DD/MM/YY vs MM/DD/YY. If first part > 12, it must be the day.
-                        if (parseInt(parts[1], 10) > 12) {
-                            day = parseInt(parts[1], 10);
-                            month = parseInt(parts[2], 10) - 1;
-                        } else { // Assume MM/DD/YY for ambiguity, can be adjusted
-                            month = parseInt(parts[1], 10) - 1;
-                            day = parseInt(parts[2], 10);
-                        }
-                        year = parseInt(parts[3], 10);
+                        let day = parseInt(parts[1], 10);
+                        let month = parseInt(parts[2], 10) - 1; 
+                        let year = parseInt(parts[3], 10);
+
                         if (year < 100) year += 2000;
 
                         const date = new Date(year, month, day);
-                        // Final check if the constructed date is valid
                         if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
                             return date;
                         }
@@ -958,11 +949,13 @@
 
                     const renderLineChart = (canvasId, dailyData, days) => {
                         const chartData = dailyData.parsed
-                            .map(d => ({...d, parsedDate: parseAndValidateDate(d.Date) }))
+                            .map(d => ({...d, parsedDate: parseAndValidateDate(d.Date)}))
                             .filter(d => d.parsedDate && (d.Draft || d.Approved))
                             .slice(-days);
 
-                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        const ctx = document.getElementById(canvasId)?.getContext('2d');
+                        if (!ctx) return null;
+
                         return new Chart(ctx, {
                             type: 'line',
                             data: {
@@ -1006,6 +999,8 @@
                             if (chartInstance) chartInstance.destroy();
                             chartInstance = renderLineChart(canvasId, dailyData, days);
                             
+                            if (!chartInstance) return;
+
                             if (chartType === 'acca') accaLineChart = chartInstance;
                             else cfaLineChart = chartInstance;
 
@@ -1042,6 +1037,7 @@
                     const qrfNav = document.getElementById('qrf-navigation-bar');
                     const qrfContentSections = document.querySelectorAll('.qrf-content-section');
                     const qrfNavItems = document.querySelectorAll('.qrf-nav-item');
+                    const qrfBackButton = document.getElementById('qrf-back-button');
 
                     const switchQrfTab = (tabId) => {
                         qrfContentSections.forEach(sec => sec.classList.add('hidden'));
@@ -1056,8 +1052,11 @@
                     };
                     
                     qrfNav.addEventListener('click', (e) => {
-                        if(e.target.matches('.qrf-nav-item')) {
-                            switchQrfTab(e.target.dataset.qrfTab);
+                        const button = e.target.closest('button');
+                        if (button && button.dataset.qrfTab) {
+                           switchQrfTab(button.dataset.qrfTab);
+                        } else if (button && button.id === 'qrf-back-button') {
+                           showReportsList();
                         }
                     });
                     
@@ -1167,18 +1166,18 @@
             };
 
             const setPageHeader = (title, sheetUrl) => {
-                headerRefreshButton.classList.add('hidden');
-                if (title) {
-                    pageHeaderTitle.textContent = title;
+                const qrfSection = document.getElementById('question-repo-section');
+                const isQrfActive = !qrfSection.classList.contains('hidden');
+
+                if (isQrfActive) {
+                    mainHeader.classList.add('hidden');
+                    pageHeader.classList.add('hidden');
+                } else if (title) {
+                    mainHeader.classList.add('hidden');
                     pageHeader.classList.remove('hidden');
                     pageHeader.classList.add('flex');
-                    mainHeader.classList.add('hidden');
+                    pageHeaderTitle.textContent = title;
                     
-                    const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
-                    if (activeSection && activeSection.id !== 'reports-section') {
-                        headerRefreshButton.classList.remove('hidden');
-                    }
-
                     if (sheetUrl) {
                         openSheetButton.href = sheetUrl;
                         openSheetButton.classList.remove('hidden');
@@ -1186,10 +1185,8 @@
                         openSheetButton.classList.add('hidden');
                     }
                 } else {
-                    pageHeader.classList.add('hidden');
-                    pageHeader.classList.remove('flex');
                     mainHeader.classList.remove('hidden');
-                    openSheetButton.classList.add('hidden');
+                    pageHeader.classList.add('hidden');
                 }
             };
             
@@ -1322,6 +1319,10 @@
                 pageContents.forEach(content => content.classList.add('hidden'));
                 document.getElementById('reports-section').classList.remove('hidden');
                 setPageHeader(null);
+                
+                // Ensure main header is visible when returning to reports list
+                mainHeader.classList.remove('hidden');
+                pageHeader.classList.add('hidden');
             };
 
             const refreshData = async () => {
