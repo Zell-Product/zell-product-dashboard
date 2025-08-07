@@ -691,29 +691,30 @@
                 };
                 destroyCharts();
 
-                const qrfStatusRows = summaryData.parsed.filter(r => r['Top-Level Box'] === 'QRF Status');
-                const processedData = qrfStatusRows.reduce((acc, row) => {
-                    const group = row['Sub-Box Header'];
-                    if (group && !acc[group]) acc[group] = {};
-                    if (group) {
-                        const key = row['Data Header'].toLowerCase().replace(/%/g, '').trim().replace(/ /g, '_');
-                        acc[group][key] = row['Value'];
-                    }
-                    return acc;
-                }, {});
-
                 const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
+                
+                const getRowData = (data, header) => data.parsed.find(row => row['Data Header'] === header) || {};
 
-                const accaData = processedData.ACCA || {};
-                const cfaData = processedData.CFA || {};
-                const overallData = processedData.Overall || {};
+                const accaSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'ACCA');
+                const cfaSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'CFA');
+                const overallSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'Overall');
+                
+                const accaDraft = parseNumericValue(getRowData(summaryData, 'Draft', 'ACCA').Value);
+                const accaInReview = parseNumericValue(summaryData.parsed.find(r => r['Sub-Box Header'] === 'ACCA' && r['Data Header'] === 'In Review')?.Value);
+                const accaApproved = parseNumericValue(getRowData(summaryData, 'Approved', 'ACCA').Value);
+                const accaCompletion = getRowData(summaryData, 'Completion %', 'ACCA').Value;
 
-                const accaDraft = parseNumericValue(accaData.draft);
-                const accaInReview = parseNumericValue(accaData.in_review);
-                const accaApproved = parseNumericValue(accaData.approved);
-                const cfaDraft = parseNumericValue(cfaData.draft);
-                const cfaInReview = parseNumericValue(cfaData.in_review);
-                const cfaApproved = parseNumericValue(cfaData.approved);
+                const cfaDraft = parseNumericValue(getRowData(summaryData, 'Draft', 'CFA').Value);
+                const cfaInReview = parseNumericValue(summaryData.parsed.find(r => r['Sub-Box Header'] === 'CFA' && r['Data Header'] === 'In Review')?.Value);
+                const cfaApproved = parseNumericValue(getRowData(summaryData, 'Approved', 'CFA').Value);
+                const cfaCompletion = getRowData(summaryData, 'Completion %', 'CFA').Value;
+
+                const overallData = {
+                    draft: getRowData(summaryData, 'Draft', 'Overall').Value,
+                    approved: getRowData(summaryData, 'Approved', 'Overall').Value,
+                    total: getRowData(summaryData, 'Total', 'Overall').Value,
+                    completion: getRowData(summaryData, 'Completion %', 'Overall').Value
+                };
                 
                 const getCompletionColorState = (valueStr) => {
                     const value = parseFloat(valueStr);
@@ -761,8 +762,8 @@
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
                                         </div>
                                    </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaData.completion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
+                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaCompletion)}">
+                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaCompletion))} tracking-tighter">${accaCompletion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
@@ -811,8 +812,8 @@
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
                                         </div>
                                    </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaData.completion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
+                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaCompletion)}">
+                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaCompletion))} tracking-tighter">${cfaCompletion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
@@ -914,23 +915,32 @@
                 accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
                 cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
                 
-                const renderLineChart = (canvasId, dailyData, days) => {
-                    const today = new Date();
-                    today.setHours(23, 59, 59, 999); 
-                    
+                const parseCustomDate = (dateStr) => {
+                    const parts = dateStr.split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1; 
+                        let year = parseInt(parts[2], 10);
+                        if (year < 100) {
+                            year += 2000;
+                        }
+                        return new Date(year, month, day);
+                    }
+                    return new Date(dateStr); 
+                };
+
+                const renderLineChart = (canvasId, dailyData, days, dateParser) => {
                     const chartData = dailyData.parsed
-                        .filter(d => {
-                            if (!d.Date || !d.Draft || !d.Approved) return false;
-                            const itemDate = new Date(d.Date);
-                            return !isNaN(itemDate.getTime()) && itemDate <= today;
-                        })
+                        .filter(d => d.Date && (d.Draft || d.Approved))
+                        .map(d => ({...d, parsedDate: dateParser(d.Date)}))
+                        .filter(d => !isNaN(d.parsedDate.getTime()))
                         .slice(-days);
 
                     const ctx = document.getElementById(canvasId).getContext('2d');
                     return new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: chartData.map(d => new Date(d.Date)),
+                            labels: chartData.map(d => d.parsedDate),
                             datasets: [
                                 { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true },
                                 { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true }
@@ -940,7 +950,16 @@
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { enabled: true, mode: 'index', intersect: false, bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
+                                tooltip: { 
+                                    enabled: true, mode: 'index', intersect: false, 
+                                    bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, 
+                                    backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8,
+                                    callbacks: {
+                                        title: function(tooltipItems) {
+                                            return new Date(tooltipItems[0].parsed.x).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                        }
+                                    }
+                                }
                             },
                             scales: { 
                                 y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
@@ -950,7 +969,7 @@
                     });
                 };
                 
-                const setupSubPage = (chartType, dailyData) => {
+                const setupSubPage = (chartType, dailyData, dateParser) => {
                     const canvasId = `${chartType}LineChartCanvas`;
                     const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
                     const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
@@ -959,7 +978,7 @@
 
                     const updateChart = (days) => {
                         if (chartInstance) chartInstance.destroy();
-                        chartInstance = renderLineChart(canvasId, dailyData, days);
+                        chartInstance = renderLineChart(canvasId, dailyData, days, dateParser);
                         
                         if (chartType === 'acca') accaLineChart = chartInstance;
                         else cfaLineChart = chartInstance;
@@ -991,8 +1010,8 @@
                         }
                     });
                 };
-                setupSubPage('acca', accaDailyData);
-                setupSubPage('cfa', cfaDailyData);
+                setupSubPage('acca', accaDailyData, parseCustomDate);
+                setupSubPage('cfa', cfaDailyData, (d) => new Date(d));
 
                 const qrfNav = document.getElementById('qrf-navigation-bar');
                 const qrfContentSections = document.querySelectorAll('.qrf-content-section');
@@ -1016,7 +1035,6 @@
                     }
                 });
                 
-                // Set default tab
                 switchQrfTab('acca');
             };
 
