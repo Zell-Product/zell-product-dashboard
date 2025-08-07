@@ -205,7 +205,7 @@
                     </a>
                 </div>
             </div>
-             </div>
+        </div>
     </header>
     
     <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
@@ -254,9 +254,7 @@
             const pageHeader = document.getElementById('page-header');
             const pageHeaderTitle = document.getElementById('page-header-title');
             const openSheetButton = document.getElementById('open-sheet-button');
-            // ▼▼▼ JS CHANGE HERE ▼▼▼
             const headerRefreshButton = document.getElementById('header-refresh-button');
-            // ▲▲▲ END OF JS CHANGE ▲▲▲
             const themeToggle = document.getElementById('theme-toggle');
             const lastUpdatedEl = document.getElementById('last-updated-text');
             const refreshButton = document.getElementById('refresh-button');
@@ -299,7 +297,6 @@
                 return metrics;
             };
 
-            // ▼▼▼ JS CHANGE HERE ▼▼▼
             const fetchAndParseData = async (url, parser = parseCSV, retries = 3, delay = 1000) => {
                 for (let i = 0; i < retries; i++) {
                     try {
@@ -319,7 +316,6 @@
                     }
                 }
             };
-            // ▲▲▲ END OF JS CHANGE ▲▲▲
 
             const getIconForMetric = (label) => {
                 const lowerLabel = label.toLowerCase();
@@ -917,19 +913,16 @@
                 container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<div class="relative z-10 report-content flex flex-col items-center justify-center"><i class="${report.icon} text-4xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-lg font-semibold">${report.title}</span></div><i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
             };
 
-            // ▼▼▼ JS CHANGE HERE ▼▼▼
             const setPageHeader = (title, sheetUrl) => {
-                headerRefreshButton.classList.add('hidden'); // Hide by default
+                headerRefreshButton.classList.add('hidden'); // Hide header refresh button by default
                 if (title) {
                     pageHeaderTitle.textContent = title;
                     pageHeader.classList.remove('hidden');
                     pageHeader.classList.add('flex');
                     mainHeader.classList.add('hidden');
                     
-                    // Show refresh button on specific sub-pages
-                    const pagesWithRefresh = ['ask-a-doubt-section', 'daily-section', 'course-checks-section', 'question-repo-section', 'batch-reports-section'];
-                    const activeSectionId = Array.from(pageContents).find(s => !s.classList.contains('hidden'))?.id;
-                    if (pagesWithRefresh.includes(activeSectionId)) {
+                    const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
+                    if (activeSection && activeSection.id !== 'reports-section') {
                         headerRefreshButton.classList.remove('hidden');
                     }
 
@@ -946,7 +939,6 @@
                     openSheetButton.classList.add('hidden');
                 }
             };
-            // ▲▲▲ END OF JS CHANGE ▲▲▲
             
             const switchTab = async (tabId) => {
                 setPageHeader(null);
@@ -956,11 +948,19 @@
                 activeContent.classList.remove('hidden');
                 if (tabId === 'overview' && !dataCache.overview) {
                     showLoading(activeContent);
-                    dataCache.overview = await fetchAndParseData(OVERVIEW_URL);
+                    const newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) {
+                        dataCache.overview = newData;
+                        renderOverviewPage(activeContent, dataCache.overview);
+                    } else {
+                        showError(activeContent, "Failed to fetch overview data. Please try again.");
+                    }
+                } else if (tabId === 'overview') {
                     renderOverviewPage(activeContent, dataCache.overview);
                 }
             };
 
+            // ▼▼▼ ALL `show...` FUNCTIONS ARE NOW FIXED ▼▼▼
             const showDailyMetrics = async () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const dailySection = document.getElementById('daily-section');
@@ -1062,7 +1062,6 @@
                 setPageHeader(null);
             };
 
-            // ▼▼▼ JS CHANGE HERE ▼▼▼
             const refreshData = async () => {
                 const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
                 if (!activeSection) return;
@@ -1071,12 +1070,19 @@
                 showLoading(activeSection);
                 
                 let newData;
-                if (sectionId === 'overview-section' || sectionId === 'batch-reports-section') {
+                if (sectionId === 'overview-section') {
                     newData = await fetchAndParseData(OVERVIEW_URL);
                     if (newData) {
                         dataCache.overview = newData;
-                        if (sectionId === 'overview-section') renderOverviewPage(activeSection, newData);
-                        else renderBatchReportsPage(activeSection, newData);
+                        renderOverviewPage(activeSection, newData);
+                    } else {
+                         showError(activeSection, "Failed to refresh data. Please check your connection and try again.");
+                    }
+                } else if (sectionId === 'batch-reports-section') {
+                    newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) {
+                        dataCache.overview = newData;
+                        renderBatchReportsPage(activeSection, newData);
                     } else {
                          showError(activeSection, "Failed to refresh data. Please check your connection and try again.");
                     }
@@ -1114,7 +1120,6 @@
                     }
                 }
             };
-            // ▲▲▲ END OF JS CHANGE ▲▲▲
             
             const updateLastUpdatedTime = () => {
                 const now = new Date();
