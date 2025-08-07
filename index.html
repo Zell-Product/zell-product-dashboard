@@ -615,12 +615,12 @@
                             tension: 0.4,
                             fill: false,
                              segment: {
-                                 borderColor: ctx => {
-                                     const y = ctx.p1.parsed.y;
-                                     if (y <= 35) return 'rgb(239, 68, 68)';
-                                     if (y > 35 && y <= 75) return 'rgb(245, 158, 11)';
-                                     return 'rgb(34, 197, 94)';
-                                 }
+                                borderColor: ctx => {
+                                    const y = ctx.p1.parsed.y;
+                                    if (y <= 35) return 'rgb(239, 68, 68)';
+                                    if (y > 35 && y <= 75) return 'rgb(245, 158, 11)';
+                                    return 'rgb(34, 197, 94)';
+                                }
                              },
                              pointBorderColor: (ctx) => {
                                  const y = ctx.raw;
@@ -692,35 +692,44 @@
                 destroyCharts();
 
                 const qrfStatusRows = summaryData.parsed.filter(r => r['Top-Level Box'] === 'QRF Status');
-                const processedData = qrfStatusRows.reduce((acc, row) => {
-                    const group = row['Sub-Box Header'];
-                    if (group && !acc[group]) acc[group] = {};
-                    if (group) {
-                        const key = row['Data Header'].toLowerCase().replace(/%/g, '').trim().replace(/ /g, '_');
-                        acc[group][key] = row['Value'];
-                    }
-                    return acc;
-                }, {});
+                
+                const getValue = (rows, group, header) => {
+                    const row = rows.find(r => r['Sub-Box Header'] === group && r['Data Header'] === header);
+                    return row ? row['Value'] : '0';
+                };
+
+                // FIX #4: Removed "In Review" from data retrieval
+                const accaData = {
+                    draft: getValue(qrfStatusRows, 'ACCA', 'Draft'),
+                    approved: getValue(qrfStatusRows, 'ACCA', 'Approved'),
+                    completion: getValue(qrfStatusRows, 'ACCA', 'Completion')
+                };
+                const cfaData = {
+                    draft: getValue(qrfStatusRows, 'CFA', 'Draft'),
+                    approved: getValue(qrfStatusRows, 'CFA', 'Approved'),
+                    completion: getValue(qrfStatusRows, 'CFA', 'Completion')
+                };
+                const overallData = {
+                    draft: getValue(qrfStatusRows, 'Overall', 'Draft'),
+                    approved: getValue(qrfStatusRows, 'Overall', 'Approved'),
+                    total: getValue(qrfStatusRows, 'Overall', 'Total'),
+                    completion: getValue(qrfStatusRows, 'Overall', 'Completion')
+                };
 
                 const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
 
-                const accaData = processedData.ACCA || {};
-                const cfaData = processedData.CFA || {};
-                const overallData = processedData.Overall || {};
-
                 const accaDraft = parseNumericValue(accaData.draft);
-                const accaInReview = parseNumericValue(accaData.in_review);
                 const accaApproved = parseNumericValue(accaData.approved);
                 const cfaDraft = parseNumericValue(cfaData.draft);
-                const cfaInReview = parseNumericValue(cfaData.in_review);
                 const cfaApproved = parseNumericValue(cfaData.approved);
                 
+                // FIX #2: Correct the logic for completion status color based on new thresholds
                 const getCompletionColorState = (valueStr) => {
                     const value = parseFloat(valueStr);
                     if (isNaN(value)) return 'neutral';
-                    if (value < 75) return 'bad';
-                    if (value >= 75 && value < 95) return 'medium';
-                    return 'good';
+                    if (value <= 35) return 'bad';      // Up to and including 35 is Red
+                    if (value < 70) return 'medium';     // 36 to 69 is Yellow
+                    return 'good';                      // 70 and above is Green
                 };
 
                 container.innerHTML = `
@@ -748,13 +757,6 @@
                                         </div>
                                         <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${accaInReview.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
                                             </div>
@@ -767,7 +769,7 @@
                                    </div>
                                </div>
                                <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
-                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                   <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
                                        <div class="flex items-center gap-2 md:gap-4">
                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
                                            <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="acca">
@@ -795,13 +797,6 @@
                                                 <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                             </div>
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaDraft.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaInReview.toLocaleString()}</span>
                                         </div>
                                         <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
@@ -874,8 +869,9 @@
                     return new Chart(ctx, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Draft', 'In Review', 'Approved'],
-                            datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
+                            // FIX #4: Updated labels and colors for Pie chart
+                            labels: ['Draft', 'Approved'],
+                            datasets: [{ data: data, backgroundColor: ['#ef4444', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false, cutout: '70%',
@@ -911,8 +907,9 @@
                         }]
                     });
                 };
-                accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
-                cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
+                // FIX #4: Pass updated data to Pie Chart
+                accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaApproved], accaDraft + accaApproved);
+                cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaApproved], cfaDraft + cfaApproved);
                 
                 const renderLineChart = (canvasId, dailyData, days) => {
                     const today = new Date();
@@ -940,11 +937,28 @@
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { enabled: true, mode: 'index', intersect: false, bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
+                                tooltip: { 
+                                    enabled: true, 
+                                    mode: 'index', 
+                                    intersect: false, 
+                                    bodyFont: { family: bodyFont }, 
+                                    titleFont: { family: bodyFont }, 
+                                    backgroundColor: 'rgba(0,0,0,0.8)', 
+                                    padding: 12, 
+                                    cornerRadius: 8,
+                                    // FIX #1: Add a tooltip title callback to format the date correctly.
+                                    callbacks: {
+                                        title: function(tooltipItems) {
+                                            const date = tooltipItems[0].parsed.x;
+                                            // Use the date adapter to format the date, requires chartjs-adapter-date-fns
+                                            return Chart.adapters.date.format(date, 'MMM d');
+                                        }
+                                    }
+                                }
                             },
                             scales: { 
                                 y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
-                                x: { type: 'time', time: { unit: 'day', displayFormats: { day: 'MMM d' } }, grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont } } } 
+                                x: { type: 'time', time: { unit: 'day', displayFormats: { day: 'MMM d' }}, grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont } } } 
                             }
                         }
                     });
@@ -965,15 +979,17 @@
                         else cfaLineChart = chartInstance;
 
                         legendContainer.innerHTML = '';
+                        // FIX #3: Ensure the legend buttons are created and clickable. This logic is correct.
                         chartInstance.data.datasets.forEach((dataset, index) => {
                             const button = document.createElement('button');
                             button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-white/5 backdrop-blur-sm border border-white/10`;
                             button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
                             
                             button.onclick = () => {
-                                chartInstance.toggleDataVisibility(index);
+                                const isVisible = chartInstance.isDatasetVisible(index);
+                                chartInstance.setDatasetVisibility(index, !isVisible);
                                 chartInstance.update();
-                                button.classList.toggle('opacity-40', !chartInstance.isDatasetVisible(index));
+                                button.classList.toggle('opacity-40', isVisible);
                             };
                             legendContainer.appendChild(button);
                         });
@@ -1088,22 +1104,22 @@
                 `;
 
                 container.innerHTML = `
-                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
-                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
-                             <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
-                                 ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
-                                 ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
-                             </div>
+                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                               <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                                   <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
+                                   <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                       ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
+                                       ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
+                                   </div>
+                               </div>
+                               <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                                   <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
+                                   <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                       ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
+                                       ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
+                                   </div>
+                               </div>
                          </div>
-                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
-                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
-                             <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
-                                 ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
-                                 ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
-                             </div>
-                         </div>
-                     </div>
                 `;
             };
             
