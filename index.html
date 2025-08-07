@@ -697,7 +697,7 @@
                     const group = row['Sub-Box Header'];
                     if (group && !acc[group]) acc[group] = {};
                     if (group) {
-                        const key = row['Data Header'].toLowerCase().replace('%', '').trim().replace(/ /g, '_');
+                        const key = row['Data Header'].toLowerCase().replace(/%/g, '').trim().replace(/ /g, '_');
                         acc[group][key] = row['Value'];
                     }
                     return acc;
@@ -719,13 +719,14 @@
                 const getCompletionColorState = (valueStr) => {
                     const value = parseFloat(valueStr);
                     if (isNaN(value)) return 'neutral';
-                    if (value <= 35) return 'bad';
-                    if (value > 35 && value <= 75) return 'medium';
+                    if (value < 75) return 'bad';
+                    if (value >= 75 && value < 95) return 'medium';
                     return 'good';
                 };
 
                 container.innerHTML = `
                     <div class="space-y-12">
+                        <!-- ACCA Section -->
                         <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                            <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
@@ -753,7 +754,7 @@
                                         <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
                                     </div>
                                </div>
-                               <div class="qrf-scorecard text-center p-4 transition-transform duration-300 hover:scale-105" data-color-state="${getCompletionColorState(accaData.completion)}">
+                               <div class="qrf-scorecard text-center p-4 transition-transform duration-300 hover:scale-105 bg-black/10 rounded-2xl" data-color-state="${getCompletionColorState(accaData.completion)}">
                                    <div class="value text-8xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
                                    <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                </div>
@@ -771,7 +772,8 @@
                            </div>
                         </div>
 
-                        <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                        <!-- CFA Section -->
+                         <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                            <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
@@ -798,7 +800,7 @@
                                         <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
                                     </div>
                                </div>
-                               <div class="qrf-scorecard text-center p-4 transition-transform duration-300 hover:scale-105" data-color-state="${getCompletionColorState(cfaData.completion)}">
+                               <div class="qrf-scorecard text-center p-4 transition-transform duration-300 hover:scale-105 bg-black/10 rounded-2xl" data-color-state="${getCompletionColorState(cfaData.completion)}">
                                    <div class="value text-8xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
                                    <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                </div>
@@ -816,6 +818,7 @@
                            </div>
                         </div>
                         
+                        <!-- Overall Section -->
                         <div class="bg-black/10 p-6 md:p-8 border border-white/10 rounded-2xl">
                             <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
                                 <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
@@ -825,10 +828,6 @@
                                     <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                         <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
                                         <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
-                                    </div>
-                                     <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
-                                        <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
-                                        <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.in_review || 'N/A'}</span>
                                     </div>
                                     <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                         <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
@@ -905,8 +904,9 @@
                 const renderLineChart = (canvasId, dailyData, days) => {
                     const chartData = dailyData.parsed
                         .filter(d => {
+                            if (!d.Date) return false;
                             const date = new Date(d.Date);
-                            return d.Date && !isNaN(date) && date <= today;
+                            return !isNaN(date.getTime()) && date <= today;
                         })
                         .slice(-days);
 
@@ -938,7 +938,6 @@
                     const toggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
                     const canvasId = `${chartType}LineChartCanvas`;
                     
-                    // Set initial active state
                     toggle.querySelector('[data-days="14"]').classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
                     if (chartType === 'acca') accaLineChart = renderLineChart(canvasId, dailyData, 14);
                     else cfaLineChart = renderLineChart(canvasId, dailyData, 14);
