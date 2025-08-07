@@ -83,6 +83,7 @@
             background-color: rgba(0, 0, 0, 0.2);
         }
         .hidden { display: none; }
+        .fa-sync-alt { transition: transform 0.5s ease; }
 
         #navigation-bar { max-width: 48rem; }
         .nav-item {
@@ -173,6 +174,20 @@
         }
         
         @media (max-width: 768px) {
+            .header { padding: 0.5rem; }
+            #main-header, #page-header {
+                max-width: 100%;
+            }
+            #page-header-center-content {
+                flex-grow: 1;
+                min-width: 0;
+            }
+            #page-header-title {
+                font-size: 1.125rem; /* text-lg */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
             #navigation-bar { width: 100%; max-width: 100%; padding: 0.25rem; }
             .nav-item { padding: 0.75rem 0.5rem; font-size: 0.875rem; flex-grow: 1; text-align: center; }
             #theme-toggle { flex-grow: 0; }
@@ -206,8 +221,8 @@
                 <button id="header-back-button" class="absolute left-0 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                     <i class="fas fa-chevron-left text-xl"></i>
                 </button>
-                <div id="page-header-center-content" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-8 py-3">
-                    <h1 id="page-header-title" class="text-2xl font-bold text-[var(--text-color)]"></h1>
+                <div id="page-header-center-content" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3">
+                    <h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)]"></h1>
                 </div>
                 <div class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <button id="header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10 hidden">
@@ -403,7 +418,7 @@
                 let content = '';
                 for (const [title, rows] of Object.entries(groupedData)) {
                     content += `<div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
-                        <h2 class="text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4">
+                        <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4">
                             <i class="${getIconForMetric(title)}"></i><span>${title}</span>
                         </h2>`;
 
@@ -413,20 +428,20 @@
                         content += `
                             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                                 <div class="lg:col-span-2 sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
-                                    <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
+                                    <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
                                     <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                         ${generalData.map(metric => `
                                             <div class="metric-card" data-color-state="neutral">
                                                 <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                     <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                    <div class="metric-value text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                    <div class="metric-value text-2xl md:text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                     <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
                                                 </div>
                                             </div>`).join('')}
                                     </div>
                                 </div>
                                 <div class="lg:col-span-3 sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
-                                    <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
+                                    <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
                                     <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                         ${performanceData.map(metric => {
                                             const colorState = getPerformanceColorState(metric['Data Header'], metric.Value);
@@ -434,7 +449,7 @@
                                             return `<div class="metric-card" data-color-state="${colorState}">
                                                 <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                     <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                    <div class="metric-value text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                    <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                     <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
                                                 </div>
                                             </div>`
@@ -456,7 +471,7 @@
                             <div class="grid grid-cols-1 ${row.length > 1 ? 'md:grid-cols-2' : ''} gap-8">
                                 ${row.map(([subTitle, metrics]) => `
                                     <div class="sub-box bg-black/10 p-6 border border-white/10 rounded-2xl flex flex-col h-full">
-                                        <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
+                                        <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
                                         <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                             ${metrics.sort((a, b) => a.Order - b.Order).map(metric => {
                                                 const val = parseInt(metric.Value, 10);
@@ -469,7 +484,7 @@
                                                 return `<div class="metric-card" data-color-state="${colorState}">
                                                     <div class="flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
                                                         <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                        <div class="metric-value text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
+                                                        <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
                                                     </div>
                                                 </div>`
@@ -510,7 +525,7 @@
                 const createRatingCard = (label, value, icon, colorClass = 'text-[var(--text-color)]') => `
                     <div class="metric-card flex-grow bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 rounded-3xl" data-color-state="${colorClass.includes('green') ? 'good' : 'neutral'}">
                         <div class="text-2xl text-[var(--icon-color)]"><i class="${icon}"></i></div>
-                        <div class="metric-value text-3xl font-bold ${colorClass} tracking-tight">${value || 'N/A'}</div>
+                        <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value || 'N/A'}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
                     </div>
                 `;
@@ -597,19 +612,19 @@
                     <div class="space-y-8">
                         <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-8 rounded-3xl text-center border border-[var(--card-border)]" data-color-state="${successRateState}">
                             <h3 class="text-lg font-medium text-[var(--text-muted-color)] uppercase tracking-widest">Success Rate</h3>
-                            <div class="text-8xl font-bold my-2 tracking-tighter ${successRateColor}">${successRate}</div>
+                            <div class="text-7xl sm:text-8xl font-bold my-2 tracking-tighter ${successRateColor}">${successRate}</div>
                         </div>
                          <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
-                             <div class="flex justify-center mb-6 items-center gap-4">
+                             <div class="flex flex-col sm:flex-row justify-center mb-6 items-center gap-2 sm:gap-4">
                                  <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Previous:</h4>
-                                 <div id="timeline-toggle" class="bg-black/20 rounded-full p-1 flex gap-1">
+                                 <div id="timeline-toggle" class="bg-black/20 rounded-full p-1 flex flex-wrap justify-center gap-1">
                                      <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
                                      <button data-days="10" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">10 Days</button>
                                      <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
                                      <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
                                  </div>
                              </div>
-                             <div class="min-h-[400px]">
+                             <div class="min-h-[300px] sm:min-h-[400px]">
                                  <canvas id="courseChecksChartCanvas"></canvas>
                              </div>
                          </div>
@@ -768,7 +783,7 @@
                     <div class="space-y-8">
                         <div id="acca-qrf-content" class="qrf-content-section space-y-12">
                             <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                               <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
+                               <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                    <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
                                    <div class="flex flex-col justify-center space-y-4">
@@ -788,7 +803,7 @@
                                         </div>
                                    </div>
                                    <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaData.completion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
+                                       <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
@@ -804,20 +819,20 @@
                                        </div>
                                        <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
                                    </div>
-                                   <div class="min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
+                                   <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
                                </div>
                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                                    <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
+                                    <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div class="split-box bg-black/10 p-6 rounded-2xl border border-white/10">
                                             <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
                                             <div class="flex justify-around items-center">
                                                 <div class="text-center">
-                                                    <div class="split-value text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
+                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
                                                 </div>
                                                 <div class="text-center">
-                                                    <div class="split-value text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
+                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
                                                 </div>
                                             </div>
@@ -826,19 +841,19 @@
                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
                                             <div class="flex justify-around items-center">
                                                 <div class="text-center">
-                                                    <div class="split-value text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
+                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
                                                 </div>
                                                 <div class="text-center">
-                                                    <div class="split-value text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
+                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="bg-black/10 p-6 rounded-2xl border border-white/10 mt-8 flex justify-center items-center gap-6">
-                                        <h3 class="text-2xl font-bold">Total Questions</h3>
-                                        <div class="text-5xl font-bold">${accaSplitData.totalQuestions}</div>
+                                        <h3 class="text-xl sm:text-2xl font-bold">Total Questions</h3>
+                                        <div class="text-4xl sm:text-5xl font-bold">${accaSplitData.totalQuestions}</div>
                                     </div>
                                 </div>
                             </div>
@@ -846,7 +861,7 @@
 
                         <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden">
                              <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                                <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
+                                <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                     <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
                                     <div class="flex flex-col justify-center space-y-4">
@@ -866,7 +881,7 @@
                                         </div>
                                    </div>
                                    <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaData.completion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
+                                       <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                    </div>
                                </div>
@@ -882,7 +897,7 @@
                                        </div>
                                        <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
                                    </div>
-                                   <div class="min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
+                                   <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
                                </div>
                             </div>
                         </div>
@@ -890,25 +905,25 @@
                         <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
                             <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                 <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
-                                    <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
+                                    <h3 class="text-2xl md:text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                                     <div class="space-y-4">
                                         <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
                                         </div>
                                         <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
                                         </div>
                                         <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
                                         </div>
                                     </div>
                                     <div class="qrf-scorecard bg-black/20 p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
-                                        <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
+                                        <div class="value text-6xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
                                         <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                     </div>
                                 </div>
@@ -1070,7 +1085,6 @@
                                 const approvedVisible = chartInstance.isDatasetVisible(1);
                                 const draftVisible = chartInstance.isDatasetVisible(0);
 
-                                // Reset all y-axis scaling options to default (auto)
                                 chartInstance.options.scales.y.min = undefined;
                                 chartInstance.options.scales.y.max = undefined;
                                 chartInstance.options.scales.y.ticks.stepSize = undefined;
@@ -1087,10 +1101,9 @@
                                 } else if (draftVisible && !approvedVisible) {
                                     const data = datasets[0].data;
                                     if (data.length > 0) {
-                                        const dataMin = Math.min(...data);
                                         const dataMax = Math.max(...data);
                                         chartInstance.options.scales.y.ticks.stepSize = 50;
-                                        chartInstance.options.scales.y.min = Math.floor(dataMin / 50) * 50;
+                                        chartInstance.options.scales.y.min = 0; // Always start from zero for Draft
                                         chartInstance.options.scales.y.max = Math.ceil(dataMax / 50) * 50;
                                     }
                                 }
@@ -1129,8 +1142,8 @@
                     const colorState = isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
                     const colorClass = isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
                     return `<div class="metric-card bg-black/5 p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center space-y-2" data-color-state="${colorState}">
-                        <i class="${getIconForMetric(metric['Data Header'])} text-3xl text-[var(--icon-color)] opacity-80"></i>
-                        <div class="text-4xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
+                        <i class="${getIconForMetric(metric['Data Header'])} text-2xl md:text-3xl text-[var(--icon-color)] opacity-80"></i>
+                        <div class="text-3xl md:text-4xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
                         <div class="text-sm font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
                     </div>`;
                 };
@@ -1138,13 +1151,13 @@
                 container.innerHTML = `
                     <div class="space-y-10">
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
-                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
+                            <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 ${generalData.map(metric => createMetricCard(metric, false)).join('')}
                             </div>
                         </div>
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
-                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
+                            <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                                 ${performanceData.map(metric => createMetricCard(metric, true)).join('')}
                             </div>
@@ -1180,7 +1193,7 @@
                 const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
                     <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl" data-color-state="${state}">
                         <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
-                        <div class="metric-value text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
+                        <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
                     </div>
                 `;
@@ -1188,14 +1201,14 @@
                 container.innerHTML = `
                          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                              <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
-                                 <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
+                                 <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
                                  <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
                                      ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
                                  </div>
                              </div>
                              <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
-                                 <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
+                                 <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
                                  <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
                                      ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
@@ -1224,7 +1237,7 @@
                     'overview-section': 'Showing selected important data from all Product Report Sheets.',
                     'reports-section': 'Select any report you want to view.',
                     'daily-section': 'Data here is updated every Friday for the week.',
-                    'course-checks-section': 'Data is updated whenever any batches setup is completed by the Acads Team.',
+                    'course-checks-section': 'Data is updated whenever any batch setup is completed by the Acads Team.',
                     'question-repo-section': 'Data is usually updated on every weekday by the first half.',
                     'ask-a-doubt-section': 'Data is updated every weekday by evening.',
                     'batch-reports-section': 'Data is updated on a weekly basis, usually by every Tuesday.'
@@ -1233,8 +1246,8 @@
             };
 
             const setPageHeader = (title, sheetUrl) => {
-                pageHeaderCenterContent.innerHTML = `<h1 id="page-header-title" class="text-2xl font-bold text-[var(--text-color)]"></h1>`;
-                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-8 py-3';
+                pageHeaderCenterContent.innerHTML = `<h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)] truncate"></h1>`;
+                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3';
                 
                 if (title !== null) { 
                     document.getElementById('page-header-title').textContent = title;
@@ -1272,19 +1285,19 @@
                 activeContent.classList.remove('hidden');
                 updateFooterText(`${tabId}-section`);
 
-                if (tabId === 'overview' && !dataCache.overview) {
-                    showLoading(activeContent);
-                    const newData = await fetchAndParseData(OVERVIEW_URL);
-                    if (newData) {
-                        dataCache.overview = newData;
-                        renderOverviewPage(activeContent, dataCache.overview);
+                if (tabId === 'overview') {
+                    if (!dataCache.overview) {
+                        showLoading(activeContent);
+                        const newData = await fetchAndParseData(OVERVIEW_URL);
+                        if (newData) {
+                            dataCache.overview = newData;
+                            renderOverviewPage(activeContent, dataCache.overview);
+                        } else {
+                            showError(activeContent, "Failed to fetch overview data. Please try again.");
+                        }
                     } else {
-                        showError(activeContent, "Failed to fetch overview data. Please try again.");
+                        renderOverviewPage(activeContent, dataCache.overview);
                     }
-                } else if (tabId === 'overview') {
-                    renderOverviewPage(activeContent, dataCache.overview);
-                } else if (tabId === 'reports') {
-                    // This space is intentionally left blank as renderReportsPage is called once on initialLoad
                 }
             };
 
@@ -1338,11 +1351,11 @@
                 
                 const qrfNav = document.createElement('nav');
                 qrfNav.id = 'qrf-navigation-bar-sticky';
-                qrfNav.className = 'flex justify-center items-center gap-2';
+                qrfNav.className = 'flex justify-center items-center gap-1';
                 qrfNav.innerHTML = `
-                    <button data-qrf-tab="acca" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
-                    <button data-qrf-tab="cfa" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
-                    <button data-qrf-tab="overall" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
+                    <button data-qrf-tab="acca" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
+                    <button data-qrf-tab="cfa" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
+                    <button data-qrf-tab="overall" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
                 `;
                 pageHeaderCenterContent.innerHTML = '';
                 pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center p-2';
@@ -1443,29 +1456,20 @@
             const refreshData = async () => {
                 const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
                 if (!activeSection) return;
-
-                const sectionId = activeSection.id;
                 
                 const activeTabButton = document.querySelector('.nav-item.active');
                 const mainTabId = activeTabButton ? activeTabButton.dataset.tab : null;
 
-                // Determine which view to refresh
-                if (mainTabId === 'overview') {
+                if (mainTabId === 'overview' || activeSection.id === 'overview-section') {
                     dataCache.overview = null;
-                    switchTab('overview');
+                    await switchTab('overview');
                 } else if (mainTabId === 'reports') {
-                    // Refresh the specific sub-page within reports
-                    switch(sectionId) {
-                        case 'batch-reports-section':
-                            dataCache.overview = null; showBatchReportsPage(); break;
-                        case 'daily-section':
-                            dataCache.daily = null; showDailyMetrics(); break;
-                        case 'course-checks-section':
-                            dataCache.courseChecks = null; showCourseChecksPage(); break;
-                        case 'question-repo-section':
-                            dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.accaSplit = null; showQuestionRepo(); break;
-                        case 'ask-a-doubt-section':
-                            dataCache.lmsSupport = null; showAskADoubtPage(); break;
+                    switch(activeSection.id) {
+                        case 'batch-reports-section': dataCache.overview = null; await showBatchReportsPage(); break;
+                        case 'daily-section': dataCache.daily = null; await showDailyMetrics(); break;
+                        case 'course-checks-section': dataCache.courseChecks = null; await showCourseChecksPage(); break;
+                        case 'question-repo-section': dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.accaSplit = null; await showQuestionRepo(); break;
+                        case 'ask-a-doubt-section': dataCache.lmsSupport = null; await showAskADoubtPage(); break;
                     }
                 }
             };
@@ -1509,11 +1513,16 @@
             const handleRefreshClick = () => {
                 const mainRefreshIcon = mainHeaderRefreshButton.querySelector('i');
                 const headerRefreshIcon = headerRefreshButton.querySelector('i');
-                mainRefreshIcon?.classList.add('animate-spin');
-                headerRefreshIcon?.classList.add('animate-spin');
-                refreshData().then(() => {
-                    mainRefreshIcon?.classList.remove('animate-spin');
-                    headerRefreshIcon?.classList.remove('animate-spin');
+                const activeIcon = mainRefreshIcon?.offsetParent ? mainRefreshIcon : headerRefreshIcon;
+
+                if (!activeIcon || activeIcon.classList.contains('animate-spin')) return;
+                
+                activeIcon.classList.add('animate-spin');
+
+                const minSpinTime = new Promise(resolve => setTimeout(resolve, 750));
+
+                Promise.all([refreshData(), minSpinTime]).finally(() => {
+                    activeIcon.classList.remove('animate-spin');
                 });
             };
 
