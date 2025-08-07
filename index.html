@@ -678,364 +678,370 @@
             };
 
             const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData) => {
-                if (!summaryData || !accaDailyData || !cfaDailyData) {
-                    showError(container, "Could not load all necessary Question Repository data. Please try refreshing.");
-                    return;
-                }
-
-                const destroyCharts = () => {
-                    if (accaPieChart) accaPieChart.destroy();
-                    if (accaLineChart) accaLineChart.destroy();
-                    if (cfaPieChart) cfaPieChart.destroy();
-                    if (cfaLineChart) cfaLineChart.destroy();
-                };
-                destroyCharts();
-
-                const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
-                
-                const getRowData = (data, header) => data.parsed.find(row => row['Data Header'] === header) || {};
-
-                const accaSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'ACCA');
-                const cfaSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'CFA');
-                const overallSummary = qrfStatusRows.filter(r => r['Sub-Box Header'] === 'Overall');
-                
-                const accaDraft = parseNumericValue(getRowData(summaryData, 'Draft', 'ACCA').Value);
-                const accaInReview = parseNumericValue(summaryData.parsed.find(r => r['Sub-Box Header'] === 'ACCA' && r['Data Header'] === 'In Review')?.Value);
-                const accaApproved = parseNumericValue(getRowData(summaryData, 'Approved', 'ACCA').Value);
-                const accaCompletion = getRowData(summaryData, 'Completion %', 'ACCA').Value;
-
-                const cfaDraft = parseNumericValue(getRowData(summaryData, 'Draft', 'CFA').Value);
-                const cfaInReview = parseNumericValue(summaryData.parsed.find(r => r['Sub-Box Header'] === 'CFA' && r['Data Header'] === 'In Review')?.Value);
-                const cfaApproved = parseNumericValue(getRowData(summaryData, 'Approved', 'CFA').Value);
-                const cfaCompletion = getRowData(summaryData, 'Completion %', 'CFA').Value;
-
-                const overallData = {
-                    draft: getRowData(summaryData, 'Draft', 'Overall').Value,
-                    approved: getRowData(summaryData, 'Approved', 'Overall').Value,
-                    total: getRowData(summaryData, 'Total', 'Overall').Value,
-                    completion: getRowData(summaryData, 'Completion %', 'Overall').Value
-                };
-                
-                const getCompletionColorState = (valueStr) => {
-                    const value = parseFloat(valueStr);
-                    if (isNaN(value)) return 'neutral';
-                    if (value < 75) return 'bad';
-                    if (value >= 75 && value < 95) return 'medium';
-                    return 'good';
-                };
-
-                container.innerHTML = `
-                    <div class="space-y-8">
-                        <div class="w-full flex justify-center">
-                             <nav id="qrf-navigation-bar" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-2">
-                                <button data-qrf-tab="acca" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
-                                <button data-qrf-tab="cfa" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
-                                <button data-qrf-tab="overall" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
-                            </nav>
-                        </div>
-
-                        <div id="acca-qrf-content" class="qrf-content-section space-y-12">
-                            <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                               <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
-                               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                                   <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
-                                   <div class="flex flex-col justify-center space-y-4">
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${accaDraft.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${accaInReview.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
-                                        </div>
-                                   </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaCompletion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaCompletion))} tracking-tighter">${accaCompletion || 'N/A'}</div>
-                                       <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
-                                   </div>
-                               </div>
-                               <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
-                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-                                       <div class="flex items-center gap-2 md:gap-4">
-                                           <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="acca">
-                                               <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
-                                               <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
-                                               <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
-                                           </div>
-                                       </div>
-                                       <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
-                                   </div>
-                                   <div class="min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
-                               </div>
-                            </div>
-                        </div>
-
-                        <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden">
-                             <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                               <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
-                               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                                   <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
-                                   <div class="flex flex-col justify-center space-y-4">
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaDraft.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaInReview.toLocaleString()}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
-                                            </div>
-                                            <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
-                                        </div>
-                                   </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaCompletion)}">
-                                       <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaCompletion))} tracking-tighter">${cfaCompletion || 'N/A'}</div>
-                                       <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
-                                   </div>
-                               </div>
-                               <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
-                                   <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-                                       <div class="flex items-center gap-2 md:gap-4">
-                                           <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="cfa">
-                                               <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
-                                               <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
-                                               <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
-                                           </div>
-                                       </div>
-                                       <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
-                                   </div>
-                                   <div class="min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
-                               </div>
-                            </div>
-                        </div>
-
-                        <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
-                            <div class="bg-black/10 p-6 md:p-8 border border-white/10 rounded-2xl">
-                                <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
-                                    <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                                    <div class="space-y-4">
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
-                                            <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
-                                        </div>
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
-                                            <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
-                                        </div>
-                                        <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
-                                            <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
-                                            <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
-                                        </div>
-                                    </div>
-                                    <div class="qrf-scorecard bg-black/20 p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
-                                        <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
-                                        <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                const isLightMode = document.body.classList.contains('light-mode');
-                const bodyFont = "'Inter', sans-serif";
-                const textColor = isLightMode ? '#1d1d1f' : '#f5f5f7';
-                const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
-                const tickColor = isLightMode ? '#515154' : '#a1a1a6';
-
-                const renderPieChart = (canvasId, data, total) => {
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    return new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Draft', 'In Review', 'Approved'],
-                            datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false, cutout: '70%',
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: true, bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
-                            },
-                            animation: { animateScale: true, animateRotate: true }
-                        },
-                        plugins: [{
-                            id: 'doughnutLabel',
-                            beforeDraw: (chart) => {
-                                const { width, height, ctx } = chart;
-                                ctx.restore();
-                                const fontSize = (height / 150).toFixed(2);
-                                ctx.font = `bold ${fontSize}em ${bodyFont}`;
-                                ctx.textBaseline = 'middle';
-                                const text = total.toLocaleString();
-                                const textX = Math.round((width - ctx.measureText(text).width) / 2);
-                                const textY = height / 2.2;
-                                ctx.fillStyle = textColor;
-                                ctx.fillText(text, textX, textY);
-                                
-                                const subText = 'Total';
-                                const subFontSize = (height / 280).toFixed(2);
-                                ctx.font = `${subFontSize}em ${bodyFont}`;
-                                const subTextX = Math.round((width - ctx.measureText(subText).width) / 2);
-                                const subTextY = height / 1.7;
-                                ctx.fillStyle = tickColor;
-                                ctx.fillText(subText, subTextX, subTextY);
-                                ctx.save();
-                            }
-                        }]
-                    });
-                };
-                accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
-                cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
-                
-                const parseCustomDate = (dateStr) => {
-                    const parts = dateStr.split('/');
-                    if (parts.length === 3) {
-                        const day = parseInt(parts[0], 10);
-                        const month = parseInt(parts[1], 10) - 1; 
-                        let year = parseInt(parts[2], 10);
-                        if (year < 100) {
-                            year += 2000;
-                        }
-                        return new Date(year, month, day);
+                try {
+                    if (!summaryData || !accaDailyData || !cfaDailyData) {
+                        showError(container, "Could not load all necessary Question Repository data. Please try refreshing.");
+                        return;
                     }
-                    return new Date(dateStr); 
-                };
 
-                const renderLineChart = (canvasId, dailyData, days, dateParser) => {
-                    const chartData = dailyData.parsed
-                        .filter(d => d.Date && (d.Draft || d.Approved))
-                        .map(d => ({...d, parsedDate: dateParser(d.Date)}))
-                        .filter(d => !isNaN(d.parsedDate.getTime()))
-                        .slice(-days);
+                    const destroyCharts = () => {
+                        if (accaPieChart) accaPieChart.destroy();
+                        if (accaLineChart) accaLineChart.destroy();
+                        if (cfaPieChart) cfaPieChart.destroy();
+                        if (cfaLineChart) cfaLineChart.destroy();
+                    };
+                    destroyCharts();
 
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    return new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: chartData.map(d => d.parsedDate),
-                            datasets: [
-                                { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true },
-                                { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { 
-                                    enabled: true, mode: 'index', intersect: false, 
-                                    bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, 
-                                    backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8,
-                                    callbacks: {
-                                        title: function(tooltipItems) {
-                                            return new Date(tooltipItems[0].parsed.x).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const qrfStatusRows = summaryData.parsed.filter(r => r['Top-Level Box'] === 'QRF Status');
+                    const processedData = qrfStatusRows.reduce((acc, row) => {
+                        const group = row['Sub-Box Header'];
+                        if (group && !acc[group]) acc[group] = {};
+                        if (group) {
+                            const key = row['Data Header'].toLowerCase().replace(/%/g, '').trim().replace(/ /g, '_');
+                            acc[group][key] = row['Value'];
+                        }
+                        return acc;
+                    }, {});
+
+                    const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
+                    
+                    const accaData = processedData.ACCA || {};
+                    const cfaData = processedData.CFA || {};
+                    const overallData = processedData.Overall || {};
+
+                    // ▼▼▼ BUG FIX: Direct Cell Access for "In Review" ▼▼▼
+                    const getCellValue = (raw, rowIndex, colIndex) => raw[rowIndex] ? raw[rowIndex].split(',')[colIndex] : '0';
+                    const accaInReview = parseNumericValue(getCellValue(summaryData.raw, 2, 4)); // E3 is row index 2, col index 4
+                    const cfaInReview = parseNumericValue(getCellValue(summaryData.raw, 7, 4));  // E8 is row index 7, col index 4
+                    // ▲▲▲ END OF BUG FIX ▲▲▲
+
+                    const accaDraft = parseNumericValue(accaData.draft);
+                    const accaApproved = parseNumericValue(accaData.approved);
+                    const cfaDraft = parseNumericValue(cfaData.draft);
+                    const cfaApproved = parseNumericValue(cfaData.approved);
+                    
+                    const getCompletionColorState = (valueStr) => {
+                        const value = parseFloat(valueStr);
+                        if (isNaN(value)) return 'neutral';
+                        if (value < 75) return 'bad';
+                        if (value >= 75 && value < 95) return 'medium';
+                        return 'good';
+                    };
+
+                    container.innerHTML = `
+                        <div class="space-y-8">
+                            <div class="w-full flex justify-center">
+                                <nav id="qrf-navigation-bar" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-2">
+                                    <button data-qrf-tab="acca" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
+                                    <button data-qrf-tab="cfa" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
+                                    <button data-qrf-tab="overall" class="qrf-nav-item px-6 py-2 text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
+                                </nav>
+                            </div>
+
+                            <div id="acca-qrf-content" class="qrf-content-section space-y-12">
+                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                                    <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
+                                    <div class="flex flex-col justify-center space-y-4">
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${accaDraft.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${accaInReview.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
+                                            </div>
+                                    </div>
+                                    <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaData.completion)}">
+                                        <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
+                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                                        <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                        <div class="flex items-center gap-2 md:gap-4">
+                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                            <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="acca">
+                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
+                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
+                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
+                                            </div>
+                                        </div>
+                                        <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
+                                    </div>
+                                    <div class="min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
+                                </div>
+                                </div>
+                            </div>
+
+                            <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden">
+                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                                    <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
+                                    <div class="flex flex-col justify-center space-y-4">
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaDraft.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaInReview.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between bg-black/10 p-4 rounded-2xl">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                                    <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
+                                                </div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
+                                            </div>
+                                    </div>
+                                    <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaData.completion)}">
+                                        <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
+                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                        <div class="flex items-center gap-2 md:gap-4">
+                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                            <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="cfa">
+                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
+                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
+                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
+                                            </div>
+                                        </div>
+                                        <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
+                                    </div>
+                                    <div class="min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
+                                </div>
+                                </div>
+                            </div>
+
+                            <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
+                                <div class="bg-black/10 p-6 md:p-8 border border-white/10 rounded-2xl">
+                                    <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
+                                        <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                        <div class="space-y-4">
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
+                                            </div>
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
+                                            </div>
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                        <div class="qrf-scorecard bg-black/20 p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
+                                            <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
+                                            <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    const isLightMode = document.body.classList.contains('light-mode');
+                    const bodyFont = "'Inter', sans-serif";
+                    const textColor = isLightMode ? '#1d1d1f' : '#f5f5f7';
+                    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+                    const tickColor = isLightMode ? '#515154' : '#a1a1a6';
+
+                    const renderPieChart = (canvasId, data, total) => {
+                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        return new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Draft', 'In Review', 'Approved'],
+                                datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false, cutout: '70%',
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true, bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
+                                },
+                                animation: { animateScale: true, animateRotate: true }
+                            },
+                            plugins: [{
+                                id: 'doughnutLabel',
+                                beforeDraw: (chart) => {
+                                    const { width, height, ctx } = chart;
+                                    ctx.restore();
+                                    const fontSize = (height / 150).toFixed(2);
+                                    ctx.font = `bold ${fontSize}em ${bodyFont}`;
+                                    ctx.textBaseline = 'middle';
+                                    const text = total.toLocaleString();
+                                    const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                                    const textY = height / 2.2;
+                                    ctx.fillStyle = textColor;
+                                    ctx.fillText(text, textX, textY);
+                                    
+                                    const subText = 'Total';
+                                    const subFontSize = (height / 280).toFixed(2);
+                                    ctx.font = `${subFontSize}em ${bodyFont}`;
+                                    const subTextX = Math.round((width - ctx.measureText(subText).width) / 2);
+                                    const subTextY = height / 1.7;
+                                    ctx.fillStyle = tickColor;
+                                    ctx.fillText(subText, subTextX, subTextY);
+                                    ctx.save();
+                                }
+                            }]
+                        });
+                    };
+                    accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
+                    cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
+                    
+                    const parseAccaDate = (dateStr) => {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            const day = parseInt(parts[0], 10);
+                            const month = parseInt(parts[1], 10) - 1; 
+                            let year = parseInt(parts[2], 10);
+                            if (year < 100) year += 2000;
+                            return new Date(year, month, day);
+                        }
+                        return new Date(dateStr); 
+                    };
+
+                    const renderLineChart = (canvasId, dailyData, days, dateParser) => {
+                        const chartData = dailyData.parsed
+                            .filter(d => d.Date && (d.Draft || d.Approved))
+                            .map(d => ({...d, parsedDate: dateParser(d.Date)}))
+                            .filter(d => !isNaN(d.parsedDate.getTime()))
+                            .slice(-days);
+
+                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        return new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: chartData.map(d => d.parsedDate),
+                                datasets: [
+                                    { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true },
+                                    { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { 
+                                        enabled: true, mode: 'index', intersect: false, 
+                                        bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, 
+                                        backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8,
+                                        callbacks: {
+                                            title: function(tooltipItems) {
+                                                return new Date(tooltipItems[0].parsed.x).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                            }
                                         }
                                     }
+                                },
+                                scales: { 
+                                    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
+                                    x: { type: 'time', time: { unit: 'day', displayFormats: { day: 'MMM d' } }, grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont } } } 
                                 }
-                            },
-                            scales: { 
-                                y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
-                                x: { type: 'time', time: { unit: 'day', displayFormats: { day: 'MMM d' } }, grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont } } } 
                             }
-                        }
-                    });
-                };
-                
-                const setupSubPage = (chartType, dailyData, dateParser) => {
-                    const canvasId = `${chartType}LineChartCanvas`;
-                    const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
-                    const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
-                    
-                    let chartInstance;
-
-                    const updateChart = (days) => {
-                        if (chartInstance) chartInstance.destroy();
-                        chartInstance = renderLineChart(canvasId, dailyData, days, dateParser);
-                        
-                        if (chartType === 'acca') accaLineChart = chartInstance;
-                        else cfaLineChart = chartInstance;
-
-                        legendContainer.innerHTML = '';
-                        chartInstance.data.datasets.forEach((dataset, index) => {
-                            const button = document.createElement('button');
-                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-white/5 backdrop-blur-sm border border-white/10`;
-                            button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
-                            
-                            button.onclick = () => {
-                                chartInstance.toggleDataVisibility(index);
-                                chartInstance.update();
-                                button.classList.toggle('opacity-40', !chartInstance.isDatasetVisible(index));
-                            };
-                            legendContainer.appendChild(button);
                         });
-                    }
-
-                    timelineToggle.querySelector('[data-days="14"]').classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
-                    updateChart(14);
-
-                    timelineToggle.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('timeline-btn')) {
-                            const days = parseInt(e.target.dataset.days);
-                            timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => btn.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]'));
-                            e.target.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
-                            updateChart(days);
-                        }
-                    });
-                };
-                setupSubPage('acca', accaDailyData, parseCustomDate);
-                setupSubPage('cfa', cfaDailyData, (d) => new Date(d));
-
-                const qrfNav = document.getElementById('qrf-navigation-bar');
-                const qrfContentSections = document.querySelectorAll('.qrf-content-section');
-                const qrfNavItems = document.querySelectorAll('.qrf-nav-item');
-
-                const switchQrfTab = (tabId) => {
-                    qrfContentSections.forEach(sec => sec.classList.add('hidden'));
-                    document.getElementById(`${tabId}-qrf-content`).classList.remove('hidden');
+                    };
                     
-                    qrfNavItems.forEach(item => {
-                        item.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
-                        if(item.dataset.qrfTab === tabId) {
-                           item.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                    const setupSubPage = (chartType, dailyData, dateParser) => {
+                        const canvasId = `${chartType}LineChartCanvas`;
+                        const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
+                        const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
+                        
+                        let chartInstance;
+
+                        const updateChart = (days) => {
+                            if (chartInstance) chartInstance.destroy();
+                            chartInstance = renderLineChart(canvasId, dailyData, days, dateParser);
+                            
+                            if (chartType === 'acca') accaLineChart = chartInstance;
+                            else cfaLineChart = chartInstance;
+
+                            legendContainer.innerHTML = '';
+                            chartInstance.data.datasets.forEach((dataset, index) => {
+                                const button = document.createElement('button');
+                                button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-white/5 backdrop-blur-sm border border-white/10`;
+                                button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
+                                
+                                button.onclick = () => {
+                                    chartInstance.toggleDataVisibility(index);
+                                    chartInstance.update();
+                                    button.classList.toggle('opacity-40', !chartInstance.isDatasetVisible(index));
+                                };
+                                legendContainer.appendChild(button);
+                            });
+                        }
+
+                        timelineToggle.querySelector('[data-days="14"]').classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        updateChart(14);
+
+                        timelineToggle.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('timeline-btn')) {
+                                const days = parseInt(e.target.dataset.days);
+                                timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => btn.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]'));
+                                e.target.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                                updateChart(days);
+                            }
+                        });
+                    };
+                    setupSubPage('acca', accaDailyData, parseAccaDate);
+                    setupSubPage('cfa', cfaDailyData, (d) => new Date(d));
+
+                    const qrfNav = document.getElementById('qrf-navigation-bar');
+                    const qrfContentSections = document.querySelectorAll('.qrf-content-section');
+                    const qrfNavItems = document.querySelectorAll('.qrf-nav-item');
+
+                    const switchQrfTab = (tabId) => {
+                        qrfContentSections.forEach(sec => sec.classList.add('hidden'));
+                        document.getElementById(`${tabId}-qrf-content`).classList.remove('hidden');
+                        
+                        qrfNavItems.forEach(item => {
+                            item.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                            if(item.dataset.qrfTab === tabId) {
+                            item.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                            }
+                        });
+                    };
+                    
+                    qrfNav.addEventListener('click', (e) => {
+                        if(e.target.matches('.qrf-nav-item')) {
+                            switchQrfTab(e.target.dataset.qrfTab);
                         }
                     });
-                };
-                
-                qrfNav.addEventListener('click', (e) => {
-                    if(e.target.matches('.qrf-nav-item')) {
-                        switchQrfTab(e.target.dataset.qrfTab);
-                    }
-                });
-                
-                switchQrfTab('acca');
+                    
+                    switchQrfTab('acca');
+                } catch (error) {
+                    console.error("Error rendering Question Repository page:", error);
+                    showError(container, "An unexpected error occurred while rendering the page. Please check the console for details.");
+                }
             };
 
             const renderBatchReportsPage = (container, data) => {
