@@ -233,6 +233,7 @@
             const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
             const ACCA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=652498444&single=true&output=csv';
             const CFA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1749523224&single=true&output=csv';
+            const ACCA_SPLIT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1011528086&single=true&output=csv';
             const COURSE_CHECKS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTo2_1ighNkAxsTHM-9kCcKcOaMHRdojOqI_5wVVHTjJA_K80HdvzHtga5XRwStdlK7sYCbYRxRhGbV/pub?gid=1674961572&single=true&output=csv';
             const LMS_SUPPORT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvkNoYVgY9VQ1IjrVblaFTGHt_gOveQHDXmgQcR0o8uF1M7O7iaJdBp6LQf8_h0pjDS8qGhpc4P08e/pub?gid=1975801635&single=true&output=csv';
 
@@ -243,7 +244,7 @@
                 'batch-reports-section': 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing'
             };
 
-            const dataCache = { overview: null, daily: null, questionRepo: null, accaDaily: null, cfaDaily: null, courseChecks: null, lmsSupport: null };
+            const dataCache = { overview: null, daily: null, questionRepo: null, accaDaily: null, cfaDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null };
             let courseChecksChart = null;
             let accaPieChart = null, accaLineChart = null, cfaPieChart = null, cfaLineChart = null;
 
@@ -298,6 +299,26 @@
                     }
                 });
                 return metrics;
+            };
+
+            // Custom parser for the ACCA Split data sheet
+            const parseAccaSplitCSV = (csv) => {
+                if (!csv) return null;
+                const lines = csv.replace(/\r/g, '').split('\n');
+                const getValue = (line, col) => {
+                    if (lines.length > line) {
+                        const parts = lines[line].split(',');
+                        if (parts.length > col) return parts[col].trim().replace(/"/g, '');
+                    }
+                    return 'N/A';
+                };
+                return {
+                    subjectiveCount: getValue(0, 4),      // E1
+                    subjectivePercent: getValue(1, 4),   // E2
+                    nonSubjectiveCount: getValue(2, 4),  // E3
+                    nonSubjectivePercent: getValue(3, 4),// E4
+                    totalQuestions: getValue(4, 4)       // E5
+                };
             };
 
             const fetchAndParseData = async (url, parser = parseCSV, retries = 3, delay = 1000) => {
@@ -678,8 +699,8 @@
                 });
             };
 
-            const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData) => {
-                if (!summaryData || !accaDailyData || !cfaDailyData) {
+            const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData, accaSplitData) => {
+                if (!summaryData || !accaDailyData || !cfaDailyData || !accaSplitData) {
                     showError(container, "Could not load all necessary Question Repository data. Please try refreshing.");
                     return;
                 }
@@ -773,6 +794,41 @@
                                    </div>
                                    <div class="min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
                                </div>
+                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                    <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div class="bg-black/10 p-6 rounded-2xl border border-white/10">
+                                            <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
+                                            <div class="flex justify-around items-center">
+                                                <div class="text-center">
+                                                    <div class="text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
+                                                    <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
+                                                    <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-black/10 p-6 rounded-2xl border border-white/10">
+                                            <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
+                                            <div class="flex justify-around items-center">
+                                                <div class="text-center">
+                                                    <div class="text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
+                                                    <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
+                                                    <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-black/10 p-6 rounded-2xl border border-white/10 mt-8 flex justify-center items-center gap-6">
+                                        <h3 class="text-2xl font-bold">Total Questions</h3>
+                                        <div class="text-5xl font-bold text-green-500">${accaSplitData.totalQuestions}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -929,13 +985,18 @@
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'nearest',
+                                axis: 'x',
+                                intersect: false
+                            },
                             plugins: {
                                 legend: { display: false },
-                                // FIX: Updated tooltip for precise, on-point interaction and intelligent positioning.
+                                // FIX: Updated tooltip for precise positioning and single-value display
                                 tooltip: { 
                                     enabled: true, 
-                                    mode: 'nearest',
-                                    intersect: true,
+                                    mode: 'index',
+                                    intersect: false,
                                     position: 'nearest',
                                     backgroundColor: 'rgba(29, 29, 31, 0.95)',
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -951,7 +1012,6 @@
                                     caretPadding: 10,
                                     callbacks: {
                                         title: function(tooltipItems) {
-                                            if (!tooltipItems.length) return '';
                                             return tooltipItems[0].label;
                                         },
                                         label: function(context) {
@@ -1248,25 +1308,27 @@
                     }
                 });
 
-                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily;
+                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily || !dataCache.accaSplit;
                 if (needsFetch) {
                     showLoading(questionRepoSection);
-                    const [summaryData, accaDailyData, cfaDailyData] = await Promise.all([
+                    const [summaryData, accaDailyData, cfaDailyData, accaSplitData] = await Promise.all([
                         fetchAndParseData(QUESTION_REPO_URL),
                         fetchAndParseData(ACCA_DAILY_URL),
-                        fetchAndParseData(CFA_DAILY_URL)
+                        fetchAndParseData(CFA_DAILY_URL),
+                        fetchAndParseData(ACCA_SPLIT_URL, parseAccaSplitCSV)
                     ]);
 
-                    if (summaryData && accaDailyData && cfaDailyData) {
+                    if (summaryData && accaDailyData && cfaDailyData && accaSplitData) {
                         dataCache.questionRepo = summaryData;
                         dataCache.accaDaily = accaDailyData;
                         dataCache.cfaDaily = cfaDailyData;
-                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData);
+                        dataCache.accaSplit = accaSplitData;
+                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData, accaSplitData);
                     } else {
                         showError(questionRepoSection, "Failed to fetch one or more data sources. Please try again.");
                     }
                 } else {
-                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily);
+                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.accaSplit);
                 }
                 switchQrfTab('acca');
             };
@@ -1325,6 +1387,7 @@
                     dataCache.questionRepo = null; // Force refetch
                     dataCache.accaDaily = null;
                     dataCache.cfaDaily = null;
+                    dataCache.accaSplit = null;
                     showQuestionRepo();
                     return;
                 }
@@ -1381,7 +1444,7 @@
                     renderCourseChecksPage(document.getElementById('course-checks-section'), dataCache.courseChecks);
                 }
                 if (activeSectionId === 'question-repo-section' && dataCache.questionRepo) {
-                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily);
+                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.accaSplit);
                 }
             });
             
