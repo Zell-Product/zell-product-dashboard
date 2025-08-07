@@ -325,7 +325,7 @@
                 });
                 return metrics;
             };
-            
+
             const parseAccaSplitCSV = (csv) => {
                 if (!csv) return null;
                 const lines = csv.replace(/\r/g, '').split('\n');
@@ -1015,8 +1015,8 @@
                                 legend: { display: false },
                                 tooltip: { 
                                     enabled: true, 
-                                    mode: 'nearest',
-                                    intersect: true,
+                                    mode: 'index',
+                                    intersect: false,
                                     position: 'nearest',
                                     backgroundColor: 'rgba(29, 29, 31, 0.95)',
                                     borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -1032,7 +1032,6 @@
                                     caretPadding: 10,
                                     callbacks: {
                                         title: function(tooltipItems) {
-                                            if (!tooltipItems.length) return '';
                                             return tooltipItems[0].label;
                                         },
                                         label: function(context) {
@@ -1080,8 +1079,7 @@
                             button.onclick = () => {
                                 const isVisible = chartInstance.isDatasetVisible(index);
                                 chartInstance.setDatasetVisibility(index, !isVisible);
-
-                                // Logic for smart axis scaling
+                                
                                 const { datasets } = chartInstance.data;
                                 const approvedVisible = chartInstance.isDatasetVisible(1);
                                 const draftVisible = chartInstance.isDatasetVisible(0);
@@ -1091,24 +1089,28 @@
 
                                 if (approvedVisible && !draftVisible) {
                                     const data = datasets[1].data;
-                                    const dataMin = Math.min(...data);
-                                    const dataMax = Math.max(...data);
-                                    if (dataMax - dataMin < 100) {
-                                        const mid = (dataMax + dataMin) / 2;
-                                        chartInstance.options.scales.y.min = Math.floor(mid - 50);
-                                        chartInstance.options.scales.y.max = Math.ceil(mid + 50);
+                                    if (data.length > 0) {
+                                        const dataMin = Math.min(...data);
+                                        const dataMax = Math.max(...data);
+                                        if (dataMax - dataMin < 100) {
+                                            const mid = (dataMax + dataMin) / 2;
+                                            chartInstance.options.scales.y.min = Math.floor(mid - 50);
+                                            chartInstance.options.scales.y.max = Math.ceil(mid + 50);
+                                        }
                                     }
                                 } else if (draftVisible && !approvedVisible) {
-                                     const data = datasets[0].data;
-                                    const dataMin = Math.min(...data);
-                                    const dataMax = Math.max(...data);
-                                    if (dataMax - dataMin < 50) {
-                                        const mid = (dataMax + dataMin) / 2;
-                                        chartInstance.options.scales.y.min = Math.floor(mid - 25);
-                                        chartInstance.options.scales.y.max = Math.ceil(mid + 25);
+                                    const data = datasets[0].data;
+                                    if (data.length > 0) {
+                                        const dataMin = Math.min(...data);
+                                        const dataMax = Math.max(...data);
+                                        if (dataMax - dataMin < 50) {
+                                            const mid = (dataMax + dataMin) / 2;
+                                            chartInstance.options.scales.y.min = Math.max(0, Math.floor(mid - 25));
+                                            chartInstance.options.scales.y.max = Math.ceil(mid + 25);
+                                        }
                                     }
                                 }
-
+                                
                                 chartInstance.update();
                                 button.classList.toggle('opacity-40', isVisible);
                             };
@@ -1536,10 +1538,9 @@
             });
 
             initialLoad();
-            // FIX: Refresh interval changed from 5 minutes to 4 hours.
             setInterval(() => {
                 refreshData().then(updateLastUpdatedTime);
-            }, 14400000); // 4 hours in milliseconds
+            }, 14400000);
         });
     </script>
 </body>
