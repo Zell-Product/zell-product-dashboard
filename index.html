@@ -694,20 +694,35 @@
 
                     const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
                     
-                    const getSummaryValue = (header, subHeader) => {
-                        const row = summaryData.parsed.find(r => r['Sub-Box Header'] === subHeader && r['Data Header'] === header);
+                    const getSummaryValue = (header, subHeader, data = summaryData) => {
+                        const row = data.parsed.find(r => r['Sub-Box Header'] === subHeader && r['Data Header'] === header);
                         return row ? row.Value : '0';
                     };
                     
+                    const getCellValueByHeader = (data, subHeader, targetHeader, columnIndex) => {
+                        const rowIndex = data.raw.findIndex(row => row.includes(subHeader));
+                        if (rowIndex === -1) return '0';
+                        const targetRow = data.raw.find((row, index) => index > rowIndex && row.includes(targetHeader));
+                        return targetRow ? targetRow.split(',')[columnIndex] : '0';
+                    };
+
                     const accaDraft = parseNumericValue(getSummaryValue('Draft', 'ACCA'));
-                    const accaInReview = parseNumericValue(getSummaryValue('In Review', 'ACCA'));
+                    const accaInReview = parseNumericValue(getCellValueByHeader(summaryData, 'ACCA', 'In Review', 4));
                     const accaApproved = parseNumericValue(getSummaryValue('Approved', 'ACCA'));
                     const accaCompletion = getSummaryValue('Completion %', 'ACCA');
-
+                    
                     const cfaDraft = parseNumericValue(getSummaryValue('Draft', 'CFA'));
-                    const cfaInReview = parseNumericValue(getSummaryValue('In Review', 'CFA'));
+                    const cfaInReview = parseNumericValue(getCellValueByHeader(summaryData, 'CFA', 'In Review', 4));
                     const cfaApproved = parseNumericValue(getSummaryValue('Approved', 'CFA'));
                     const cfaCompletion = getSummaryValue('Completion %', 'CFA');
+
+                    const accaSplitData = {
+                        subjectiveCount: getSummaryValue('Count', 'ACCA Question Split'),
+                        subjectivePercent: getSummaryValue('Percentage', 'ACCA Question Split'),
+                        nonSubjectiveCount: getSummaryValue('Count', 'ACCA Question Split Non-Subjective'),
+                        nonSubjectivePercent: getSummaryValue('Percentage', 'ACCA Question Split Non-Subjective'),
+                        total: getSummaryValue('Total Questions', 'ACCA Question Split')
+                    };
 
                     const overallData = {
                         draft: getSummaryValue('Draft', 'Overall'),
@@ -777,21 +792,21 @@
                                          <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
                                              <h4 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4">Subjective Questions</h4>
                                              <div class="flex justify-around items-center">
-                                                 <div><div class="text-3xl font-bold">${getSummaryValue('Count', 'ACCA Question Split')}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
-                                                 <div><div class="text-3xl font-bold">${getSummaryValue('Percentage', 'ACCA Question Split')}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
+                                                 <div><div class="text-3xl font-bold">${accaSplitData.subjectiveCount}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
+                                                 <div><div class="text-3xl font-bold">${accaSplitData.subjectivePercent}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
                                              </div>
                                          </div>
                                          <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
                                              <h4 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4">Non-Subjective Questions</h4>
                                              <div class="flex justify-around items-center">
-                                                <div><div class="text-3xl font-bold">${getSummaryValue('Count', 'ACCA Question Split Non-Subjective')}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
-                                                <div><div class="text-3xl font-bold">${getSummaryValue('Percentage', 'ACCA Question Split Non-Subjective')}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
+                                                <div><div class="text-3xl font-bold">${accaSplitData.nonSubjectiveCount}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
+                                                <div><div class="text-3xl font-bold">${accaSplitData.nonSubjectivePercent}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
                                              </div>
                                          </div>
                                      </div>
                                      <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
                                          <h4 class="text-lg font-semibold text-[var(--text-muted-color)]">Total Questions</h4>
-                                         <div class="text-4xl font-bold mt-2">${getSummaryValue('Total Questions', 'ACCA Question Split')}</div>
+                                         <div class="text-4xl font-bold mt-2">${accaSplitData.total}</div>
                                      </div>
                                  </div>
                                 </div>
@@ -837,7 +852,7 @@
                                 </div>
                             </div>
                             <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
-                                <div class="bg-black/10 p-6 md:p-8 border border-white/10 rounded-2xl">
+                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl">
                                     <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
                                         <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
                                     </div>
@@ -917,26 +932,34 @@
                     accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
                     cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
                     
-                    const parseAccaDate = (dateStr) => {
-                        const parts = dateStr.split('/');
-                        if (parts.length === 3) {
-                            const day = parseInt(parts[0], 10);
-                            const month = parseInt(parts[1], 10) - 1; 
-                            let year = parseInt(parts[2], 10);
-                            if (year < 100) year += 2000;
-                            return new Date(year, month, day);
+                    const parseAndValidateDate = (dateStr) => {
+                        const parts = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+                        if (!parts) return null;
+                        
+                        let day, month, year;
+                        // Heuristic to guess DD/MM/YY vs MM/DD/YY. If first part > 12, it must be the day.
+                        if (parseInt(parts[1], 10) > 12) {
+                            day = parseInt(parts[1], 10);
+                            month = parseInt(parts[2], 10) - 1;
+                        } else { // Assume MM/DD/YY for ambiguity, can be adjusted
+                            month = parseInt(parts[1], 10) - 1;
+                            day = parseInt(parts[2], 10);
                         }
-                        return new Date(dateStr); 
+                        year = parseInt(parts[3], 10);
+                        if (year < 100) year += 2000;
+
+                        const date = new Date(year, month, day);
+                        // Final check if the constructed date is valid
+                        if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                            return date;
+                        }
+                        return null;
                     };
 
-                    const renderLineChart = (canvasId, dailyData, days, dateParser) => {
-                        const today = new Date();
-                        today.setHours(23, 59, 59, 999); 
-
+                    const renderLineChart = (canvasId, dailyData, days) => {
                         const chartData = dailyData.parsed
-                            .filter(d => d.Date && (d.Draft || d.Approved))
-                            .map(d => ({...d, parsedDate: dateParser(d.Date)}))
-                            .filter(d => !isNaN(d.parsedDate.getTime()) && d.parsedDate <= today)
+                            .map(d => ({...d, parsedDate: parseAndValidateDate(d.Date) }))
+                            .filter(d => d.parsedDate && (d.Draft || d.Approved))
                             .slice(-days);
 
                         const ctx = document.getElementById(canvasId).getContext('2d');
@@ -972,7 +995,7 @@
                         });
                     };
                     
-                    const setupSubPage = (chartType, dailyData, dateParser) => {
+                    const setupSubPage = (chartType, dailyData) => {
                         const canvasId = `${chartType}LineChartCanvas`;
                         const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
                         const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
@@ -981,7 +1004,7 @@
 
                         const updateChart = (days) => {
                             if (chartInstance) chartInstance.destroy();
-                            chartInstance = renderLineChart(canvasId, dailyData, days, dateParser);
+                            chartInstance = renderLineChart(canvasId, dailyData, days);
                             
                             if (chartType === 'acca') accaLineChart = chartInstance;
                             else cfaLineChart = chartInstance;
@@ -1013,8 +1036,8 @@
                             }
                         });
                     };
-                    setupSubPage('acca', accaDailyData, parseAccaDate);
-                    setupSubPage('cfa', cfaDailyData, (d) => new Date(d));
+                    setupSubPage('acca', accaDailyData);
+                    setupSubPage('cfa', cfaDailyData);
 
                     const qrfNav = document.getElementById('qrf-navigation-bar');
                     const qrfContentSections = document.querySelectorAll('.qrf-content-section');
