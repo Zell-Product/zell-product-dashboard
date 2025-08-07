@@ -733,8 +733,7 @@
                     };
 
                     container.innerHTML = `
-                        <div id="qrf-page-container" class="space-y-4 pt-20">
-                            <div class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-4">
+                        <div id="qrf-page-container" class="space-y-4 pt-20"> <div class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-4">
                                 <nav id="qrf-navigation-bar" class="bg-[var(--card-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-2">
                                     <button id="qrf-back-button" class="bg-transparent hover:bg-white/10 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300">
                                         <i class="fas fa-arrow-left text-lg"></i>
@@ -746,7 +745,7 @@
                             </div>
 
                             <div id="acca-qrf-content" class="qrf-content-section space-y-12">
-                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                <div class="bg-transparent backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                 <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                                     <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
@@ -756,4 +755,687 @@
                                                 <span class="text-2xl font-semibold text-[var(--text-color)]">${accaDraft.toLocaleString()}</span>
                                             </div>
                                             <div class="flex items-center justify-between">
-                                                <div
+                                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-amber-500"></div><span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span></div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${accaInReview.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-green-500"></div><span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span></div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
+                                            </div>
+                                    </div>
+                                    <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(accaCompletion)}">
+                                        <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaCompletion))} tracking-tighter">${accaCompletion || 'N/A'}</div>
+                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                                        <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                        <div class="flex items-center gap-2 md:gap-4">
+                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                            <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="acca">
+                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
+                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
+                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
+                                            </div>
+                                        </div>
+                                        <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
+                                    </div>
+                                    <div class="min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
+                                </div>
+                                <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                                     <h3 class="text-2xl font-bold text-center text-[var(--text-color)] mb-6">ACCA Questions Split</h3>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                                         <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
+                                             <h4 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4">Subjective Questions</h4>
+                                             <div class="flex justify-around items-center">
+                                                 <div><div class="text-3xl font-bold">${accaSplitData.subjectiveCount}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
+                                                 <div><div class="text-3xl font-bold">${accaSplitData.subjectivePercent}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
+                                             </div>
+                                         </div>
+                                         <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
+                                             <h4 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4">Non-Subjective Questions</h4>
+                                             <div class="flex justify-around items-center">
+                                                <div><div class="text-3xl font-bold">${accaSplitData.nonSubjectiveCount}</div><div class="text-xs text-[var(--text-muted-color)]">Count</div></div>
+                                                <div><div class="text-3xl font-bold">${accaSplitData.nonSubjectivePercent}</div><div class="text-xs text-[var(--text-muted-color)]">Percentage</div></div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="bg-black/20 p-4 rounded-xl border border-white/10 text-center">
+                                         <h4 class="text-lg font-semibold text-[var(--text-muted-color)]">Total Questions</h4>
+                                         <div class="text-4xl font-bold mt-2">${accaSplitData.total}</div>
+                                     </div>
+                                 </div>
+                                </div>
+                            </div>
+                            <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden pt-4">
+                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                   <h2 class="text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
+                                   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                                       <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="cfaPieChartCanvas"></canvas></div>
+                                       <div class="flex flex-col justify-center space-y-4 bg-black/10 p-4 rounded-2xl border border-white/10">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-red-500"></div><span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span></div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaDraft.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-amber-500"></div><span class="text-lg font-medium text-[var(--text-muted-color)]">In Review</span></div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaInReview.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-green-500"></div><span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span></div>
+                                                <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
+                                            </div>
+                                       </div>
+                                       <div class="qrf-scorecard text-center p-6 bg-black/10 rounded-3xl border border-white/5" data-color-state="${getCompletionColorState(cfaCompletion)}">
+                                           <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaCompletion))} tracking-tighter">${cfaCompletion || 'N/A'}</div>
+                                           <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                       </div>
+                                   </div>
+                                   <div class="bg-black/10 p-6 border border-white/10 rounded-2xl">
+                                       <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                           <div class="flex items-center gap-2 md:gap-4">
+                                               <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                               <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="cfa">
+                                                   <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">7 Days</button>
+                                                   <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors active">14 Days</button>
+                                                   <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full transition-colors">30 Days</button>
+                                               </div>
+                                           </div>
+                                           <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
+                                       </div>
+                                       <div class="min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
+                                   </div>
+                                </div>
+                            </div>
+                            <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden pt-4">
+                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl">
+                                    <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
+                                        <h3 class="text-3xl font-bold text-center text-[var(--text-color)]">Overall</h3>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                        <div class="space-y-4">
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
+                                            </div>
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
+                                            </div>
+                                            <div class="qrf-scorecard bg-black/20 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                                <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
+                                                <span class="value text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                        <div class="qrf-scorecard bg-black/20 p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
+                                            <div class="value text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
+                                            <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    const isLightMode = document.body.classList.contains('light-mode');
+                    const bodyFont = "'Inter', sans-serif";
+                    const textColor = isLightMode ? '#1d1d1f' : '#f5f5f7';
+                    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+                    const tickColor = isLightMode ? '#515154' : '#a1a1a6';
+
+                    const renderPieChart = (canvasId, data, total) => {
+                        const ctx = document.getElementById(canvasId)?.getContext('2d');
+                        if (!ctx) return null;
+                        return new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Draft', 'In Review', 'Approved'],
+                                datasets: [{ data: data, backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false, cutout: '70%',
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: true, bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
+                                },
+                                animation: { animateScale: true, animateRotate: true }
+                            },
+                            plugins: [{
+                                id: 'doughnutLabel',
+                                beforeDraw: (chart) => {
+                                    const { width, height, ctx } = chart;
+                                    ctx.restore();
+                                    const fontSize = (height / 150).toFixed(2);
+                                    ctx.font = `bold ${fontSize}em ${bodyFont}`;
+                                    ctx.textBaseline = 'middle';
+                                    const text = total.toLocaleString();
+                                    const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                                    const textY = height / 2.2;
+                                    ctx.fillStyle = textColor;
+                                    ctx.fillText(text, textX, textY);
+                                    
+                                    const subText = 'Total';
+                                    const subFontSize = (height / 280).toFixed(2);
+                                    ctx.font = `${subFontSize}em ${bodyFont}`;
+                                    const subTextX = Math.round((width - ctx.measureText(subText).width) / 2);
+                                    const subTextY = height / 1.7;
+                                    ctx.fillStyle = tickColor;
+                                    ctx.fillText(subText, subTextX, subTextY);
+                                    ctx.save();
+                                }
+                            }]
+                        });
+                    };
+                    accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaInReview, accaApproved], accaDraft + accaInReview + accaApproved);
+                    cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaInReview, cfaApproved], cfaDraft + cfaInReview + cfaApproved);
+                    
+                    const parseAndValidateDate = (dateStr) => {
+                        const parts = String(dateStr).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+                        if (!parts) return null;
+                        let day, month, year;
+                        if (parseInt(parts[1], 10) > 12) { // DD/MM/YY format
+                            day = parseInt(parts[1], 10);
+                            month = parseInt(parts[2], 10) - 1;
+                        } else { // Assume MM/DD/YY for ambiguity
+                            month = parseInt(parts[1], 10) - 1;
+                            day = parseInt(parts[2], 10);
+                        }
+                        year = parseInt(parts[3], 10);
+                        if (year < 100) year += 2000;
+                        const date = new Date(year, month, day);
+                        if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                            return date;
+                        }
+                        return null;
+                    };
+
+                    const renderLineChart = (canvasId, dailyData, days) => {
+                        const chartData = dailyData.parsed
+                            .map(d => ({...d, parsedDate: parseAndValidateDate(d.Date) }))
+                            .filter(d => d.parsedDate && (parseNumericValue(d.Draft) > 0 || parseNumericValue(d.Approved) > 0))
+                            .slice(-days);
+
+                        const ctx = document.getElementById(canvasId)?.getContext('2d');
+                        if (!ctx) return null;
+
+                        return new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: chartData.map(d => d.parsedDate),
+                                datasets: [
+                                    { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true },
+                                    { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { 
+                                        enabled: true, mode: 'index', intersect: false, 
+                                        bodyFont: { family: bodyFont }, titleFont: { family: bodyFont }, 
+                                        backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8,
+                                        callbacks: {
+                                            title: function(tooltipItems) {
+                                                return new Date(tooltipItems[0].parsed.x).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: { 
+                                    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
+                                    x: { type: 'time', time: { unit: 'day', displayFormats: { day: 'MMM d' } }, grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont } } } 
+                                }
+                            }
+                        });
+                    };
+                    
+                    const setupSubPage = (chartType, dailyData) => {
+                        const canvasId = `${chartType}LineChartCanvas`;
+                        const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
+                        const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
+                        
+                        let chartInstance;
+
+                        const updateChart = (days) => {
+                            if (chartInstance) chartInstance.destroy();
+                            chartInstance = renderLineChart(canvasId, dailyData, days);
+                            
+                            if (!chartInstance) return;
+
+                            if (chartType === 'acca') accaLineChart = chartInstance;
+                            else cfaLineChart = chartInstance;
+
+                            legendContainer.innerHTML = '';
+                            chartInstance.data.datasets.forEach((dataset, index) => {
+                                const button = document.createElement('button');
+                                button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-white/5 backdrop-blur-sm border border-white/10`;
+                                button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
+                                
+                                button.onclick = () => {
+                                    chartInstance.toggleDataVisibility(index);
+                                    chartInstance.update();
+                                    button.classList.toggle('opacity-40', !chartInstance.isDatasetVisible(index));
+                                };
+                                legendContainer.appendChild(button);
+                            });
+                        }
+
+                        timelineToggle.querySelector('[data-days="14"]').classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        updateChart(14);
+
+                        timelineToggle.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('timeline-btn')) {
+                                const days = parseInt(e.target.dataset.days);
+                                timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => btn.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]'));
+                                e.target.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                                updateChart(days);
+                            }
+                        });
+                    };
+                    setupSubPage('acca', accaDailyData);
+                    setupSubPage('cfa', cfaDailyData);
+
+                    const qrfNav = document.getElementById('qrf-navigation-bar');
+                    const qrfContentSections = document.querySelectorAll('.qrf-content-section');
+                    const qrfNavItems = document.querySelectorAll('.qrf-nav-item');
+                    const qrfBackButton = document.getElementById('qrf-back-button');
+
+                    const switchQrfTab = (tabId) => {
+                        qrfContentSections.forEach(sec => sec.classList.add('hidden'));
+                        document.getElementById(`${tabId}-qrf-content`).classList.remove('hidden');
+                        
+                        qrfNavItems.forEach(item => {
+                            item.classList.remove('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                            if(item.dataset.qrfTab === tabId) {
+                            item.classList.add('active', 'bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                            }
+                        });
+                    };
+                    
+                    qrfNav.addEventListener('click', (e) => {
+                        const button = e.target.closest('button');
+                        if (button && button.dataset.qrfTab) {
+                           switchQrfTab(button.dataset.qrfTab);
+                        } else if (button && button.id === 'qrf-back-button') {
+                           showReportsList();
+                        }
+                    });
+                    
+                    switchQrfTab('acca');
+                } catch (error) {
+                    console.error("Error rendering Question Repository page:", error);
+                    showError(container, "An unexpected error occurred while rendering the page. Please check the console for details.");
+                }
+            };
+
+            const renderBatchReportsPage = (container, data) => {
+                if (!data || !data.parsed) { showError(container, "Could not load Batch Reports data."); return; }
+                
+                const batchSectionData = data.parsed.filter(row => row['Top-Level Box'] && row['Top-Level Box'].trim() === 'Batches Information');
+                const generalData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'General');
+                const performanceData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'Performance Data');
+
+                const createMetricCard = (metric, isPerformance = false) => {
+                    const colorState = isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
+                    const colorClass = isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
+                    return `<div class="metric-card bg-black/5 p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center space-y-2" data-color-state="${colorState}">
+                        <i class="${getIconForMetric(metric['Data Header'])} text-3xl text-[var(--icon-color)] opacity-80"></i>
+                        <div class="text-4xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
+                        <div class="text-sm font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                    </div>`;
+                };
+
+                container.innerHTML = `
+                    <div class="space-y-10">
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                ${generalData.map(metric => createMetricCard(metric, false)).join('')}
+                            </div>
+                        </div>
+                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                ${performanceData.map(metric => createMetricCard(metric, true)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const renderAskADoubtPage = (container, data) => {
+                if (!data) { showError(container, "Could not load Support data."); return; }
+                
+                const metrics = data; 
+                
+                const getMetricValue = (key) => metrics[key] || 'N/A';
+                const openDoubts = parseInt(getMetricValue('Open Doubts'), 10);
+                const openTickets = parseInt(getMetricValue('Open Support Tickets'), 10);
+
+                const getConditionalColor = (value) => {
+                    if (isNaN(value)) return 'text-[var(--text-color)]';
+                    return value >= 10 ? 'text-red-500' : 'text-green-500';
+                };
+                
+                const getConditionalIcon = (value, highIcon, lowIcon) => {
+                    if (isNaN(value)) return highIcon;
+                    return value >= 10 ? highIcon : lowIcon;
+                };
+                
+                const getConditionalState = (value) => {
+                     if (isNaN(value)) return 'neutral';
+                    return value >= 10 ? 'bad' : 'good';
+                }
+
+                const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
+                    <div class="metric-card flex-grow flex-shrink-0 bg-black/5 p-4 border border-white/10 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl" data-color-state="${state}">
+                        <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
+                        <div class="metric-value text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
+                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
+                             <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                 ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
+                                 ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
+                             </div>
+                         </div>
+                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
+                             <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                 ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
+                                 ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
+                             </div>
+                         </div>
+                     </div>
+                `;
+            };
+            
+            const renderReportsPage = (container) => {
+                const reports = [
+                    { title: 'Daily Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
+                    { title: 'LMS Checks', icon: 'fas fa-clipboard-check', id: 'show-course-checks-btn' },
+                    { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn' },
+                    { title: 'Ask a Doubt + LMS Tickets', icon: 'fas fa-headset', id: 'show-ask-a-doubt-btn' },
+                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', id: 'show-batch-reports-btn' },
+                ];
+                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<div class="relative z-10 report-content flex flex-col items-center justify-center"><i class="${report.icon} text-4xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-lg font-semibold">${report.title}</span></div><i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
+            };
+
+            const setPageHeader = (title, sheetUrl) => {
+                const qrfSection = document.getElementById('question-repo-section');
+                const isQrfActive = !qrfSection.classList.contains('hidden');
+
+                mainHeader.classList.toggle('hidden', isQrfActive);
+                pageHeader.classList.add('hidden');
+
+                if (title && !isQrfActive) {
+                    pageHeader.classList.remove('hidden');
+                    pageHeader.classList.add('flex');
+                    pageHeaderTitle.textContent = title;
+                    
+                    if (sheetUrl) {
+                        openSheetButton.href = sheetUrl;
+                        openSheetButton.classList.remove('hidden');
+                    } else {
+                        openSheetButton.classList.add('hidden');
+                    }
+                }
+            };
+            
+            const switchTab = async (tabId) => {
+                setPageHeader(null);
+                navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const activeContent = document.getElementById(`${tabId}-section`);
+                activeContent.classList.remove('hidden');
+                if (tabId === 'overview' && !dataCache.overview) {
+                    showLoading(activeContent);
+                    const newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) {
+                        dataCache.overview = newData;
+                        renderOverviewPage(activeContent, dataCache.overview);
+                    } else {
+                        showError(activeContent, "Failed to fetch overview data. Please try again.");
+                    }
+                } else if (tabId === 'overview') {
+                    renderOverviewPage(activeContent, dataCache.overview);
+                }
+            };
+
+            const showDailyMetrics = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const dailySection = document.getElementById('daily-section');
+                dailySection.classList.remove('hidden');
+                setPageHeader('Daily Metrics');
+                if (!dataCache.daily) {
+                    showLoading(dailySection);
+                    const newData = await fetchAndParseData(DAILY_METRICS_URL);
+                    if (newData) {
+                        dataCache.daily = newData;
+                        renderDailyMetricsPage(dailySection, dataCache.daily);
+                    } else {
+                        showError(dailySection, "Failed to fetch daily metrics data. Please try again.");
+                    }
+                } else {
+                    renderDailyMetricsPage(dailySection, dataCache.daily);
+                }
+            };
+
+            const showCourseChecksPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const courseChecksSection = document.getElementById('course-checks-section');
+                courseChecksSection.classList.remove('hidden');
+                setPageHeader('LMS Checks', SHEET_URLS['course-checks-section']);
+                if (!dataCache.courseChecks) {
+                    showLoading(courseChecksSection);
+                    const newData = await fetchAndParseData(COURSE_CHECKS_URL);
+                     if (newData) {
+                        dataCache.courseChecks = newData;
+                        renderCourseChecksPage(courseChecksSection, dataCache.courseChecks);
+                    } else {
+                        showError(courseChecksSection, "Failed to fetch LMS checks data. Please try again.");
+                    }
+                } else {
+                    renderCourseChecksPage(courseChecksSection, dataCache.courseChecks);
+                }
+            };
+
+            const showQuestionRepo = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const questionRepoSection = document.getElementById('question-repo-section');
+                questionRepoSection.classList.remove('hidden');
+                setPageHeader('Question Repository', SHEET_URLS['question-repo-section']);
+                
+                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily;
+
+                if (needsFetch) {
+                    showLoading(questionRepoSection);
+                    const [summaryData, accaDailyData, cfaDailyData] = await Promise.all([
+                        fetchAndParseData(QUESTION_REPO_URL),
+                        fetchAndParseData(ACCA_DAILY_URL),
+                        fetchAndParseData(CFA_DAILY_URL)
+                    ]);
+
+                    if (summaryData && accaDailyData && cfaDailyData) {
+                        dataCache.questionRepo = summaryData;
+                        dataCache.accaDaily = accaDailyData;
+                        dataCache.cfaDaily = cfaDailyData;
+                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData);
+                    } else {
+                        showError(questionRepoSection, "Failed to fetch one or more data sources. Please try again.");
+                    }
+                } else {
+                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily);
+                }
+            };
+
+            const showBatchReportsPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const batchReportsSection = document.getElementById('batch-reports-section');
+                batchReportsSection.classList.remove('hidden');
+                setPageHeader('Batch Reports', SHEET_URLS['batch-reports-section']);
+                if (!dataCache.overview) {
+                    showLoading(batchReportsSection);
+                    const newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) {
+                        dataCache.overview = newData;
+                        renderBatchReportsPage(batchReportsSection, dataCache.overview);
+                    } else {
+                        showError(batchReportsSection, "Failed to fetch batch reports data. Please try again.");
+                    }
+                } else {
+                    renderBatchReportsPage(batchReportsSection, dataCache.overview);
+                }
+            };
+
+            const showAskADoubtPage = async () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const askADoubtSection = document.getElementById('ask-a-doubt-section');
+                askADoubtSection.classList.remove('hidden');
+                setPageHeader('LMS Support', SHEET_URLS['ask-a-doubt-section']);
+                if (!dataCache.lmsSupport) {
+                    showLoading(askADoubtSection);
+                    const newData = await fetchAndParseData(LMS_SUPPORT_URL, parseSimpleCSV);
+                    if (newData) {
+                        dataCache.lmsSupport = newData;
+                        renderAskADoubtPage(askADoubtSection, dataCache.lmsSupport);
+                    } else {
+                        showError(askADoubtSection, "Failed to fetch LMS support data. Please try again.");
+                    }
+                } else {
+                    renderAskADoubtPage(askADoubtSection, dataCache.lmsSupport);
+                }
+            };
+            
+            const showReportsList = () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                document.getElementById('reports-section').classList.remove('hidden');
+                setPageHeader(null);
+            };
+
+            const refreshData = async () => {
+                const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
+                if (!activeSection) return;
+
+                const sectionId = activeSection.id;
+                showLoading(activeSection);
+                
+                let newData;
+                if (sectionId === 'overview-section') {
+                    newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) { dataCache.overview = newData; renderOverviewPage(activeSection, newData); } 
+                    else { showError(activeSection, "Failed to refresh data."); }
+                } else if (sectionId === 'batch-reports-section') {
+                    newData = await fetchAndParseData(OVERVIEW_URL);
+                    if (newData) { dataCache.overview = newData; renderBatchReportsPage(activeSection, newData); }
+                    else { showError(activeSection, "Failed to refresh data."); }
+                } else if (sectionId === 'ask-a-doubt-section') {
+                    newData = await fetchAndParseData(LMS_SUPPORT_URL, parseSimpleCSV);
+                    if (newData) { dataCache.lmsSupport = newData; renderAskADoubtPage(activeSection, newData); }
+                    else { showError(activeSection, "Failed to refresh data."); }
+                } else if (sectionId === 'daily-section') {
+                    newData = await fetchAndParseData(DAILY_METRICS_URL);
+                    if (newData) { dataCache.daily = newData; renderDailyMetricsPage(activeSection, newData); }
+                    else { showError(activeSection, "Failed to refresh data."); }
+                } else if (sectionId === 'course-checks-section') {
+                    newData = await fetchAndParseData(COURSE_CHECKS_URL);
+                    if (newData) { dataCache.courseChecks = newData; renderCourseChecksPage(activeSection, newData); }
+                    else { showError(activeSection, "Failed to refresh data."); }
+                } else if (sectionId === 'question-repo-section') {
+                    const [summaryData, accaDailyData, cfaDailyData] = await Promise.all([
+                        fetchAndParseData(QUESTION_REPO_URL),
+                        fetchAndParseData(ACCA_DAILY_URL),
+                        fetchAndParseData(CFA_DAILY_URL)
+                    ]);
+                    if (summaryData && accaDailyData && cfaDailyData) {
+                        dataCache.questionRepo = summaryData;
+                        dataCache.accaDaily = accaDailyData;
+                        dataCache.cfaDaily = cfaDailyData;
+                        renderQuestionRepoPage(activeSection, summaryData, accaDailyData, cfaDailyData);
+                    } else {
+                        showError(activeSection, "Failed to refresh data.");
+                    }
+                }
+            };
+            
+            const updateLastUpdatedTime = () => {
+                const now = new Date();
+                const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const formattedTime = now.toLocaleString('en-IN', options);
+                lastUpdatedEl.textContent = `Data last synced at ${formattedTime}.`;
+            };
+
+            const initialLoad = () => {
+                switchTab('overview'); 
+                renderReportsPage(document.getElementById('reports-section'));
+                updateLastUpdatedTime();
+            };
+
+            navButtons.forEach(button => {
+                if (button.dataset.tab) {
+                    button.addEventListener('click', () => switchTab(button.dataset.tab));
+                }
+            });
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                const activeSectionId = Array.from(pageContents).find(s => !s.classList.contains('hidden'))?.id;
+                if (activeSectionId === 'course-checks-section' && dataCache.courseChecks) {
+                    renderCourseChecksPage(document.getElementById('course-checks-section'), dataCache.courseChecks);
+                }
+                if (activeSectionId === 'question-repo-section' && dataCache.questionRepo) {
+                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily);
+                }
+            });
+            
+            headerBackButton.addEventListener('click', showReportsList);
+            
+            mainContent.addEventListener('click', (event) => {
+                const target = event.target.closest('button');
+                if (!target) return;
+
+                if (target.id === 'show-daily-metrics-btn') showDailyMetrics();
+                else if (target.id === 'show-question-repo-btn') showQuestionRepo();
+                else if (target.id === 'show-course-checks-btn') showCourseChecksPage();
+                else if (target.id === 'show-batch-reports-btn') showBatchReportsPage();
+                else if (target.id === 'show-ask-a-doubt-btn') showAskADoubtPage();
+            });
+            
+            const handleRefreshClick = () => {
+                const refreshIcon = refreshButton.querySelector('i');
+                const headerRefreshIcon = headerRefreshButton.querySelector('i');
+                refreshIcon?.classList.add('animate-spin');
+                headerRefreshIcon?.classList.add('animate-spin');
+                refreshData().then(() => {
+                    updateLastUpdatedTime();
+                    refreshIcon?.classList.remove('animate-spin');
+                    headerRefreshIcon?.classList.remove('animate-spin');
+                });
+            };
+
+            refreshButton.addEventListener('click', handleRefreshClick);
+            headerRefreshButton.addEventListener('click', handleRefreshClick);
+            
+            mainContent.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = mainContent;
+                if (scrollHeight - scrollTop <= clientHeight + 50) {
+                    document.getElementById('page-footer').classList.add('visible');
+                } else {
+                    document.getElementById('page-footer').classList.remove('visible');
+                }
+            });
+
+            initialLoad();
+            setInterval(() => {
+                refreshData().then(updateLastUpdatedTime);
+            }, 300000);
+        });
+    </script>
+</body>
+</html>
