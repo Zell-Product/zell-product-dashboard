@@ -147,9 +147,21 @@
             transform: scale(1.1);
         }
         
-        .timeline-toggle .timeline-btn { transition: all 0.2s ease-in-out; }
+        .timeline-toggle {
+            transition: all 0.2s ease-in-out;
+        }
+        .timeline-toggle .timeline-btn { 
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+        }
+        .timeline-toggle .timeline-btn.active {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
         .timeline-toggle .timeline-btn:not(.active):hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
             background-color: rgba(255, 255, 255, 0.1);
         }
         body.light-mode .timeline-toggle .timeline-btn:not(.active):hover {
@@ -174,23 +186,30 @@
         }
         
         @media (max-width: 768px) {
-            .header { padding: 0.5rem; }
-            #main-header, #page-header {
-                max-width: 100%;
+            .header-container {
+                min-height: 3.5rem; /* 56px */
+            }
+             #page-header {
+                gap: 0.5rem; /* 8px */
             }
             #page-header-center-content {
                 flex-grow: 1;
                 min-width: 0;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             #page-header-title {
-                font-size: 1.125rem; /* text-lg */
+                font-size: 1rem; /* text-base */
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+            #main-header-refresh-button {
+                right: 0.5rem;
+            }
             #navigation-bar { width: 100%; max-width: 100%; padding: 0.25rem; }
-            .nav-item { padding: 0.75rem 0.5rem; font-size: 0.875rem; flex-grow: 1; text-align: center; }
-            #theme-toggle { flex-grow: 0; }
+            .nav-item { padding: 0.75rem 0.25rem; font-size: 0.8rem; flex-grow: 1; text-align: center; }
+            #theme-toggle { flex-grow: 0; padding-left: 1rem; padding-right: 1rem; }
             .page-content { padding-top: 1rem; }
             .card-grid { flex-direction: column; }
             .card-grid.force-row { flex-direction: row; }
@@ -199,11 +218,11 @@
     </style>
 </head>
 <body class="h-screen flex flex-col">
-    <header class="w-full z-50 p-4 flex-shrink-0">
-        <div class="w-full max-w-7xl mx-auto flex items-center justify-center h-14 relative">
+    <header class="w-full z-50 p-2 md:p-4 flex-shrink-0">
+        <div class="w-full max-w-7xl mx-auto flex items-center justify-center header-container relative">
             
             <div id="main-header" class="w-full h-full flex items-center justify-center relative">
-                <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1 md:gap-2">
+                <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1">
                     <button data-tab="overview" class="nav-item">Overview</button>
                     <button data-tab="reports" class="nav-item">Reports</button>
                     <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
@@ -217,18 +236,20 @@
                 </div>
             </div>
 
-            <div id="page-header" class="hidden w-full h-full items-center justify-center relative">
-                <button id="header-back-button" class="absolute left-0 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
-                    <i class="fas fa-chevron-left text-xl"></i>
-                </button>
+            <div id="page-header" class="hidden w-full h-full items-center justify-between relative">
+                <div class="flex-shrink-0">
+                    <button id="header-back-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
+                        <i class="fas fa-chevron-left text-xl"></i>
+                    </button>
+                </div>
                 <div id="page-header-center-content" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center px-4 md:px-8 py-3">
                     <h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)]"></h1>
                 </div>
-                <div class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <div class="flex-shrink-0 flex items-center gap-2">
                     <button id="header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10 hidden">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <a id="open-sheet-button" href="#" target="_blank" rel="noopener noreferrer" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] h-12 px-5 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
+                    <a id="open-sheet-button" href="#" target="_blank" rel="noopener noreferrer" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 md:h-12 md:w-auto md:px-5 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                         <span class="mr-2 hidden md:inline">Open Sheet</span>
                         <i class="fas fa-external-link-alt"></i>
                     </a>
@@ -617,7 +638,7 @@
                          <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                              <div class="flex flex-col sm:flex-row justify-center mb-6 items-center gap-2 sm:gap-4">
                                  <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Previous:</h4>
-                                 <div id="timeline-toggle" class="bg-black/20 rounded-full p-1 flex flex-wrap justify-center gap-1">
+                                 <div id="timeline-toggle" class="timeline-toggle bg-black/20 rounded-full p-1 flex flex-wrap justify-center gap-1">
                                      <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
                                      <button data-days="10" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">10 Days</button>
                                      <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
@@ -634,7 +655,7 @@
                 const timelineButtons = container.querySelectorAll('.timeline-btn');
                 timelineButtons.forEach(btn => {
                     if (parseInt(btn.dataset.days) === days) {
-                        btn.classList.add('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        btn.classList.add('active');
                     }
                     btn.addEventListener('click', () => {
                         renderCourseChecksPage(container, data, parseInt(btn.dataset.days));
@@ -811,7 +832,7 @@
                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
                                        <div class="flex items-center gap-2 md:gap-4">
                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="acca">
+                                           <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="acca">
                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
@@ -889,7 +910,7 @@
                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
                                        <div class="flex items-center gap-2 md:gap-4">
                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 flex gap-1" data-chart-type="cfa">
+                                           <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="cfa">
                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
@@ -1057,14 +1078,27 @@
                     });
                 };
                 
+                 const calculateNiceStep = (range, targetSteps) => {
+                    if (range === 0) return 1;
+                    const rawStep = range / targetSteps;
+                    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+                    const residual = rawStep / magnitude;
+                    if (residual > 5) return 10 * magnitude;
+                    if (residual > 2) return 5 * magnitude;
+                    if (residual > 1) return 2 * magnitude;
+                    return magnitude;
+                };
+
                 const setupSubPage = (chartType, dailyData) => {
                     const canvasId = `${chartType}LineChartCanvas`;
                     const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
                     const legendContainer = document.getElementById(`${chartType}-legend-toggle`);
                     
                     let chartInstance;
+                    let currentDays = 14;
 
                     const updateChart = (days) => {
+                        currentDays = days;
                         if (chartInstance) chartInstance.destroy();
                         chartInstance = renderLineChart(canvasId, dailyData, days);
                         
@@ -1089,7 +1123,18 @@
                                 chartInstance.options.scales.y.max = undefined;
                                 chartInstance.options.scales.y.ticks.stepSize = undefined;
 
-                                if (approvedVisible && !draftVisible) {
+                                if (chartType === 'acca' && approvedVisible && !draftVisible && currentDays === 7) {
+                                    const data = datasets[1].data.filter(v => v !== null);
+                                    if (data.length > 0) {
+                                        const dataMin = Math.min(...data);
+                                        const dataMax = Math.max(...data);
+                                        const range = dataMax - dataMin;
+                                        const step = calculateNiceStep(range, 4);
+                                        chartInstance.options.scales.y.ticks.stepSize = step;
+                                        chartInstance.options.scales.y.min = Math.floor(dataMin / step) * step;
+                                        chartInstance.options.scales.y.max = Math.ceil(dataMax / step) * step;
+                                    }
+                                } else if (approvedVisible && !draftVisible) {
                                     const data = datasets[1].data;
                                     if (data.length > 0) {
                                         const dataMin = Math.min(...data);
@@ -1103,7 +1148,7 @@
                                     if (data.length > 0) {
                                         const dataMax = Math.max(...data);
                                         chartInstance.options.scales.y.ticks.stepSize = 50;
-                                        chartInstance.options.scales.y.min = 0; // Always start from zero for Draft
+                                        chartInstance.options.scales.y.min = 0;
                                         chartInstance.options.scales.y.max = Math.ceil(dataMax / 50) * 50;
                                     }
                                 }
@@ -1115,17 +1160,15 @@
                         });
                     }
 
-                    timelineToggle.querySelector('[data-days="14"]').classList.add('active');
-                    updateChart(14);
-
-                    timelineToggle.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('timeline-btn')) {
-                            const days = parseInt(e.target.dataset.days);
-                            timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => btn.classList.remove('active'));
+                    timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            timelineToggle.querySelector('.active')?.classList.remove('active');
                             e.target.classList.add('active');
-                            updateChart(days);
-                        }
+                            updateChart(parseInt(e.target.dataset.days));
+                        });
                     });
+
+                    updateChart(currentDays);
                 };
                 setupSubPage('acca', accaDailyData);
                 setupSubPage('cfa', cfaDailyData);
