@@ -205,7 +205,7 @@
                 left: 50%;
                 transform: translateX(-50%);
                 width: auto;
-                max-width: calc(100% - 10rem);
+                max-width: calc(100% - 9rem); /* Adjusted for better spacing */
             }
             #page-header-title {
                 font-size: 1rem; /* text-base */
@@ -220,6 +220,13 @@
             .card-grid { flex-direction: column; }
             .card-grid.force-row { flex-direction: row; }
             .card-grid .flex-grow { min-width: 0; }
+
+            /* FIX: Reduce padding on QRF nav buttons for mobile */
+            .qrf-nav-item {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -300,7 +307,7 @@
                 'batch-reports-section': 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing'
             };
 
-            const dataCache = { overview: null, daily: null, lmsStats: null, testsCompletion: null, questionRepo: null, accaDaily: null, cfaDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null, lmsTrends: null };
+            const dataCache = { overview: null, daily: null, lmsStats: null, questionRepo: null, accaDaily: null, cfaDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null, lmsTrends: null, batchReports: null };
             let courseChecksChart = null;
             let accaPieChart = null, accaLineChart = null, cfaPieChart = null, cfaLineChart = null;
             let supportLineChart = null;
@@ -330,7 +337,7 @@
                         const obj = {};
                         headers.forEach((header, index) => {
                             let value = values[index] ? values[index].trim().replace(/"/g, '') : '';
-                            if (value === '#NAME?') value = '...';
+                            if (value === '#NAME?' || value === '#REF!') value = '...';
                             obj[header] = value;
                         });
                         data.push(obj);
@@ -348,7 +355,7 @@
                     if (parts.length >= 2) {
                         const key = parts[0].trim().replace(/"/g, '');
                         let value = parts[1].trim().replace(/"/g, '');
-                        if (value === '#NAME?') value = '...';
+                        if (value === '#NAME?' || value === '#REF!') value = '...';
                         if (key) metrics[key] = value;
                     }
                 });
@@ -362,28 +369,46 @@
                     if (lines.length > lineIndex) {
                         const values = lines[lineIndex].match(/(?:"[^"]*"|[^,]+)/g) || [];
                         if (values.length > colIndex) {
-                            return values[colIndex].trim().replace(/"/g, '').replace(/,/g, '');
+                            let value = values[colIndex].trim().replace(/"/g, '').replace(/,/g, '');
+                             if (value === '#NAME?' || value === '#REF!') return '...';
+                            return value;
                         }
                     }
                     return 'N/A';
                 };
+                const totalLearners = getValue(7, 1);
+                const testsTaken = getValue(8, 1);
+
                 return {
-                    totalLearners: parseInt(getValue(7, 1)).toLocaleString(),
-                    testsTaken: parseInt(getValue(8, 1)).toLocaleString(),
+                    totalLearners: !isNaN(parseInt(totalLearners)) ? parseInt(totalLearners).toLocaleString() : totalLearners,
+                    testsTaken: !isNaN(parseInt(testsTaken)) ? parseInt(testsTaken).toLocaleString() : testsTaken,
                     avgTimeSpent: getValue(10, 1)
                 };
             };
 
-            const parseTestsCompletionCSV = (csv) => {
-                if (!csv) return 'N/A';
+            const parseBatchReportsCSV = (csv) => {
+                if (!csv) return null;
                 const lines = csv.replace(/\r/g, '').split('\n');
-                if (lines.length > 5) {
-                    const values = lines[5].split(',');
-                    if (values.length > 1) {
-                        return values[1].trim().replace(/"/g, '');
+                
+                const getValue = (rowIndex, colIndex) => {
+                    if (lines.length > rowIndex) {
+                        const values = lines[rowIndex].split(',');
+                        if (values.length > colIndex) {
+                            let value = values[colIndex].trim().replace(/"/g, '');
+                            if (value === '#NAME?' || value === '#REF!') return '...';
+                            return value;
+                        }
                     }
-                }
-                return 'N/A';
+                    return 'N/A';
+                };
+
+                return {
+                    totalEnrolled: getValue(1, 1),      // Cell B2
+                    liveBatches: getValue(2, 1),      // Cell B3
+                    avgAttendance: getValue(3, 1),      // Cell B4
+                    avgLPS: getValue(4, 1),           // Cell B5
+                    testsCompletion: getValue(5, 1)   // Cell B6
+                };
             };
 
             const parseLmsTrendsCSV = (csv) => {
@@ -420,7 +445,9 @@
                     if (lines.length > lineIndex) {
                         const values = lines[lineIndex].match(/(?:"[^"]*"|[^,]+)/g) || [];
                         if (values.length > colIndex) {
-                            return values[colIndex].trim().replace(/"/g, '');
+                             let value = values[colIndex].trim().replace(/"/g, '');
+                             if (value === '#NAME?' || value === '#REF!') return '...';
+                             return value;
                         }
                     }
                     return 'N/A';
@@ -502,8 +529,11 @@
                 return 'text-[var(--text-color)]';
             };
 
-            const renderOverviewPage = (container, data) => {
+            const renderOverviewPage = async (container, data) => {
                 if (!data || !data.parsed || data.parsed.length === 0) { showError(container, "Could not load overview data. It might be temporarily unavailable. Please try refreshing."); return; }
+                
+                const batchData = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
+
                 const groupedData = data.parsed.reduce((acc, row) => { const topLevel = row['Top-Level Box']; if (topLevel) { if (!acc[topLevel]) acc[topLevel] = []; acc[topLevel].push(row); } return acc; }, {});
                 
                 let content = '';
@@ -513,9 +543,17 @@
                             <i class="${getIconForMetric(title)}"></i><span>${title}</span>
                         </h2>`;
 
-                    if (title.trim() === 'Batches Information') {
-                        const generalData = rows.filter(r => r['Sub-Box Header'] === 'General');
-                        const performanceData = rows.filter(r => r['Sub-Box Header'] === 'Performance Data');
+                    if (title.trim() === 'Batches Information' && batchData) {
+                        const generalData = [
+                            { 'Data Header': 'Total Enrolled Students', 'Value': batchData.totalEnrolled },
+                            { 'Data Header': 'Live Batches Count', 'Value': batchData.liveBatches }
+                        ];
+                        const performanceData = [
+                             { 'Data Header': 'Average Attendance %', 'Value': batchData.avgAttendance },
+                             { 'Data Header': 'Average LPS', 'Value': batchData.avgLPS },
+                             { 'Data Header': 'Tests Completion %', 'Value': batchData.testsCompletion }
+                        ];
+
                         content += `
                             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                                 <div class="lg:col-span-2 sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
@@ -549,7 +587,7 @@
                                 </div>
                             </div>
                         `;
-                    } else {
+                    } else if (title.trim() !== 'Batches Information') {
                         const subBoxes = rows.reduce((acc, row) => { const subHeader = row['Sub-Box Header']; if (subHeader) { if (!acc[subHeader]) acc[subHeader] = []; acc[subHeader].push(row); } return acc; }, {});
                         const chunkedSubBoxes = Object.entries(subBoxes).reduce((resultArray, item, index) => { 
                             const chunkIndex = Math.floor(index/2);
@@ -647,8 +685,8 @@
                     <div class="space-y-8">
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-users"></i>Active Users</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)]">
+                            <div class="flex flex-col sm:flex-row gap-8">
+                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)] flex-1">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Daily Active (DAU)</h4>
                                     <div class="flex justify-center gap-4">
                                         ${createPlatformCard('Web', dau.WEB)}
@@ -656,7 +694,7 @@
                                         ${createPlatformCard('iOS', dau.iOS)}
                                     </div>
                                 </div>
-                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)]">
+                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)] flex-1">
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
                                     <div class="flex justify-center gap-4">
                                         ${createPlatformCard('Web', mau.WEB)}
@@ -761,6 +799,7 @@
                 }
 
                 const isLightMode = document.body.classList.contains('light-mode');
+                const isMobile = window.innerWidth < 768;
                 const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                 const tickColor = isLightMode ? '#515154' : '#a1a1a6';
                 const bodyFont = "'Inter', sans-serif";
@@ -772,9 +811,9 @@
                         datasets: [{
                             label: 'Pass %',
                             data: chartData.map(d => d.value),
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            pointHoverRadius: 8,
+                            borderWidth: isMobile ? 2 : 3,
+                            pointRadius: isMobile ? 3 : 5,
+                            pointHoverRadius: isMobile ? 6 : 8,
                             tension: 0.4,
                             fill: false,
                              segment: {
@@ -833,7 +872,11 @@
                             },
                             x: {
                                 grid: { display: false },
-                                ticks: { color: tickColor, font: { family: bodyFont } }
+                                ticks: { 
+                                    color: tickColor, 
+                                    font: { family: bodyFont },
+                                    maxTicksLimit: isMobile ? 6 : undefined
+                                }
                             }
                         }
                     }
@@ -940,26 +983,26 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
                                             <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
-                                            <div class="flex justify-around items-center">
-                                                <div class="split-box-inner p-4 rounded-xl flex-1 text-center">
-                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
+                                            <div class="flex justify-around items-center gap-4">
+                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
                                                 </div>
-                                                <div class="split-box-inner p-4 rounded-xl flex-1 text-center">
-                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
+                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
-                                            <div class="flex justify-around items-center">
-                                                <div class="split-box-inner p-4 rounded-xl flex-1 text-center">
-                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
+                                            <div class="flex justify-around items-center gap-4">
+                                                 <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
                                                 </div>
-                                                <div class="split-box-inner p-4 rounded-xl flex-1 text-center">
-                                                    <div class="split-value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
+                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
                                                 </div>
                                             </div>
@@ -1100,6 +1143,7 @@
                 const renderLineChart = (canvasId, dailyData, days) => {
                     const today = new Date();
                     today.setHours(23, 59, 59, 999); 
+                    const isMobile = window.innerWidth < 768;
                     
                     const chartData = dailyData.parsed
                         .filter(d => {
@@ -1120,8 +1164,8 @@
                         data: {
                             labels: chartLabels,
                             datasets: [
-                                { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true },
-                                { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, fill: true }
+                                { label: 'Draft', data: chartData.map(d => parseNumericValue(d.Draft)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, borderWidth: isMobile ? 2 : 3, pointRadius: isMobile ? 3 : 4, pointHoverRadius: isMobile ? 6 : 7, fill: true },
+                                { label: 'Approved', data: chartData.map(d => parseNumericValue(d.Approved)), borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.4, borderWidth: isMobile ? 2 : 3, pointRadius: isMobile ? 3 : 4, pointHoverRadius: isMobile ? 6 : 7, fill: true }
                             ]
                         },
                         options: {
@@ -1164,7 +1208,13 @@
                                 y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont } } }, 
                                 x: { 
                                     grid: { display: false }, 
-                                    ticks: { color: tickColor, font: { family: bodyFont } } 
+                                    ticks: { 
+                                        color: tickColor, 
+                                        font: { family: bodyFont },
+                                        maxTicksLimit: isMobile ? 6 : undefined,
+                                        maxRotation: 0,
+                                        minRotation: 0
+                                    } 
                                 } 
                             }
                         }
@@ -1269,22 +1319,19 @@
                 setupSubPage('cfa', cfaDailyData);
             };
 
-            const renderBatchReportsPage = (container, data, testsCompletionData) => {
-                if (!data || !data.parsed) { showError(container, "Could not load Batch Reports data."); return; }
+            const renderBatchReportsPage = (container, data) => {
+                if (!data) { showError(container, "Could not load Batch Reports data."); return; }
                 
-                const batchSectionData = data.parsed.filter(row => row['Top-Level Box'] && row['Top-Level Box'].trim() === 'Batches Information');
-                const generalData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'General');
-                let performanceData = batchSectionData.filter(row => row['Sub-Box Header'] && row['Sub-Box Header'].trim() === 'Performance Data');
+                const generalData = [
+                    { 'Data Header': 'Total Enrolled Students', 'Value': data.totalEnrolled },
+                    { 'Data Header': 'Live Batches Count', 'Value': data.liveBatches }
+                ];
 
-                // Filter out the 'QC Batch Check' metric
-                performanceData = performanceData.filter(metric => metric['Data Header'].trim() !== 'QC Batches Check %');
-
-                if (testsCompletionData) {
-                    performanceData.push({
-                        'Data Header': 'Tests Completion %',
-                        'Value': testsCompletionData
-                    });
-                }
+                const performanceData = [
+                    { 'Data Header': 'Average Attendance %', 'Value': data.avgAttendance },
+                    { 'Data Header': 'Average LPS', 'Value': data.avgLPS },
+                    { 'Data Header': 'Tests Completion %', 'Value': data.testsCompletion }
+                ];
 
                 const createMetricCard = (metric, isPerformance = false) => {
                     const colorState = isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
@@ -1339,7 +1386,7 @@
                 }
 
                 const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
-                    <div class="metric-card flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl" data-color-state="${state}">
+                    <div class="metric-card flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl" data-color-state="${state}">
                         <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
@@ -1348,17 +1395,17 @@
 
                 container.innerHTML = `
                     <div class="space-y-8">
-                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                         <div class="flex flex-col sm:flex-row gap-8 items-start">
+                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
-                                 <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                 <div class="card-grid force-row flex flex-wrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
                                      ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
                                  </div>
                              </div>
-                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6">
+                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
-                                 <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                 <div class="card-grid force-row flex flex-wrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
                                      ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
                                  </div>
@@ -1401,6 +1448,7 @@
                 const renderSupportTrendChart = () => {
                     if (supportLineChart) supportLineChart.destroy();
                     
+                    const isMobile = window.innerWidth < 768;
                     const chartData = trendsData.map(d => ({
                         date: d.date,
                         value: d[currentDataType]
@@ -1429,9 +1477,9 @@
                                 data: dataPoints,
                                 borderColor: pointColor,
                                 backgroundColor: bgColor,
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                pointHoverRadius: 8,
+                                borderWidth: isMobile ? 2 : 3,
+                                pointRadius: isMobile ? 3 : 5,
+                                pointHoverRadius: isMobile ? 6 : 8,
                                 tension: 0.4,
                                 fill: true,
                             }]
@@ -1473,7 +1521,13 @@
                                     type: 'time',
                                     time: { unit: 'day', displayFormats: { day: 'd MMM' } },
                                     grid: { display: false },
-                                    ticks: { color: tickColor, font: { family: bodyFont } }
+                                    ticks: { 
+                                        color: tickColor, 
+                                        font: { family: bodyFont },
+                                        maxTicksLimit: isMobile ? 5 : undefined,
+                                        maxRotation: 0,
+                                        minRotation: 0
+                                    }
                                 }
                             }
                         }
@@ -1707,25 +1761,18 @@
                 setPageHeader('Batch Reports', SHEET_URLS['batch-reports-section']);
                 updateFooterText('batch-reports-section');
 
-                const needsOverviewFetch = !dataCache.overview;
-                const needsTestsFetch = !dataCache.testsCompletion;
-
-                if (needsOverviewFetch || needsTestsFetch) {
+                if (!dataCache.batchReports) {
                     showLoading(batchReportsSection);
-                    const [overviewData, testsData] = await Promise.all([
-                        needsOverviewFetch ? fetchAndParseData(OVERVIEW_URL) : Promise.resolve(dataCache.overview),
-                        needsTestsFetch ? fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseTestsCompletionCSV) : Promise.resolve(dataCache.testsCompletion)
-                    ]);
+                    const batchData = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
 
-                    if (overviewData && testsData) {
-                        dataCache.overview = overviewData;
-                        dataCache.testsCompletion = testsData;
-                        renderBatchReportsPage(batchReportsSection, dataCache.overview, dataCache.testsCompletion);
+                    if (batchData) {
+                        dataCache.batchReports = batchData;
+                        renderBatchReportsPage(batchReportsSection, dataCache.batchReports);
                     } else {
                         showError(batchReportsSection, "Failed to fetch batch reports data. Please try again.");
                     }
                 } else {
-                    renderBatchReportsPage(batchReportsSection, dataCache.overview, dataCache.testsCompletion);
+                    renderBatchReportsPage(batchReportsSection, dataCache.batchReports);
                 }
             };
 
@@ -1777,7 +1824,7 @@
                     await switchTab('overview');
                 } else if (mainTabId === 'reports') {
                     switch(activeSection.id) {
-                        case 'batch-reports-section': dataCache.overview = null; dataCache.testsCompletion = null; await showBatchReportsPage(); break;
+                        case 'batch-reports-section': dataCache.batchReports = null; await showBatchReportsPage(); break;
                         case 'daily-section': dataCache.daily = null; dataCache.lmsStats = null; await showDailyMetrics(); break;
                         case 'course-checks-section': dataCache.courseChecks = null; await showCourseChecksPage(); break;
                         case 'question-repo-section': dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.accaSplit = null; await showQuestionRepo(); break;
