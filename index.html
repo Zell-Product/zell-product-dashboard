@@ -106,6 +106,16 @@
             0%, 100% { opacity: 0; }
             50% { opacity: 1; }
         }
+        
+        /* Access Granted Animation */
+        .access-granted-animation {
+            animation: scale-up-center 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+        }
+        @keyframes scale-up-center {
+          0% { transform: scale(0.5); }
+          100% { transform: scale(1); }
+        }
+
 
         #navigation-bar { max-width: 48rem; }
         .nav-item {
@@ -257,6 +267,13 @@
                 <button id="check-status-btn" class="w-full bg-gray-500 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-transform hover:scale-105 active:scale-95">Check My Status</button>
                  <p id="status-message" class="text-sm mt-4 h-5"></p>
             </div>
+             <div id="granted-view" class="hidden">
+                 <div class="access-granted-animation">
+                    <i class="fas fa-check-circle text-6xl text-green-500 mb-6"></i>
+                    <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Access Granted</h2>
+                    <p class="text-[var(--text-muted-color)]">Welcome to the dashboard.</p>
+                 </div>
+            </div>
         </div>
     </div>
 
@@ -370,6 +387,7 @@
             const checkStatusBtn = document.getElementById('check-status-btn');
             const initialView = document.getElementById('initial-view');
             const pendingView = document.getElementById('pending-view');
+            const grantedView = document.getElementById('granted-view');
             const accessMessage = document.getElementById('access-message');
             const statusMessage = document.getElementById('status-message');
 
@@ -2109,15 +2127,28 @@
                     }
 
                     if (userStatus === 'Allow') {
-                        accessOverlay.style.opacity = '0';
+                        initialView.classList.add('hidden');
+                        pendingView.classList.add('hidden');
+                        grantedView.classList.remove('hidden');
                         setTimeout(() => {
-                            accessOverlay.style.display = 'none';
-                            document.querySelector('header').classList.remove('hidden');
-                            document.querySelector('main').classList.remove('hidden');
-                            initialLoad();
-                        }, 500);
+                            accessOverlay.style.opacity = '0';
+                            setTimeout(() => {
+                                accessOverlay.style.display = 'none';
+                                document.querySelector('header').classList.remove('hidden');
+                                document.querySelector('main').classList.remove('hidden');
+                                initialLoad();
+                            }, 500);
+                        }, 1500);
                     } else if (userStatus === 'Deny') {
                         showMessage(statusMessage, 'Access has been denied.', true);
+                        localStorage.removeItem('dashboardUserEmail');
+                        setTimeout(() => {
+                            pendingView.classList.add('hidden');
+                            initialView.classList.remove('hidden');
+                            statusMessage.textContent = '';
+                            accessMessage.textContent = '';
+                            emailInput.value = '';
+                        }, 2000);
                     } else {
                          showMessage(statusMessage, 'Access is still pending approval.');
                     }
