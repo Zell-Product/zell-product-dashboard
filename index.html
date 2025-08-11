@@ -324,7 +324,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/zelleducation.com/s/AKfycby7N_zRfC7vucHp291Uu3ajfyCZxqF9Mrk-10mxI9zEb_j1kZRs4tCdhQRsjwCZdmzH/exec';
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyydB-DmvAORBsmg8oXrbc9sx4qc6SMYCtEDPvAIG5-68oKuUvgGNHEyMGo2DRvWOQ-/exec';
             const ACCESS_CONTROL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRm9ZKft-lHOoPkFzmITq3tmJRxX_51m_CpuKD7z8yzGQNmqDO88gqC7vesImRixJGAwOc-FHZJzzgJ/pub?output=csv';
 
             const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
@@ -2065,11 +2065,12 @@
                 requestAccessBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
 
                 try {
+                    // Use text/plain to avoid CORS preflight issues
                     const response = await fetch(APPS_SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // Use no-cors for this type of request
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email })
+                        mode: 'cors', 
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: email
                     });
                     
                     localStorage.setItem('dashboardUserEmail', email);
