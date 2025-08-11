@@ -90,6 +90,23 @@
         }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
+        #loading-overlay {
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #loading-text-container span {
+            opacity: 0;
+            animation: fadeInOut 2s ease-in-out infinite;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-muted-color);
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
 
         #navigation-bar { max-width: 48rem; }
         .nav-item {
@@ -203,9 +220,9 @@
             #page-header-center-content {
                 position: absolute;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translateX(-58%); /* Nudge further left for more space on the right */
                 width: auto;
-                max-width: calc(100% - 9rem); /* Adjusted for better spacing */
+                max-width: calc(100% - 11.5rem); /* Add a bit more buffer for right side buttons */
             }
             #page-header-title {
                 font-size: 1rem; /* text-base */
@@ -218,24 +235,24 @@
             #theme-toggle { flex-shrink: 0; padding-left: 1rem; padding-right: 1rem; }
             .page-content { padding-top: 1rem; }
             .card-grid { flex-direction: column; }
-            .card-grid.force-row { flex-direction: row; }
+            .sub-box .card-grid.force-row { flex-direction: row; flex-wrap: nowrap; }
             .card-grid .flex-grow { min-width: 0; }
-
-            /* FIX: Reduce padding on QRF nav buttons for mobile */
-            .qrf-nav-item {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-                font-size: 0.8rem;
-            }
         }
     </style>
 </head>
 <body class="h-screen flex flex-col">
+    <div id="loading-overlay" class="fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-[100]">
+        <div id="loading-text-container">
+            <span>Loading...</span>
+        </div>
+    </div>
+
     <header class="w-full z-50 p-2 md:p-4 flex-shrink-0">
         <div class="w-full max-w-7xl mx-auto flex items-center justify-center header-container relative">
             
             <div id="main-header" class="w-full h-full flex items-center justify-between md:justify-center relative">
-                <div class="w-12 h-12 flex-shrink-0 md:absolute md:left-0"></div>
+                <div class="w-12 h-12 flex-shrink-0 md:absolute md:left-0">
+                </div>
                 <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1">
                     <button data-tab="overview" class="nav-item">Overview</button>
                     <button data-tab="reports" class="nav-item">Reports</button>
@@ -272,7 +289,7 @@
         </div>
     </header>
     
-    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content">
+    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content relative">
         <div id="overview-section" class="page-content pt-8 pb-16"></div>
         <div id="daily-section" class="page-content hidden pt-8 pb-16"></div>
         <div id="reports-section" class="page-content hidden pt-8 pb-16"></div>
@@ -293,11 +310,12 @@
             const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
             const ACCA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=652498444&single=true&output=csv';
             const CFA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1749523224&single=true&output=csv';
+            const OVERALL_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1953325823&single=true&output=csv';
             const ACCA_SPLIT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1011528086&single=true&output=csv';
             const COURSE_CHECKS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTo2_1ighNkAxsTHM-9kCcKcOaMHRdojOqI_5wVVHTjJA_K80HdvzHtga5XRwStdlK7sYCbYRxRhGbV/pub?gid=1674961572&single=true&output=csv';
             const LMS_SUPPORT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvkNoYVgY9VQ1IjrVblaFTGHt_gOveQHDXmgQcR0o8uF1M7O7iaJdBp6LQf8_h0pjDS8qGhpc4P08e/pub?gid=1975801635&single=true&output=csv';
             const LMS_TRENDS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvkNoYVgY9VQ1IjrVblaFTGHt_gOveQHDXmgQcR0o8uF1M7O7iaJdBp6LQf8_h0pjDS8qGhpc4P08e/pub?gid=420305713&single=true&output=csv';
-            const WEEKLY_BATCH_REPORTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRK-8xEDVQIGw4xhw-5jY0NvHYi0OEYB0iJiUERycG8bvwyImE3LnEoEqYgTNBlFNjcsA7VI8-cAU0q/pub?gid=746074448&single=true&output=csv';
+            const WEEKLY_BATCH_REPORTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=647223292&single=true&output=csv';
 
             const SHEET_URLS = {
                 'daily-section': 'https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing',
@@ -307,9 +325,9 @@
                 'batch-reports-section': 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing'
             };
 
-            const dataCache = { overview: null, daily: null, lmsStats: null, questionRepo: null, accaDaily: null, cfaDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null, lmsTrends: null, batchReports: null };
+            const dataCache = { overview: null, daily: null, lmsStats: null, questionRepo: null, accaDaily: null, cfaDaily: null, overallDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null, lmsTrends: null, batchReports: null };
             let courseChecksChart = null;
-            let accaPieChart = null, accaLineChart = null, cfaPieChart = null, cfaLineChart = null;
+            let accaPieChart = null, accaLineChart = null, cfaPieChart = null, cfaLineChart = null, overallLineChart = null;
             let supportLineChart = null;
 
             const mainContent = document.getElementById('main-content');
@@ -323,6 +341,7 @@
             const headerRefreshButton = document.getElementById('header-refresh-button');
             const mainHeaderRefreshButton = document.getElementById('main-header-refresh-button');
             const themeToggle = document.getElementById('theme-toggle');
+            const loadingOverlay = document.getElementById('loading-overlay');
 
             const parseCSV = (csv) => {
                 if (!csv) return { parsed: [], raw: [] };
@@ -391,9 +410,9 @@
                 const lines = csv.replace(/\r/g, '').split('\n');
                 
                 const getValue = (rowIndex, colIndex) => {
-                    if (lines.length > rowIndex) {
+                    if (lines.length > rowIndex && lines[rowIndex]) { 
                         const values = lines[rowIndex].split(',');
-                        if (values.length > colIndex) {
+                        if (values.length > colIndex && values[colIndex]) { 
                             let value = values[colIndex].trim().replace(/"/g, '');
                             if (value === '#NAME?' || value === '#REF!') return '...';
                             return value;
@@ -403,38 +422,44 @@
                 };
 
                 return {
-                    totalEnrolled: getValue(1, 1),      // Cell B2
-                    liveBatches: getValue(2, 1),      // Cell B3
-                    avgAttendance: getValue(3, 1),      // Cell B4
-                    avgLPS: getValue(4, 1),           // Cell B5
-                    testsCompletion: getValue(5, 1)   // Cell B6
+                    totalEnrolled: getValue(0, 1),     // Cell B1
+                    liveBatches: getValue(1, 1),       // Cell B2
+                    avgAttendance: getValue(2, 1),     // Cell B3
+                    avgLPS: getValue(3, 1),            // Cell B4
+                    testsCompletion: getValue(4, 1)     // Cell B5
                 };
             };
 
             const parseLmsTrendsCSV = (csv) => {
                 if (!csv) return [];
-                const lines = csv.replace(/\r/g, '').split('\n').slice(1); // Skip header
+                const lines = csv.replace(/\r/g, '').split('\n').slice(1);
                 const data = [];
-                const today = new Date();
-                today.setHours(23, 59, 59, 999);
 
                 lines.forEach(line => {
                     const parts = line.split(',');
-                    if (parts.length >= 3) {
+                    if (parts.length >= 3 && parts[0].trim() && parts[1].trim() && parts[2].trim()) {
                         const dateStr = parts[0].trim().replace(/"/g, '');
-                        const date = new Date(dateStr);
-                        const doubts = parseInt(parts[1].trim(), 10);
-                        const tickets = parseInt(parts[2].trim(), 10);
+                        const doubtsStr = parts[1].trim();
+                        const ticketsStr = parts[2].trim();
+                        
+                        const dateParts = dateStr.split('/');
+                        if (dateParts.length === 3) {
+                            const date = new Date(dateParts[2], dateParts[0] - 1, dateParts[1]);
+                            const doubts = parseInt(doubtsStr, 10);
+                            const tickets = parseInt(ticketsStr, 10);
 
-                        if (dateStr && !isNaN(date.getTime()) && date <= today && (!isNaN(doubts) || !isNaN(tickets))) {
-                            data.push({
-                                date: dateStr,
-                                doubts: isNaN(doubts) ? null : doubts,
-                                tickets: isNaN(tickets) ? null : tickets
-                            });
+                            if (!isNaN(date.getTime()) && !isNaN(doubts) && !isNaN(tickets)) {
+                                data.push({
+                                    date: date,
+                                    doubts: doubts,
+                                    tickets: tickets
+                                });
+                            }
                         }
                     }
                 });
+                
+                data.sort((a, b) => a.date - b.date);
                 return data;
             };
 
@@ -461,7 +486,7 @@
                 };
             };
 
-            const fetchAndParseData = async (url, parser = parseCSV, retries = 5, delay = 1500) => {
+            const fetchAndParseData = async (url, parser = parseCSV, retries = 3, delay = 1500) => {
                 for (let i = 0; i < retries; i++) {
                     try {
                         const response = await fetch(`${url}&t=${new Date().getTime()}`);
@@ -471,7 +496,25 @@
                             throw new Error("Received an HTML page instead of CSV data. Retrying...");
                         }
                         if (text.includes("Sorry, the file you have requested does not exist.")) throw new Error("Data source not found.");
-                        return parser(text);
+                        
+                        const parsedData = parser(text);
+
+                        if (parser === parseBatchReportsCSV) {
+                            let needsRetry = false;
+                            for (const key in parsedData) {
+                                if (parsedData[key] === '...') {
+                                    needsRetry = true;
+                                    break;
+                                }
+                            }
+                            if (needsRetry && i < retries - 1) {
+                                console.warn(`Batch data still calculating, retrying in ${delay/1000}s...`);
+                                await new Promise(res => setTimeout(res, delay));
+                                continue;
+                            }
+                        }
+                        
+                        return parsedData;
                     } catch (error) {
                         console.error(`Attempt ${i + 1} to fetch from ${url} failed:`, error.message);
                         if (i < retries - 1) {
@@ -506,8 +549,8 @@
             };
 
             const showLoading = (container) => { container.innerHTML = `<div class="flex justify-center items-center h-64"><div class="w-16 h-16 border-4 border-[var(--text-muted-color)] border-t-[var(--text-color)] rounded-full animate-spin"></div></div>`; };
-            const showError = (container, message) => { container.innerHTML = `<div class="bg-red-900/50 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto"><h3 class="font-bold text-lg mb-2">Error Loading Data</h3><p>${message}</p></div>`; };
-
+            const showError = (container, message) => { container.innerHTML = `<div class="bg-red-900/50 border border-[var(--card-border)] text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto"><h3 class="font-bold text-lg mb-2">Error Loading Data</h3><p>${message}</p></div>`; };
+            
             const getPerformanceColorState = (label, valueStr) => {
                 const value = parseFloat(valueStr);
                 if (isNaN(value)) return 'neutral';
@@ -529,60 +572,64 @@
                 return 'text-[var(--text-color)]';
             };
 
-            const renderOverviewPage = async (container, data) => {
+            const renderOverviewPage = async (container, data, batchData) => {
                 if (!data || !data.parsed || data.parsed.length === 0) { showError(container, "Could not load overview data. It might be temporarily unavailable. Please try refreshing."); return; }
                 
-                const batchData = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
-
                 const groupedData = data.parsed.reduce((acc, row) => { const topLevel = row['Top-Level Box']; if (topLevel) { if (!acc[topLevel]) acc[topLevel] = []; acc[topLevel].push(row); } return acc; }, {});
                 
                 let content = '';
                 for (const [title, rows] of Object.entries(groupedData)) {
+                    const isUserAnalytics = title.toLowerCase().includes('user analytics');
+                    const isStudentSupport = title.toLowerCase().includes('student support');
+
                     content += `<div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
                         <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4">
                             <i class="${getIconForMetric(title)}"></i><span>${title}</span>
                         </h2>`;
 
                     if (title.trim() === 'Batches Information' && batchData) {
-                        const generalData = [
-                            { 'Data Header': 'Total Enrolled Students', 'Value': batchData.totalEnrolled },
-                            { 'Data Header': 'Live Batches Count', 'Value': batchData.liveBatches }
+                        const generalMetrics = [
+                            { 'Data Header': 'Total Enrolled Students', 'Value': batchData.totalEnrolled, isPerformance: false },
+                            { 'Data Header': 'Live Batches Count', 'Value': batchData.liveBatches, isPerformance: false }
                         ];
-                        const performanceData = [
-                             { 'Data Header': 'Average Attendance %', 'Value': batchData.avgAttendance },
-                             { 'Data Header': 'Average LPS', 'Value': batchData.avgLPS },
-                             { 'Data Header': 'Tests Completion %', 'Value': batchData.testsCompletion }
+                        const performanceMetrics = [
+                            { 'Data Header': 'Average Attendance %', 'Value': batchData.avgAttendance, isPerformance: true },
+                            { 'Data Header': 'Average LPS', 'Value': batchData.avgLPS, isPerformance: true },
+                            { 'Data Header': 'Tests Completion %', 'Value': batchData.testsCompletion, isPerformance: true }
                         ];
+                        
+                        const createBatchMetricCard = (metric) => {
+                            const colorState = metric.isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
+                            const colorClass = metric.isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
+                            return `<div class="metric-card h-full" data-color-state="${colorState}">
+                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center justify-center text-center space-y-2 min-w-0 rounded-3xl h-full">
+                                    <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                    <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
+                                    <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                                </div>
+                            </div>`;
+                        };
 
                         content += `
-                            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                                <div class="lg:col-span-2 sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
-                                    <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
-                                    <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
-                                        ${generalData.map(metric => `
-                                            <div class="metric-card" data-color-state="neutral">
-                                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
-                                                    <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                    <div class="metric-value text-2xl md:text-3xl font-bold text-[var(--text-color)] tracking-tight">${metric['Value'] || 'N/A'}</div>
-                                                    <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
-                                                </div>
-                                            </div>`).join('')}
+                            <div class="space-y-6">
+                                <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                    <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">General Information</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${generalMetrics.map(metric => createBatchMetricCard(metric)).join('')}
                                     </div>
                                 </div>
-                                <div class="lg:col-span-3 sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
-                                    <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
-                                    <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
-                                        ${performanceData.map(metric => {
-                                            const colorState = getPerformanceColorState(metric['Data Header'], metric.Value);
-                                            const colorClass = getPerformanceColorClass(colorState);
-                                            return `<div class="metric-card" data-color-state="${colorState}">
-                                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
-                                                    <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                    <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
-                                                    <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
-                                                </div>
-                                            </div>`
-                                        }).join('')}
+                                <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                    <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">Performance Data</h3>
+                                    <div class="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3">
+                                        <div class="w-[calc(50%-0.5rem)] sm:w-auto">
+                                            ${createBatchMetricCard(performanceMetrics[0])}
+                                        </div>
+                                         <div class="w-[calc(50%-0.5rem)] sm:w-auto">
+                                            ${createBatchMetricCard(performanceMetrics[1])}
+                                        </div>
+                                         <div class="w-full max-w-[180px] sm:max-w-none sm:w-auto mx-auto sm:mx-0">
+                                            ${createBatchMetricCard(performanceMetrics[2])}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -598,10 +645,17 @@
 
                         content += chunkedSubBoxes.map(row => `
                             <div class="grid grid-cols-1 ${row.length > 1 ? 'md:grid-cols-2' : ''} gap-8">
-                                ${row.map(([subTitle, metrics]) => `
+                                ${row.map(([subTitle, metrics]) => {
+                                    const cardContainerClasses = isUserAnalytics 
+                                        ? 'grid grid-cols-3 gap-4' 
+                                        : isStudentSupport 
+                                            ? 'grid grid-cols-2 gap-4' 
+                                            : 'flex flex-wrap justify-center gap-4';
+
+                                    return `
                                     <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
                                         <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
-                                        <div class="card-grid flex flex-wrap justify-center gap-4 mt-auto">
+                                        <div class="card-grid ${cardContainerClasses} mt-auto">
                                             ${metrics.sort((a, b) => a.Order - b.Order).map(metric => {
                                                 const val = parseInt(metric.Value, 10);
                                                 let colorState = 'neutral';
@@ -611,7 +665,7 @@
                                                     colorClass = getPerformanceColorClass(colorState);
                                                 }
                                                 return `<div class="metric-card" data-color-state="${colorState}">
-                                                    <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-[140px] rounded-3xl">
+                                                    <div class="p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl">
                                                         <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
                                                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
                                                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
@@ -620,7 +674,8 @@
                                             }).join('')}
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `
+                                }).join('')}
                             </div>
                         `).join('');
                     }
@@ -645,8 +700,8 @@
                 };
 
                 const createPlatformCard = (label, value) => `
-                    <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-3 rounded-lg text-center border border-[var(--card-border)] flex-1">
-                        <div class="value text-2xl md:text-3xl font-semibold tracking-tight">${value || 'N/A'}</div>
+                    <div class="metric-card p-3 rounded-2xl text-center border border-[var(--card-border)] flex-1">
+                        <div class="metric-value text-2xl md:text-3xl font-semibold tracking-tight">${value || 'N/A'}</div>
                         <div class="text-xs text-[var(--text-muted-color)]">${label}</div>
                     </div>
                 `;
@@ -771,7 +826,7 @@
                                  <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Previous:</h4>
                                  <div id="timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
                                      <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
-                                     <button data-days="10" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">10 Days</button>
+                                     <button data-days="10" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">10 Days</button>
                                      <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
                                      <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
                                  </div>
@@ -779,16 +834,20 @@
                              <div class="min-h-[300px] sm:min-h-[400px]">
                                  <canvas id="courseChecksChartCanvas"></canvas>
                              </div>
+                             <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                 <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                             </div>
                          </div>
                     </div>
                 `;
 
-                const timelineButtons = container.querySelectorAll('.timeline-btn');
+                const timelineButtons = container.querySelectorAll('#timeline-toggle .timeline-btn');
                 timelineButtons.forEach(btn => {
                     if (parseInt(btn.dataset.days) === days) {
                         btn.classList.add('active');
                     }
                     btn.addEventListener('click', () => {
+                        timelineButtons.forEach(b => b.classList.remove('active'));
                         renderCourseChecksPage(container, data, parseInt(btn.dataset.days));
                     });
                 });
@@ -883,8 +942,8 @@
                 });
             };
 
-            const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData, accaSplitData) => {
-                if (!summaryData || !accaDailyData || !cfaDailyData || !accaSplitData) {
+            const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData) => {
+                if (!summaryData || !accaDailyData || !cfaDailyData || !overallDailyData || !accaSplitData) {
                     showError(container, "Could not load all necessary Question Repository data. Please try refreshing.");
                     return;
                 }
@@ -894,6 +953,7 @@
                     if (accaLineChart) accaLineChart.destroy();
                     if (cfaPieChart) cfaPieChart.destroy();
                     if (cfaLineChart) cfaLineChart.destroy();
+                    if (overallLineChart) overallLineChart.destroy();
                 };
                 destroyCharts();
 
@@ -977,6 +1037,9 @@
                                        <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
                                    </div>
                                    <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
+                                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                    </div>
                                </div>
                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                     <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
@@ -998,13 +1061,13 @@
                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
                                             <div class="flex justify-around items-center gap-4">
                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
-                                                    <div class="text-sm text-[var(--text-muted-color)]">Count</div>
-                                                </div>
-                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
-                                                    <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
-                                                </div>
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
+                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                 </div>
+                                                 <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
+                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                 </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1036,26 +1099,29 @@
                                              </div>
                                              <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
                                          </div>
-                                    </div>
-                                    <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(cfaData.completion)}">
-                                        <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
-                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
-                                    </div>
+                                     </div>
+                                     <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(cfaData.completion)}">
+                                         <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
+                                         <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                     </div>
                                  </div>
-                                <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
-                                    <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-                                        <div class="flex items-center gap-2 md:gap-4">
-                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                            <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="cfa">
-                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
-                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
-                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
-                                            </div>
-                                        </div>
-                                        <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
-                                    </div>
-                                    <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
-                                </div>
+                                 <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                     <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                         <div class="flex items-center gap-2 md:gap-4">
+                                             <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                             <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="cfa">
+                                                 <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
+                                                 <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
+                                                 <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                                             </div>
+                                         </div>
+                                         <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
+                                     </div>
+                                     <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
+                                      <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                          <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                      </div>
+                                 </div>
                              </div>
                         </div>
 
@@ -1084,6 +1150,23 @@
                                         <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                     </div>
                                 </div>
+                                <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl mt-8">
+                                   <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                       <div class="flex items-center gap-2 md:gap-4">
+                                           <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                           <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="overall">
+                                               <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
+                                               <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
+                                               <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                                           </div>
+                                       </div>
+                                       <div class="md:ml-auto flex items-center gap-2" id="overall-legend-toggle"></div>
+                                   </div>
+                                   <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="overallLineChartCanvas"></canvas></div>
+                                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                    </div>
+                               </div>
                             </div>
                         </div>
                     </div>
@@ -1141,15 +1224,13 @@
                 cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaApproved], cfaDraft + cfaApproved);
                 
                 const renderLineChart = (canvasId, dailyData, days) => {
-                    const today = new Date();
-                    today.setHours(23, 59, 59, 999); 
                     const isMobile = window.innerWidth < 768;
                     
                     const chartData = dailyData.parsed
                         .filter(d => {
                             if (!d.Date || !d.Draft || !d.Approved) return false;
                             const itemDate = new Date(d.Date);
-                            return !isNaN(itemDate.getTime()) && itemDate <= today;
+                            return !isNaN(itemDate.getTime());
                         })
                         .slice(-days);
 
@@ -1222,15 +1303,15 @@
                 };
                 
                  const calculateNiceStep = (range, targetSteps) => {
-                    if (range === 0) return 1;
-                    const rawStep = range / targetSteps;
-                    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
-                    const residual = rawStep / magnitude;
-                    if (residual > 5) return 10 * magnitude;
-                    if (residual > 2) return 5 * magnitude;
-                    if (residual > 1) return 2 * magnitude;
-                    return magnitude;
-                };
+                         if (range === 0) return 1;
+                         const rawStep = range / targetSteps;
+                         const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+                         const residual = rawStep / magnitude;
+                         if (residual > 5) return 10 * magnitude;
+                         if (residual > 2) return 5 * magnitude;
+                         if (residual > 1) return 2 * magnitude;
+                         return magnitude;
+                 };
 
                 const setupSubPage = (chartType, dailyData) => {
                     const canvasId = `${chartType}LineChartCanvas`;
@@ -1239,65 +1320,32 @@
                     
                     let chartInstance;
                     let currentDays = 14;
+                    let visibleDatasets = [1, 1];
 
-                    const updateChart = (days) => {
-                        currentDays = days;
+                    const updateChart = () => {
                         if (chartInstance) chartInstance.destroy();
-                        chartInstance = renderLineChart(canvasId, dailyData, days);
+                        chartInstance = renderLineChart(canvasId, dailyData, currentDays);
                         
+                        visibleDatasets.forEach((val, index) => {
+                            chartInstance.setDatasetVisibility(index, val === 1);
+                        });
+                        chartInstance.update();
+
                         if (chartType === 'acca') accaLineChart = chartInstance;
-                        else cfaLineChart = chartInstance;
+                        else if (chartType === 'cfa') cfaLineChart = chartInstance;
+                        else if (chartType === 'overall') overallLineChart = chartInstance;
+
 
                         legendContainer.innerHTML = '';
                         chartInstance.data.datasets.forEach((dataset, index) => {
                             const button = document.createElement('button');
-                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105`;
+                            const isVisible = visibleDatasets[index] === 1;
+                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105 ${!isVisible ? 'opacity-40' : ''}`;
                             button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
                             
                             button.onclick = () => {
-                                const isVisible = chartInstance.isDatasetVisible(index);
-                                chartInstance.setDatasetVisibility(index, !isVisible);
-                                
-                                const { datasets } = chartInstance.data;
-                                const approvedVisible = chartInstance.isDatasetVisible(1);
-                                const draftVisible = chartInstance.isDatasetVisible(0);
-
-                                chartInstance.options.scales.y.min = undefined;
-                                chartInstance.options.scales.y.max = undefined;
-                                chartInstance.options.scales.y.ticks.stepSize = undefined;
-
-                                if (chartType === 'acca' && approvedVisible && !draftVisible && currentDays === 7) {
-                                    const data = datasets[1].data.filter(v => v !== null);
-                                    if (data.length > 0) {
-                                        const dataMin = Math.min(...data);
-                                        const dataMax = Math.max(...data);
-                                        const range = dataMax - dataMin;
-                                        const step = calculateNiceStep(range, 4);
-                                        chartInstance.options.scales.y.ticks.stepSize = step;
-                                        chartInstance.options.scales.y.min = Math.floor(dataMin / step) * step;
-                                        chartInstance.options.scales.y.max = Math.ceil(dataMax / step) * step;
-                                    }
-                                } else if (approvedVisible && !draftVisible) {
-                                    const data = datasets[1].data;
-                                    if (data.length > 0) {
-                                        const dataMin = Math.min(...data);
-                                        const dataMax = Math.max(...data);
-                                        chartInstance.options.scales.y.ticks.stepSize = 100;
-                                        chartInstance.options.scales.y.min = Math.floor(dataMin / 100) * 100;
-                                        chartInstance.options.scales.y.max = Math.ceil(dataMax / 100) * 100;
-                                    }
-                                } else if (draftVisible && !approvedVisible) {
-                                    const data = datasets[0].data;
-                                    if (data.length > 0) {
-                                        const dataMax = Math.max(...data);
-                                        chartInstance.options.scales.y.ticks.stepSize = 50;
-                                        chartInstance.options.scales.y.min = 0;
-                                        chartInstance.options.scales.y.max = Math.ceil(dataMax / 50) * 50;
-                                    }
-                                }
-                                
-                                chartInstance.update();
-                                button.classList.toggle('opacity-40', isVisible);
+                                visibleDatasets[index] = visibleDatasets[index] === 1 ? 0 : 1;
+                                updateChart();
                             };
                             legendContainer.appendChild(button);
                         });
@@ -1307,21 +1355,23 @@
                         btn.addEventListener('click', (e) => {
                             timelineToggle.querySelector('.active')?.classList.remove('active');
                             e.target.classList.add('active');
-                            updateChart(parseInt(e.target.dataset.days));
+                            currentDays = parseInt(e.target.dataset.days);
+                            updateChart();
                         });
                     });
                     
                     timelineToggle.querySelector('.active')?.classList.remove('active');
                     timelineToggle.querySelector(`[data-days="${currentDays}"]`)?.classList.add('active');
-                    updateChart(currentDays);
+                    updateChart();
                 };
                 setupSubPage('acca', accaDailyData);
                 setupSubPage('cfa', cfaDailyData);
+                setupSubPage('overall', overallDailyData);
             };
 
             const renderBatchReportsPage = (container, data) => {
                 if (!data) { showError(container, "Could not load Batch Reports data."); return; }
-                
+
                 const generalData = [
                     { 'Data Header': 'Total Enrolled Students', 'Value': data.totalEnrolled },
                     { 'Data Header': 'Live Batches Count', 'Value': data.liveBatches }
@@ -1347,14 +1397,20 @@
                     <div class="space-y-10">
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
                             <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-2 gap-6">
                                 ${generalData.map(metric => createMetricCard(metric, false)).join('')}
                             </div>
                         </div>
                         <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
                             <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                                ${performanceData.map(metric => createMetricCard(metric, true)).join('')}
+                            <div class="flex flex-col items-center gap-6 md:grid md:grid-cols-3">
+                                <div class="w-full grid grid-cols-2 md:col-span-2 gap-6">
+                                    ${createMetricCard(performanceData[0], true)}
+                                    ${createMetricCard(performanceData[1], true)}
+                                </div>
+                                <div class="w-1/2 md:w-full md:col-span-1">
+                                    ${createMetricCard(performanceData[2], true)}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1386,7 +1442,7 @@
                 }
 
                 const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
-                    <div class="metric-card flex-grow flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl" data-color-state="${state}">
+                    <div class="metric-card flex-1 flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl" data-color-state="${state}">
                         <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
                         <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value}</div>
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
@@ -1398,14 +1454,14 @@
                          <div class="flex flex-col sm:flex-row gap-8 items-start">
                              <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
-                                 <div class="card-grid force-row flex flex-wrap justify-center gap-4 mt-auto">
+                                 <div class="card-grid force-row flex flex-nowrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
                                      ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
                                  </div>
                              </div>
                              <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
-                                 <div class="card-grid force-row flex flex-wrap justify-center gap-4 mt-auto">
+                                 <div class="card-grid force-row flex flex-nowrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
                                      ${createMetricCard('Open Support Tickets', getMetricValue('Open Support Tickets'), getConditionalIcon(openTickets, 'fas fa-exclamation-triangle', 'fas fa-check-circle'), getConditionalColor(openTickets), getConditionalState(openTickets))}
                                  </div>
@@ -1434,11 +1490,14 @@
                         <div id="support-timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1 scale-90">
                              <button data-days="7" class="timeline-btn px-4 py-1.5 text-xs font-semibold rounded-full active">7 Days</button>
                              <button data-days="14" class="timeline-btn px-4 py-1.5 text-xs font-semibold rounded-full">14 Days</button>
-                             <button data-days="30" class="timeline-btn px-4 py-1.5 text-xs font-semibold rounded-full">30 Days</button>
+                             <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
                         </div>
                     </div>
                     <div class="min-h-[300px] sm:min-h-[400px]">
                         <canvas id="supportLineChartCanvas"></canvas>
+                    </div>
+                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
                     </div>
                 `;
                 
@@ -1447,27 +1506,42 @@
 
                 const renderSupportTrendChart = () => {
                     if (supportLineChart) supportLineChart.destroy();
-                    
-                    const isMobile = window.innerWidth < 768;
-                    const chartData = trendsData.map(d => ({
-                        date: d.date,
-                        value: d[currentDataType]
-                    })).filter(d => d.value !== null).slice(-currentDays);
 
-                    const labels = chartData.map(d => new Date(d.date));
-                    const dataPoints = chartData.map(d => d.value);
-
-                    const maxValue = Math.max(...dataPoints, 0);
-                    const yMax = maxValue > 60 ? undefined : 60;
-
-                    const ctx = document.getElementById('supportLineChartCanvas').getContext('2d');
+                    const allData = dataCache.lmsTrends || [];
+                    const canvas = document.getElementById('supportLineChartCanvas');
+                    const ctx = canvas.getContext('2d');
                     const isLightMode = document.body.classList.contains('light-mode');
-                    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                     const tickColor = isLightMode ? '#515154' : '#a1a1a6';
+
+                    if (allData.length === 0) {
+                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                          ctx.font = "16px 'Inter', sans-serif";
+                          ctx.fillStyle = tickColor;
+                          ctx.textAlign = "center";
+                          ctx.fillText("No data available to display.", canvas.width / 2, canvas.height / 2);
+                          return;
+                    }
+
+                    const chartDataPoints = allData.slice(-currentDays);
+                    
+                    if (chartDataPoints.length === 0) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.font = "16px 'Inter', sans-serif";
+                        ctx.fillStyle = tickColor;
+                        ctx.textAlign = "center";
+                        ctx.fillText("No data available for this period.", canvas.width / 2, canvas.height / 2);
+                        return;
+                    }
+                    
+                    const labels = chartDataPoints.map(d => d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+                    const dataPoints = chartDataPoints.map(d => d[currentDataType]);
+
+                    const isMobile = window.innerWidth < 768;
+                    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                     const bodyFont = "'Inter', sans-serif";
                     const pointColor = currentDataType === 'doubts' ? 'rgb(239, 68, 68)' : 'rgb(59, 130, 246)';
                     const bgColor = currentDataType === 'doubts' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)';
-
+                    
                     supportLineChart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -1499,8 +1573,7 @@
                                     displayColors: false,
                                     callbacks: {
                                         title: (tooltipItems) => {
-                                            const date = new Date(tooltipItems[0].parsed.x);
-                                            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+                                            return tooltipItems[0].label;
                                         },
                                         label: (context) => `Count: ${context.raw}`
                                     }
@@ -1509,22 +1582,19 @@
                             scales: {
                                 y: {
                                     min: 0,
-                                    max: yMax,
                                     grid: { color: gridColor },
                                     ticks: { 
-                                        stepSize: 10,
                                         color: tickColor, 
-                                        font: { family: bodyFont }
+                                        font: { family: bodyFont },
+                                        callback: function(value) { if (Number.isInteger(value)) { return value; } }
                                     }
                                 },
                                 x: {
-                                    type: 'time',
-                                    time: { unit: 'day', displayFormats: { day: 'd MMM' } },
+                                    type: 'category',
                                     grid: { display: false },
                                     ticks: { 
                                         color: tickColor, 
                                         font: { family: bodyFont },
-                                        maxTicksLimit: isMobile ? 5 : undefined,
                                         maxRotation: 0,
                                         minRotation: 0
                                     }
@@ -1554,7 +1624,7 @@
                     });
                 });
 
-                renderSupportTrendChart(); // Initial render
+                renderSupportTrendChart();
             };
             
             const renderReportsPage = (container) => {
@@ -1625,18 +1695,25 @@
                 updateFooterText(`${tabId}-section`);
 
                 if (tabId === 'overview') {
-                    if (!dataCache.overview) {
+                    if (!dataCache.overview || !dataCache.batchReports) {
                         showLoading(activeContent);
-                        const newData = await fetchAndParseData(OVERVIEW_URL);
-                        if (newData) {
-                            dataCache.overview = newData;
-                            renderOverviewPage(activeContent, dataCache.overview);
+                        const [overviewData, batchData] = await Promise.all([
+                            dataCache.overview ? Promise.resolve(dataCache.overview) : fetchAndParseData(OVERVIEW_URL),
+                            dataCache.batchReports ? Promise.resolve(dataCache.batchReports) : fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV)
+                        ]);
+                        
+                        if (overviewData && batchData) {
+                            dataCache.overview = overviewData;
+                            dataCache.batchReports = batchData;
+                            await renderOverviewPage(activeContent, dataCache.overview, dataCache.batchReports);
                         } else {
                             showError(activeContent, "Failed to fetch overview data. Please try again.");
                         }
                     } else {
-                        renderOverviewPage(activeContent, dataCache.overview);
+                        await renderOverviewPage(activeContent, dataCache.overview, dataCache.batchReports);
                     }
+                } else if (tabId === 'reports') {
+                    renderReportsPage(document.getElementById('reports-section'));
                 }
             };
 
@@ -1729,27 +1806,29 @@
                     }
                 });
 
-                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily || !dataCache.accaSplit;
+                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily || !dataCache.overallDaily || !dataCache.accaSplit;
                 if (needsFetch) {
                     showLoading(questionRepoSection);
-                    const [summaryData, accaDailyData, cfaDailyData, accaSplitData] = await Promise.all([
+                    const [summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData] = await Promise.all([
                         fetchAndParseData(QUESTION_REPO_URL),
                         fetchAndParseData(ACCA_DAILY_URL),
                         fetchAndParseData(CFA_DAILY_URL),
+                        fetchAndParseData(OVERALL_DAILY_URL),
                         fetchAndParseData(ACCA_SPLIT_URL, parseAccaSplitCSV)
                     ]);
 
-                    if (summaryData && accaDailyData && cfaDailyData && accaSplitData) {
+                    if (summaryData && accaDailyData && cfaDailyData && overallDailyData && accaSplitData) {
                         dataCache.questionRepo = summaryData;
                         dataCache.accaDaily = accaDailyData;
                         dataCache.cfaDaily = cfaDailyData;
+                        dataCache.overallDaily = overallDailyData;
                         dataCache.accaSplit = accaSplitData;
-                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData, accaSplitData);
+                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData);
                     } else {
                         showError(questionRepoSection, "Failed to fetch one or more data sources. Please try again.");
                     }
                 } else {
-                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.accaSplit);
+                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.overallDaily, dataCache.accaSplit);
                 }
                 switchQrfTab('acca');
             };
@@ -1821,22 +1900,30 @@
 
                 if (mainTabId === 'overview' || activeSection.id === 'overview-section') {
                     dataCache.overview = null;
+                    dataCache.batchReports = null;
                     await switchTab('overview');
                 } else if (mainTabId === 'reports') {
                     switch(activeSection.id) {
                         case 'batch-reports-section': dataCache.batchReports = null; await showBatchReportsPage(); break;
                         case 'daily-section': dataCache.daily = null; dataCache.lmsStats = null; await showDailyMetrics(); break;
                         case 'course-checks-section': dataCache.courseChecks = null; await showCourseChecksPage(); break;
-                        case 'question-repo-section': dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.accaSplit = null; await showQuestionRepo(); break;
+                        case 'question-repo-section': dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.overallDaily = null; dataCache.accaSplit = null; await showQuestionRepo(); break;
                         case 'ask-a-doubt-section': dataCache.lmsSupport = null; dataCache.lmsTrends = null; await showAskADoubtPage(); break;
                     }
                 }
             };
             
-            const initialLoad = () => {
-                switchTab('overview'); 
+            const initialLoad = async () => {
+                dataCache.batchReports = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
+                
+                await switchTab('overview'); 
                 renderReportsPage(document.getElementById('reports-section'));
                 updateFooterText('overview-section');
+
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
             };
 
             navButtons.forEach(button => {
@@ -1852,7 +1939,7 @@
                     renderCourseChecksPage(document.getElementById('course-checks-section'), dataCache.courseChecks);
                 }
                 if (activeSectionId === 'question-repo-section' && dataCache.questionRepo) {
-                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.accaSplit);
+                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.overallDaily, dataCache.accaSplit);
                 }
                 if (activeSectionId === 'ask-a-doubt-section' && dataCache.lmsSupport) {
                     renderAskADoubtPage(document.getElementById('ask-a-doubt-section'), dataCache.lmsSupport, dataCache.lmsTrends);
