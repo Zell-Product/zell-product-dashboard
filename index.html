@@ -801,7 +801,7 @@
                                     <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
                                     <div class="flex justify-center gap-4">
                                         ${createPlatformCard('Web', mau.WEB)}
-                                        ${createPlatformCard('Android', mau.ANDROID)}
+                                        ${createPlatformCard('Android', dau.ANDROID)}
                                         ${createPlatformCard('iOS', dau.iOS)}
                                     </div>
                                 </div>
@@ -2163,6 +2163,12 @@
 
             requestAccessBtn.addEventListener('click', handleEmailRequest);
             checkStatusBtn.addEventListener('click', checkAccessStatus);
+            emailInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    requestAccessBtn.click();
+                }
+            });
 
             // Check if user has already requested access
             const storedEmail = localStorage.getItem('dashboardUserEmail');
