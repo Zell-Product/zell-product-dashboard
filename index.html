@@ -39,20 +39,18 @@
             --good-hover-tint: rgba(34, 197, 94, 0.15);
             --medium-hover-tint: rgba(245, 158, 11, 0.15);
             --bad-hover-tint: rgba(239, 68, 68, 0.15);
-            --passcode-btn-bg: rgba(255, 255, 255, 0.15);
-            --passcode-btn-hover-bg: rgba(255, 255, 255, 0.25);
         }
 
         body.light-mode {
             /* NEW Light Mode - Apple Inspired */
-            --bg-color: #f5f5f7;
+            --bg-color: #f0f0f5; /* Softer, less glaring background */
             --text-color: #1d1d1f;
             --text-muted-color: #6e6e73;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(0, 0, 0, 0.08);
-            --card-hover-bg: rgba(255, 255, 255, 0.9);
-            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-            --header-bg: rgba(247, 247, 247, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.6); /* Glassier card background */
+            --card-border: rgba(0, 0, 0, 0.07);
+            --card-hover-bg: rgba(255, 255, 255, 0.8);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            --header-bg: rgba(247, 247, 247, 0.7);
             --header-border: rgba(0, 0, 0, 0.1);
             --icon-color: #000000;
             --nav-text-color: #515154;
@@ -66,8 +64,6 @@
             --good-hover-tint: rgba(34, 197, 94, 0.1);
             --medium-hover-tint: rgba(245, 158, 11, 0.1);
             --bad-hover-tint: rgba(239, 68, 68, 0.1);
-            --passcode-btn-bg: rgba(0, 0, 0, 0.08);
-            --passcode-btn-hover-bg: rgba(0, 0, 0, 0.12);
         }
 
         body {
@@ -94,7 +90,7 @@
         }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        #loading-overlay {
+        #loading-overlay, #access-overlay {
             transition: opacity 0.5s ease-in-out;
         }
         
@@ -110,41 +106,6 @@
             0%, 100% { opacity: 0; }
             50% { opacity: 1; }
         }
-
-        /* Passcode Styles */
-        #passcode-overlay {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: opacity 0.5s ease-in-out;
-        }
-        .passcode-dot {
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-            border: 2px solid var(--text-color);
-            transition: all 0.2s ease-in-out;
-        }
-        .passcode-dot.filled {
-            background-color: var(--text-color);
-            transform: scale(1.1);
-        }
-        .passcode-keypad-btn {
-            background-color: var(--passcode-btn-bg);
-            transition: background-color 0.2s ease-in-out;
-        }
-        .passcode-keypad-btn:active {
-            background-color: var(--passcode-btn-hover-bg);
-        }
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-
 
         #navigation-bar { max-width: 48rem; }
         .nav-item {
@@ -279,39 +240,27 @@
     </style>
 </head>
 <body class="h-screen flex flex-col">
-    <div id="passcode-overlay" class="fixed inset-0 bg-[var(--bg-color)]/80 flex flex-col items-center justify-center z-[101]">
-        <div class="text-center">
-            <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-4">Enter Passcode</h2>
-            <div id="passcode-dots" class="flex justify-center items-center gap-4 mb-4">
-                <div class="passcode-dot"></div>
-                <div class="passcode-dot"></div>
-                <div class="passcode-dot"></div>
-                <div class="passcode-dot"></div>
+    <div id="access-overlay" class="fixed inset-0 bg-[var(--bg-color)]/80 backdrop-blur-xl flex items-center justify-center z-[101]">
+        <div class="w-full max-w-sm p-8 text-center">
+            <div id="initial-view">
+                <i class="fas fa-lock text-4xl text-[var(--text-muted-color)] mb-6"></i>
+                <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Dashboard Access</h2>
+                <p class="text-[var(--text-muted-color)] mb-6">Please enter your email to check for access or request it.</p>
+                <input type="email" id="email-input" class="w-full bg-[var(--sub-box-bg)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-center text-[var(--text-color)] placeholder-[var(--text-muted-color)] focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="your.email@example.com">
+                <button id="request-access-btn" class="w-full bg-blue-600 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-transform hover:scale-105 active:scale-95">Request Access</button>
+                <p id="access-message" class="text-sm mt-4 h-5"></p>
             </div>
-            <p id="passcode-error" class="text-red-500 h-6"></p>
-        </div>
-        <div id="passcode-keypad" class="grid grid-cols-3 gap-4 mt-8 max-w-xs w-full">
-            <!-- Numbers 1-9 -->
-            <button data-key="1" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">1</button>
-            <button data-key="2" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">2</button>
-            <button data-key="3" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">3</button>
-            <button data-key="4" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">4</button>
-            <button data-key="5" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">5</button>
-            <button data-key="6" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">6</button>
-            <button data-key="7" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">7</button>
-            <button data-key="8" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">8</button>
-            <button data-key="9" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">9</button>
-            <!-- Empty, 0, Backspace -->
-            <div class="aspect-square"></div>
-            <button data-key="0" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">0</button>
-            <button data-key="backspace" class="passcode-keypad-btn rounded-full aspect-square flex items-center justify-center text-2xl">
-                <i class="fas fa-delete-left"></i>
-            </button>
+            <div id="pending-view" class="hidden">
+                 <i class="fas fa-clock text-4xl text-[var(--text-muted-color)] mb-6 animate-pulse"></i>
+                <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Access Requested</h2>
+                <p class="text-[var(--text-muted-color)] mb-6">Your request has been sent. The admin has been notified. Please check back later.</p>
+                <button id="check-status-btn" class="w-full bg-gray-500 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-transform hover:scale-105 active:scale-95">Check My Status</button>
+                 <p id="status-message" class="text-sm mt-4 h-5"></p>
+            </div>
         </div>
     </div>
 
-
-    <div id="loading-overlay" class="fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-[100]">
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-[100]">
         <div id="loading-text-container">
             <span>Loading...</span>
         </div>
@@ -375,6 +324,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // IMPORTANT: PASTE YOUR TWO URLS HERE
+            const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/zelleducation.com/s/AKfycby7N_zRfC7vucHp291Uu3ajfyCZxqF9Mrk-10mxI9zEb_j1kZRs4tCdhQRsjwCZdmzH/exec';
+            const ACCESS_CONTROL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRm9ZKft-lHOoPkFzmITq3tmJRxX_51m_CpuKD7z8yzGQNmqDO88gqC7vesImRixJGAwOc-FHZJzzgJ/pub?output=csv';
+
             const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
             const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
             const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
@@ -412,10 +365,14 @@
             const mainHeaderRefreshButton = document.getElementById('main-header-refresh-button');
             const themeToggle = document.getElementById('theme-toggle');
             const loadingOverlay = document.getElementById('loading-overlay');
-            const passcodeOverlay = document.getElementById('passcode-overlay');
-            const passcodeKeypad = document.getElementById('passcode-keypad');
-            const passcodeDots = document.getElementById('passcode-dots');
-            const passcodeError = document.getElementById('passcode-error');
+            const accessOverlay = document.getElementById('access-overlay');
+            const emailInput = document.getElementById('email-input');
+            const requestAccessBtn = document.getElementById('request-access-btn');
+            const checkStatusBtn = document.getElementById('check-status-btn');
+            const initialView = document.getElementById('initial-view');
+            const pendingView = document.getElementById('pending-view');
+            const accessMessage = document.getElementById('access-message');
+            const statusMessage = document.getElementById('status-message');
 
             const parseCSV = (csv) => {
                 if (!csv) return { parsed: [], raw: [] };
@@ -1258,7 +1215,7 @@
                         type: 'doughnut',
                         data: {
                             labels: ['Draft', 'Approved'],
-                            datasets: [{ data: data, backgroundColor: ['#ef4444', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 4, hoverBorderWidth: 6 }]
+                            datasets: [{ data: data, backgroundColor: ['#ef4444', '#22c55e'], borderColor: 'var(--bg-color)', borderWidth: 2, hoverBorderWidth: 4 }]
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false, cutout: '70%',
@@ -1427,6 +1384,10 @@
                             button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
                             
                             button.onclick = () => {
+                                const currentlyVisible = visibleDatasets.filter(v => v === 1).length;
+                                if (currentlyVisible === 1 && isVisible) {
+                                    return; // Prevent deselecting the last item
+                                }
                                 visibleDatasets[index] = visibleDatasets[index] === 1 ? 0 : 1;
                                 updateChart();
                             };
@@ -1567,7 +1528,7 @@
                             <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Trends for:</h4>
                             <div id="support-type-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
                                 <button data-type="doubts" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">Ask a Doubt</button>
-                                <button data-type="tickets" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">LMS Tickets</button>
+                                <button data-type="tickets" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">LMS Tickets</button>
                             </div>
                         </div>
                         <div id="support-timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1 scale-90">
@@ -1584,8 +1545,8 @@
                     </div>
                 `;
                 
-                let currentDataType = 'doubts';
                 let currentDays = 7;
+                let visibleSupportDatasets = [1, 1]; // [doubts, tickets]
 
                 const renderSupportTrendChart = () => {
                     if (supportLineChart) supportLineChart.destroy();
@@ -1617,29 +1578,41 @@
                     }
                     
                     const labels = chartDataPoints.map(d => d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
-                    const dataPoints = chartDataPoints.map(d => d[currentDataType]);
 
                     const isMobile = window.innerWidth < 768;
                     const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                     const bodyFont = "'Inter', sans-serif";
-                    const pointColor = currentDataType === 'doubts' ? 'rgb(239, 68, 68)' : 'rgb(59, 130, 246)';
-                    const bgColor = currentDataType === 'doubts' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)';
                     
                     supportLineChart = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: labels,
-                            datasets: [{
-                                label: currentDataType === 'doubts' ? 'Open Doubts' : 'Open Tickets',
-                                data: dataPoints,
-                                borderColor: pointColor,
-                                backgroundColor: bgColor,
-                                borderWidth: isMobile ? 2 : 3,
-                                pointRadius: isMobile ? 3 : 5,
-                                pointHoverRadius: isMobile ? 6 : 8,
-                                tension: 0.4,
-                                fill: true,
-                            }]
+                            datasets: [
+                                {
+                                    label: 'Open Doubts',
+                                    data: chartDataPoints.map(d => d.doubts),
+                                    borderColor: 'rgb(239, 68, 68)',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                    hidden: !visibleSupportDatasets[0],
+                                    borderWidth: isMobile ? 2 : 3,
+                                    pointRadius: isMobile ? 3 : 5,
+                                    pointHoverRadius: isMobile ? 6 : 8,
+                                    tension: 0.4,
+                                    fill: true,
+                                },
+                                {
+                                    label: 'Open Tickets',
+                                    data: chartDataPoints.map(d => d.tickets),
+                                    borderColor: 'rgb(59, 130, 246)',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    hidden: !visibleSupportDatasets[1],
+                                    borderWidth: isMobile ? 2 : 3,
+                                    pointRadius: isMobile ? 3 : 5,
+                                    pointHoverRadius: isMobile ? 6 : 8,
+                                    tension: 0.4,
+                                    fill: true,
+                                }
+                            ]
                         },
                         options: {
                             responsive: true,
@@ -1648,17 +1621,19 @@
                                 legend: { display: false },
                                 tooltip: {
                                     enabled: true,
+                                    mode: 'index', 
+                                    intersect: false,
                                     backgroundColor: 'rgba(0,0,0,0.8)',
                                     titleFont: { family: bodyFont, size: 14, weight: 'bold' },
                                     bodyFont: { family: bodyFont, size: 12 },
                                     padding: 12,
                                     cornerRadius: 8,
-                                    displayColors: false,
+                                    displayColors: true,
                                     callbacks: {
                                         title: (tooltipItems) => {
                                             return tooltipItems[0].label;
                                         },
-                                        label: (context) => `Count: ${context.raw}`
+                                        label: (context) => `${context.dataset.label}: ${context.raw}`
                                     }
                                 }
                             },
@@ -1688,11 +1663,14 @@
                 };
                 
                 const typeToggleButtons = trendsContainer.querySelectorAll('#support-type-toggle .timeline-btn');
-                typeToggleButtons.forEach(btn => {
+                typeToggleButtons.forEach((btn, index) => {
                     btn.addEventListener('click', (e) => {
-                        typeToggleButtons.forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        currentDataType = e.target.dataset.type;
+                        const currentlyVisible = visibleSupportDatasets.filter(v => v === 1).length;
+                        if (currentlyVisible === 1 && btn.classList.contains('active')) {
+                            return; // Prevent deselecting the last item
+                        }
+                        btn.classList.toggle('active');
+                        visibleSupportDatasets[index] = visibleSupportDatasets[index] === 1 ? 0 : 1;
                         renderSupportTrendChart();
                     });
                 });
@@ -2071,55 +2049,98 @@
                 }
             });
 
-            // Passcode Logic
-            let currentPasscode = '';
-            const correctPasscode = '4246';
-
-            const updatePasscodeDots = () => {
-                const dots = passcodeDots.querySelectorAll('.passcode-dot');
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('filled', index < currentPasscode.length);
-                });
+            // --- Access Control Logic ---
+            const showMessage = (element, text, isError = false) => {
+                element.textContent = text;
+                element.style.color = isError ? '#ef4444' : 'var(--text-muted-color)';
             };
 
-            const handlePasscodeEntry = (key) => {
-                if (key === 'backspace') {
-                    currentPasscode = currentPasscode.slice(0, -1);
-                } else if (currentPasscode.length < 4) {
-                    currentPasscode += key;
+            const handleEmailRequest = async () => {
+                const email = emailInput.value.trim().toLowerCase();
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showMessage(accessMessage, 'Please enter a valid email.', true);
+                    return;
                 }
+                
+                requestAccessBtn.disabled = true;
+                requestAccessBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
 
-                updatePasscodeDots();
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // Use no-cors for this type of request
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    localStorage.setItem('dashboardUserEmail', email);
+                    initialView.classList.add('hidden');
+                    pendingView.classList.remove('hidden');
 
-                if (currentPasscode.length === 4) {
-                    if (currentPasscode === correctPasscode) {
-                        passcodeOverlay.style.opacity = '0';
+                } catch (error) {
+                    showMessage(accessMessage, 'Could not send request. Check connection.', true);
+                } finally {
+                    requestAccessBtn.disabled = false;
+                    requestAccessBtn.innerHTML = 'Request Access';
+                }
+            };
+            
+            const checkAccessStatus = async () => {
+                const email = localStorage.getItem('dashboardUserEmail');
+                if (!email) return;
+
+                checkStatusBtn.disabled = true;
+                checkStatusBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
+                showMessage(statusMessage, 'Checking status...');
+
+                try {
+                    const response = await fetch(`${ACCESS_CONTROL_SHEET_URL}&t=${new Date().getTime()}`);
+                    if (!response.ok) throw new Error('Network error');
+                    const csv = await response.text();
+                    const lines = csv.replace(/\r/g, '').split('\n');
+                    let userStatus = 'Not Found';
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const parts = lines[i].split(',');
+                        if (parts[0] && parts[0].trim().toLowerCase() === email) {
+                            userStatus = parts[1] ? parts[1].trim() : 'Pending';
+                            break;
+                        }
+                    }
+
+                    if (userStatus === 'Allow') {
+                        accessOverlay.style.opacity = '0';
                         setTimeout(() => {
-                            passcodeOverlay.style.display = 'none';
+                            accessOverlay.style.display = 'none';
                             document.querySelector('header').classList.remove('hidden');
                             document.querySelector('main').classList.remove('hidden');
                             initialLoad();
                         }, 500);
+                    } else if (userStatus === 'Deny') {
+                        showMessage(statusMessage, 'Access has been denied.', true);
                     } else {
-                        passcodeDots.classList.add('shake');
-                        passcodeError.textContent = 'Incorrect Passcode';
-                        setTimeout(() => {
-                            passcodeDots.classList.remove('shake');
-                            passcodeError.textContent = '';
-                            currentPasscode = '';
-                            updatePasscodeDots();
-                        }, 1000);
+                         showMessage(statusMessage, 'Access is still pending approval.');
                     }
+
+                } catch (error) {
+                    showMessage(statusMessage, 'Could not check status. Try again later.', true);
+                } finally {
+                     checkStatusBtn.disabled = false;
+                     checkStatusBtn.innerHTML = 'Check My Status';
                 }
             };
 
-            passcodeKeypad.addEventListener('click', (e) => {
-                const key = e.target.closest('.passcode-keypad-btn')?.dataset.key;
-                if (key) {
-                    handlePasscodeEntry(key);
-                }
-            });
+            requestAccessBtn.addEventListener('click', handleEmailRequest);
+            checkStatusBtn.addEventListener('click', checkAccessStatus);
 
+            // Check if user has already requested access
+            const storedEmail = localStorage.getItem('dashboardUserEmail');
+            if (storedEmail) {
+                emailInput.value = storedEmail;
+                checkAccessStatus(); // Immediately check status on page load if email exists
+                initialView.classList.add('hidden');
+                pendingView.classList.remove('hidden');
+            }
         });
     </script>
 </body>
