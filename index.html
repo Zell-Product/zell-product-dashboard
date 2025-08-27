@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Product Dashboard</title>
     
     <link rel="icon" href="https://raw.githubusercontent.com/YashShah20F/Dashboard-V3/main/favicon%20BW.png" type="image/png">
@@ -12,7 +12,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-45WZTRG841"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-45WZTRG841');
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
@@ -42,28 +49,28 @@
         }
 
         body.light-mode {
-            /* NEW Light Mode - Apple Inspired */
-            --bg-color: #f0f0f5; /* Softer, less glaring background */
+            /* Redesigned Light Mode - iOS Inspired Glassmorphism */
+            --bg-color: #f7f7f8; /* Base color if gradient fails */
             --text-color: #1d1d1f;
-            --text-muted-color: #6e6e73;
-            --card-bg: rgba(255, 255, 255, 0.6); /* Glassier card background */
-            --card-border: rgba(0, 0, 0, 0.07);
-            --card-hover-bg: rgba(255, 255, 255, 0.8);
-            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            --header-bg: rgba(247, 247, 247, 0.7);
-            --header-border: rgba(0, 0, 0, 0.1);
-            --icon-color: #000000;
-            --nav-text-color: #515154;
+            --text-muted-color: #86868b;
+            --card-bg: rgba(252, 252, 253, 0.8);
+            --card-border: rgba(255, 255, 255, 0.8); /* Use a light border to catch light */
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --card-hover-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            --header-bg: rgba(249, 249, 251, 0.85);
+            --header-border: rgba(0, 0, 0, 0.08);
+            --icon-color: #333;
+            --nav-text-color: #555555;
             --nav-text-hover: #000000;
-            --nav-active-bg: #e5e5e7;
+            --nav-active-bg: #ffffff;
             --nav-active-text: #000000;
-            --sub-box-bg: rgba(0,0,0,0.03);
-            --footer-bg: #e5e5e7;
-            --chart-grid-color: rgba(0, 0, 0, 0.1);
-            --chart-tick-color: #515154;
-            --good-hover-tint: rgba(34, 197, 94, 0.1);
-            --medium-hover-tint: rgba(245, 158, 11, 0.1);
-            --bad-hover-tint: rgba(239, 68, 68, 0.1);
+            --sub-box-bg: rgba(239, 240, 242, 0.7); /* A more silvery, glassy look */
+            --footer-bg: transparent;
+            --chart-grid-color: rgba(0, 0, 0, 0.08);
+            --chart-tick-color: #86868b;
+            --good-hover-tint: rgba(52, 199, 89, 0.12);
+            --medium-hover-tint: rgba(255, 159, 10, 0.12);
+            --bad-hover-tint: rgba(255, 69, 58, 0.12);
         }
 
         body {
@@ -74,6 +81,10 @@
             color: var(--text-color);
             transition: background-color 0.5s ease, color 0.5s ease;
         }
+
+        body.light-mode {
+            background-image: linear-gradient(180deg, #fbfbfd 0%, #f5f6fa 100%);
+        }
         
         .main-content::-webkit-scrollbar { width: 8px; }
         .main-content::-webkit-scrollbar-track { background: transparent; }
@@ -82,15 +93,14 @@
             border-radius: 10px;
         }
         body:not(.light-mode) .main-content::-webkit-scrollbar-thumb {
-             background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
         }
         .hidden { display: none; }
         .fa-sync-alt.animate-spin {
             animation: spin 1s linear infinite;
         }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        #loading-overlay, #access-overlay {
+        #loading-overlay {
             transition: opacity 0.5s ease-in-out;
         }
         
@@ -101,22 +111,10 @@
             font-weight: 500;
             color: var(--text-muted-color);
         }
-
         @keyframes fadeInOut {
             0%, 100% { opacity: 0; }
             50% { opacity: 1; }
         }
-        
-        /* Access Granted Animation */
-        .access-granted-animation {
-            animation: scale-up-center 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-        }
-        @keyframes scale-up-center {
-          0% { transform: scale(0.5); }
-          100% { transform: scale(1); }
-        }
-
-
         #navigation-bar { max-width: 48rem; }
         .nav-item {
             padding: 0.75rem 1.5rem;
@@ -130,45 +128,58 @@
             color: var(--nav-text-hover);
             background-color: rgba(255, 255, 255, 0.05);
         }
-        body.light-mode .nav-item:hover { background-color: rgba(0, 0, 0, 0.03); }
+        body.light-mode .nav-item:hover { background-color: rgba(0, 0, 0, 0.04); }
         .nav-item.active {
             background-color: var(--nav-active-bg);
             color: var(--nav-active-text);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        }
+        body.light-mode .nav-item.active {
+             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        body:not(.light-mode) .nav-item.active {
+             box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         }
 
-        .metric-card { border-radius: 1.5rem; transition: all 0.3s ease; border: 1px solid var(--card-border); background-color: var(--card-bg); backdrop-filter: blur(10px); }
+        .metric-card { 
+            border-radius: 1.5rem; 
+            transition: all 0.3s ease; 
+            border: 1px solid var(--card-border); 
+            background-color: var(--card-bg); 
+            backdrop-filter: blur(20px); 
+        }
+        body.light-mode .metric-card {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        }
+
         .metric-card:hover {
             background-color: var(--card-hover-bg);
-            border-color: rgba(255, 255, 255, 0.2);
             transform: translateY(-4px) scale(1.03);
             box-shadow: var(--card-hover-shadow);
         }
-        body.light-mode .metric-card:hover { border-color: rgba(0, 0, 0, 0.2); }
+        body.light-mode .metric-card:hover { border-color: rgba(255, 255, 255, 1); }
+        body:not(.light-mode) .metric-card:hover { border-color: rgba(255, 255, 255, 0.2); }
+
         .metric-value { transition: transform 0.3s ease; }
         .metric-card:hover .metric-value { transform: scale(1.1); }
         
         .metric-card[data-color-state="good"]:hover { background-color: var(--good-hover-tint); }
         .metric-card[data-color-state="medium"]:hover { background-color: var(--medium-hover-tint); }
         .metric-card[data-color-state="bad"]:hover { background-color: var(--bad-hover-tint); }
-
         .report-button { border-radius: 1.5rem; }
         
         .qrf-scorecard { transition: all 0.3s ease; }
         .qrf-scorecard .value { transition: transform 0.3s ease; }
-        .qrf-scorecard:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .qrf-scorecard:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        body:not(.light-mode) .qrf-scorecard:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .qrf-scorecard:hover .value { transform: scale(1.05); }
-
         .qrf-scorecard[data-color-state="good"]:hover { background-color: var(--good-hover-tint); }
         .qrf-scorecard[data-color-state="medium"]:hover { background-color: var(--medium-hover-tint); }
         .qrf-scorecard[data-color-state="bad"]:hover { background-color: var(--bad-hover-tint); }
-
         .pie-legend-item { transition: all 0.2s ease-in-out; }
         .pie-legend-item:hover {
             transform: scale(1.05);
             background-color: var(--card-hover-bg);
         }
-
         .split-box { transition: all 0.2s ease-in-out; }
         .split-box:hover {
             transform: scale(1.03);
@@ -190,6 +201,9 @@
             background-color: var(--text-color);
             color: var(--bg-color);
             transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        body:not(.light-mode) .timeline-toggle .timeline-btn.active {
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .timeline-toggle .timeline-btn:not(.active):hover {
@@ -199,8 +213,6 @@
         body.light-mode .timeline-toggle .timeline-btn:not(.active):hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
-
-
         #page-footer {
             background-color: var(--footer-bg);
             color: var(--text-muted-color);
@@ -217,21 +229,159 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* New Bar Chart Styles */
+        .bar-chart-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* 12px */
+            width: 100%;
+            border-radius: 0.5rem; /* 8px */
+            transition: background-color 0.2s ease-in-out;
+        }
+        .bar-chart-row:hover {
+            background-color: rgba(120, 120, 128, 0.12);
+        }
+        .bar-chart-label {
+            flex-shrink: 0;
+            width: 5rem; /* 80px */
+            text-align: right;
+            font-size: 0.875rem; /* 14px */
+            color: var(--text-muted-color);
+        }
+        .bar-chart-bar-container {
+            flex-grow: 1;
+            background-color: var(--sub-box-bg);
+            border-radius: 9999px;
+            height: 1.75rem; /* 28px */
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-chart-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            border-radius: 9999px;
+            background-color: var(--text-muted-color);
+            transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1), filter 0.2s ease-in-out, background-color 0.3s ease;
+            width: 0; /* Start with 0 width for animation */
+        }
+        .bar-chart-row:hover .bar-chart-bar {
+            filter: brightness(1.15);
+        }
+        .bar-chart-bar.animate-in {
+            width: var(--target-width);
+        }
+        .bar-chart-bar.good { background-color: #34c759; }
+        .bar-chart-bar.medium { background-color: #ff9500; }
+        .bar-chart-bar.bad { background-color: #ff3b30; }
+
+        .bar-chart-value {
+            font-weight: 600;
+            color: var(--text-color);
+            width: 4rem; /* 64px */
+            text-align: left;
+        }
         
+        /* New Rating Scale Styles */
+        .rating-scale-container {
+            width: 100%;
+        }
+        .rating-scale-track {
+            height: 0.75rem; /* 12px */
+            background-color: var(--sub-box-bg);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+        .rating-scale-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 0; /* Start with 0 width for animation */
+        }
+        .rating-scale-fill.animate-in {
+            width: var(--target-width);
+        }
+        .rating-scale-fill.good { background: linear-gradient(90deg, #34c759, #30d158); }
+        .rating-scale-fill.medium { background: linear-gradient(90deg, #ff9500, #ff9f0a); }
+        .rating-scale-fill.bad { background: linear-gradient(90deg, #ff3b30, #ff453a); }
+
+        
+        /* --- Passcode Screen Styles --- */
+        #passcode-overlay {
+            backdrop-filter: blur(20px);
+            transition: opacity 0.5s ease-in-out;
+        }
+        #passcode-container {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .passcode-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            border: 2px solid var(--text-muted-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .passcode-dot.filled {
+            background-color: var(--text-color);
+            border-color: var(--text-color);
+            transform: scale(1.1);
+        }
+        .passcode-dot.success {
+            background-color: #22c55e;
+            border-color: #22c55e;
+            animation: pulse 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #passcode-dots.shake {
+            animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.3); }
+        }
+        .passcode-keypad-btn {
+            background-color: rgba(128, 128, 128, 0.2);
+            color: var(--text-color);
+            transition: all 0.2s ease-in-out;
+            border: none;
+            touch-action: manipulation; /* Prevents double-tap zoom */
+        }
+        .passcode-keypad-btn:active {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+        body.light-mode .passcode-keypad-btn {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode .passcode-keypad-btn:active {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
         @media (max-width: 768px) {
             .header-container {
                 min-height: 3.5rem; /* 56px */
             }
-             #page-header {
+            #main-header {
+                justify-content: space-between;
+                gap: 0.5rem;
+            }
+            #page-header {
                 gap: 0.5rem; /* 8px */
                 justify-content: space-between;
             }
             #page-header-center-content {
                 position: absolute;
                 left: 50%;
-                transform: translateX(-58%); /* Nudge further left for more space on the right */
+                transform: translateX(-50%);
                 width: auto;
-                max-width: calc(100% - 11.5rem); /* Add a bit more buffer for right side buttons */
+                max-width: calc(100% - 10rem);
             }
             #page-header-title {
                 font-size: 1rem; /* text-base */
@@ -239,70 +389,106 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            #navigation-bar { width: auto; flex-grow: 1; margin: 0 0.5rem; }
-            .nav-item { padding: 0.75rem 0.25rem; font-size: 0.8rem; flex-grow: 1; text-align: center; }
-            #theme-toggle { flex-shrink: 0; padding-left: 1rem; padding-right: 1rem; }
+            #navigation-bar { 
+                width: 100%; 
+            }
+            .nav-item { 
+                padding: 0.75rem 0.5rem; /* Increased horizontal padding */
+                font-size: 0.8rem; 
+                flex-grow: 1; 
+                text-align: center; 
+            }
+            #theme-toggle, #main-header-refresh-button { 
+                width: 2.75rem; /* 44px */
+                height: 2.75rem; /* 44px */
+                flex-shrink: 0;
+            }
+            #theme-toggle > i {
+                font-size: 1rem;
+            }
             .page-content { padding-top: 1rem; }
             .card-grid { flex-direction: column; }
             .sub-box .card-grid.force-row { flex-direction: row; flex-wrap: nowrap; }
             .card-grid .flex-grow { min-width: 0; }
+            #header-greeting { display: none; }
         }
     </style>
 </head>
 <body class="h-screen flex flex-col">
-    <div id="access-overlay" class="fixed inset-0 bg-[var(--bg-color)]/80 backdrop-blur-xl flex items-center justify-center z-[101]">
-        <div class="w-full max-w-sm p-8 text-center">
-            <div id="initial-view">
-                <i class="fas fa-lock text-4xl text-[var(--text-muted-color)] mb-6"></i>
-                <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Dashboard Access</h2>
-                <p class="text-[var(--text-muted-color)] mb-6">Please enter your email to check for access or request it.</p>
-                <input type="email" id="email-input" class="w-full bg-[var(--sub-box-bg)] border border-[var(--card-border)] rounded-xl px-4 py-3 text-center text-[var(--text-color)] placeholder-[var(--text-muted-color)] focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="your.email@example.com">
-                <button id="request-access-btn" class="w-full bg-blue-600 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-transform hover:scale-105 active:scale-95">Request Access</button>
-                <p id="access-message" class="text-sm mt-4 h-5"></p>
+    <!-- Passcode Screen -->
+    <div id="passcode-overlay" class="fixed inset-0 bg-[var(--bg-color)]/80 flex flex-col items-center justify-center z-[101]">
+        <div id="passcode-container" class="flex flex-col items-center">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Zell Product Dashboard</h2>
+                <p class="text-sm text-[var(--text-muted-color)] mb-6">Enter Passcode</p>
+                <div id="passcode-dots" class="flex justify-center items-center gap-4 mb-4">
+                    <div class="passcode-dot"></div>
+                    <div class="passcode-dot"></div>
+                    <div class="passcode-dot"></div>
+                    <div class="passcode-dot"></div>
+                </div>
+                <p id="passcode-error" class="text-red-500 h-6"></p>
             </div>
-            <div id="pending-view" class="hidden">
-                 <i class="fas fa-clock text-4xl text-[var(--text-muted-color)] mb-6 animate-pulse"></i>
-                <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Access Requested</h2>
-                <p class="text-[var(--text-muted-color)] mb-6">Your request has been sent. The admin has been notified. Please check back later.</p>
-                <button id="check-status-btn" class="w-full bg-gray-500 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-transform hover:scale-105 active:scale-95">Check My Status</button>
-                 <p id="status-message" class="text-sm mt-4 h-5"></p>
-            </div>
-             <div id="granted-view" class="hidden">
-                 <div class="access-granted-animation">
-                    <i class="fas fa-check-circle text-6xl text-green-500 mb-6"></i>
-                    <h2 class="text-2xl font-semibold text-[var(--text-color)] mb-2">Access Granted</h2>
-                    <p class="text-[var(--text-muted-color)]">Welcome to the dashboard.</p>
-                 </div>
+            <div id="passcode-keypad" class="grid grid-cols-3 gap-4 mt-8 max-w-xs w-full">
+                <button data-key="1" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">1</button>
+                <button data-key="2" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">2</button>
+                <button data-key="3" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">3</button>
+                <button data-key="4" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">4</button>
+                <button data-key="5" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">5</button>
+                <button data-key="6" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">6</button>
+                <button data-key="7" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">7</button>
+                <button data-key="8" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">8</button>
+                <button data-key="9" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">9</button>
+                <div class="aspect-square"></div>
+                <button data-key="0" class="passcode-keypad-btn text-3xl font-light rounded-full aspect-square flex items-center justify-center">0</button>
+                <button data-key="backspace" class="passcode-keypad-btn rounded-full aspect-square flex items-center justify-center text-2xl">
+                    <i class="fas fa-delete-left"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-[100]">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-[100] opacity-0 pointer-events-none">
         <div id="loading-text-container">
             <span>Loading...</span>
         </div>
     </div>
 
+    <!-- Header -->
     <header class="w-full z-50 p-2 md:p-4 flex-shrink-0 hidden">
-        <div class="w-full max-w-7xl mx-auto flex items-center justify-center header-container relative">
+        <div class="w-full max-w-7xl mx-auto flex items-center header-container relative h-full">
             
+            <!-- Main Header for Overview/Reports List -->
             <div id="main-header" class="w-full h-full flex items-center justify-between md:justify-center relative">
-                <div class="w-12 h-12 flex-shrink-0 md:absolute md:left-0">
-                </div>
-                <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1">
-                    <button data-tab="overview" class="nav-item">Overview</button>
-                    <button data-tab="reports" class="nav-item">Reports</button>
-                    <button id="theme-toggle" class="px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
+                <div class="flex-1 flex justify-start">
+                    <div id="header-greeting" class="hidden md:block opacity-0 transition-opacity duration-500">
+                        <h2 id="greeting-text" class="text-xl font-bold text-[var(--text-color)] whitespace-nowrap"></h2>
+                        <p id="date-text" class="text-sm text-[var(--text-muted-color)] whitespace-nowrap"></p>
+                    </div>
+                    <button id="theme-toggle-mobile" class="md:hidden bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                         <i class="fas fa-sun"></i>
                     </button>
-                </nav>
-                 <div class="w-12 h-12 flex-shrink-0 md:absolute md:right-0 flex items-center justify-center">
+                </div>
+
+                <div class="flex-shrink-0 mx-2 md:mx-4">
+                     <nav id="navigation-bar" class="bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-2 flex justify-center items-center gap-1">
+                        <button data-tab="overview" class="nav-item">Overview</button>
+                        <button data-tab="reports" class="nav-item">Reports</button>
+                        <button id="theme-toggle-desktop" class="hidden md:flex px-4 py-3 rounded-full text-lg transition-all duration-300 text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)]">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="flex-1 flex justify-end items-center gap-2">
                      <button id="main-header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
                          <i class="fas fa-sync-alt"></i>
                      </button>
-                 </div>
+                </div>
             </div>
 
+            <!-- Page-specific Header -->
             <div id="page-header" class="hidden w-full h-full items-center justify-center relative">
                 <div class="absolute left-0 top-1/2 -translate-y-1/2">
                     <button id="header-back-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10">
@@ -325,7 +511,8 @@
         </div>
     </header>
     
-    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content relative hidden">
+    <!-- Main Content Area -->
+    <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content relative">
         <div id="overview-section" class="page-content pt-8 pb-16"></div>
         <div id="daily-section" class="page-content hidden pt-8 pb-16"></div>
         <div id="reports-section" class="page-content hidden pt-8 pb-16"></div>
@@ -341,21 +528,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxA9o0HlLQa3iTvCkrqFUVBFTAASYDSGC345Rpzec9udk3I3M3JvW7a08XNuWN8I_wv/exec';
-            const ACCESS_CONTROL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRm9ZKft-lHOoPkFzmITq3tmJRxX_51m_CpuKD7z8yzGQNmqDO88gqC7vesImRixJGAwOc-FHZJzzgJ/pub?output=csv';
-
-            const OVERVIEW_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=2143739256&single=true&output=csv';
-            const DAILY_METRICS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ve6vqp96t9mWt-s2DF1vzLPlamk3JskBjjrvEwB-K3HgaVpmYZcnPN11nzKSeFJ0QGa9AsCvGWyE/pub?gid=0&single=true&output=csv';
-            const QUESTION_REPO_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1254961431&single=true&output=csv';
-            const ACCA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=652498444&single=true&output=csv';
-            const CFA_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1749523224&single=true&output=csv';
-            const OVERALL_DAILY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1953325823&single=true&output=csv';
-            const ACCA_SPLIT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXN3EV-fPaGnr3lC43rx1yFopzMYd4LKV70JA0J_9R-gEbsHJSbNvze-7pKRh199bOU2MIlCPwpiWl/pub?gid=1011528086&single=true&output=csv';
-            const COURSE_CHECKS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTo2_1ighNkAxsTHM-9kCcKcOaMHRdojOqI_5wVVHTjJA_K80HdvzHtga5XRwStdlK7sYCbYRxRhGbV/pub?gid=1674961572&single=true&output=csv';
-            const LMS_SUPPORT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvkNoYVgY9VQ1IjrVblaFTGHt_gOveQHDXmgQcR0o8uF1M7O7iaJdBp6LQf8_h0pjDS8qGhpc4P08e/pub?gid=1975801635&single=true&output=csv';
-            const LMS_TRENDS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvkNoYVgY9VQ1IjrVblaFTGHt_gOveQHDXmgQcR0o8uF1M7O7iaJdBp6LQf8_h0pjDS8qGhpc4P08e/pub?gid=420305713&single=true&output=csv';
-            const WEEKLY_BATCH_REPORTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9p5Y3pAPNizOEYtkCm4afSajXjCIleDobCAbzQ3-VfSAMD3Mn2VsyCXDQgCZ-RpGtRVqhnxBgU8hE/pub?gid=647223292&single=true&output=csv';
-
+            // --- Configuration ---
+            const API_URL = "https://script.google.com/macros/s/AKfycbw3af1hFqZ-P9rxaWw4P7eUY47yHC1Iz6lWlHL3PkMRGDSGA3Kmoiy18v5aoaF3MBRjwg/exec";
+            const CORRECT_PASSCODE = '2020';
             const SHEET_URLS = {
                 'daily-section': 'https://docs.google.com/spreadsheets/d/17_clxpnwRjQ7qEiR6taISN9eLblZQ-4fr9WB2EqyQeE/edit?usp=sharing',
                 'course-checks-section': 'https://docs.google.com/spreadsheets/d/1nvGEbgEfrVrW1zWGndsRjF2naOp24BRk0cCRlLBoing/edit?usp=sharing',
@@ -364,14 +539,16 @@
                 'batch-reports-section': 'https://docs.google.com/spreadsheets/d/1QjRDyvdsDLTqo2wVuv9nF125z7nxaN2htTh-3o5HQ8A/edit?usp=sharing'
             };
 
-            const dataCache = { overview: null, daily: null, lmsStats: null, questionRepo: null, accaDaily: null, cfaDaily: null, overallDaily: null, accaSplit: null, courseChecks: null, lmsSupport: null, lmsTrends: null, batchReports: null };
-            let courseChecksChart = null;
-            let accaPieChart = null, accaLineChart = null, cfaPieChart = null, cfaLineChart = null, overallLineChart = null;
-            let supportLineChart = null;
+            // --- State Management ---
+            const dataCache = {};
+            let chartInstances = {};
+            let chartVisibilityState = {};
 
+            // --- DOM Elements ---
             const mainContent = document.getElementById('main-content');
             const navButtons = document.querySelectorAll('.nav-item');
             const pageContents = document.querySelectorAll('.page-content');
+            const header = document.querySelector('header');
             const mainHeader = document.getElementById('main-header');
             const headerBackButton = document.getElementById('header-back-button');
             const pageHeader = document.getElementById('page-header');
@@ -379,204 +556,87 @@
             const openSheetButton = document.getElementById('open-sheet-button');
             const headerRefreshButton = document.getElementById('header-refresh-button');
             const mainHeaderRefreshButton = document.getElementById('main-header-refresh-button');
-            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleDesktop = document.getElementById('theme-toggle-desktop');
+            const themeToggleMobile = document.getElementById('theme-toggle-mobile');
             const loadingOverlay = document.getElementById('loading-overlay');
-            const accessOverlay = document.getElementById('access-overlay');
-            const emailInput = document.getElementById('email-input');
-            const requestAccessBtn = document.getElementById('request-access-btn');
-            const checkStatusBtn = document.getElementById('check-status-btn');
-            const initialView = document.getElementById('initial-view');
-            const pendingView = document.getElementById('pending-view');
-            const grantedView = document.getElementById('granted-view');
-            const accessMessage = document.getElementById('access-message');
-            const statusMessage = document.getElementById('status-message');
+            const passcodeOverlay = document.getElementById('passcode-overlay');
+            const passcodeContainer = document.getElementById('passcode-container');
+            const passcodeKeypad = document.getElementById('passcode-keypad');
+            const passcodeDots = document.getElementById('passcode-dots');
+            const passcodeError = document.getElementById('passcode-error');
+            const headerGreeting = document.getElementById('header-greeting');
 
-            const parseCSV = (csv) => {
-                if (!csv) return { parsed: [], raw: [] };
-                const lines = csv.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
-                if (lines.length < 1) return { parsed: [], raw: lines };
-                const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    const values = line.match(/(?:"[^"]*"|[^,]+)/g) || [];
-                     if (values.length > 0) {
+            // --- Data Fetching & Processing ---
+            async function fetchAllData(forceRefresh = false, isRetry = false) {
+                if (Object.keys(dataCache).length > 0 && !forceRefresh) {
+                    console.log("Using cached data.");
+                    return dataCache;
+                }
+                console.log(isRetry ? "Retrying data fetch from API..." : "Fetching new data from API...");
+                
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error(`API responded with status: ${response.status}`);
+                    const data = await response.json();
+                    if (data.error) throw new Error(`API script returned an error: ${data.details || data.error}`);
+                    
+                    // This block checks if the specific 'batch_information' data is missing or incomplete.
+                    // If it is, and this is the first attempt to fetch, it waits 3 seconds and tries again.
+                    const isBatchInfoInvalid = !data.batch_information || data.batch_information.length === 0;
+                    if (isBatchInfoInvalid && !isRetry) {
+                        console.warn("Batch information appears incomplete. Retrying fetch in 3 seconds to allow IMPORTRANGE to update.");
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        return fetchAllData(forceRefresh, true); // Call again with the retry flag set to true
+                    }
+
+                    Object.keys(dataCache).forEach(key => delete dataCache[key]);
+                    Object.assign(dataCache, data);
+                    console.log("Data fetched and cached:", dataCache);
+                    return dataCache;
+                } catch (error) {
+                    console.error("Fatal Error: Could not fetch from Apps Script.", error);
+                    mainContent.innerHTML = `<div class="bg-red-900/50 border border-[var(--card-border)] text-red-200 px-6 py-4 rounded-xl text-center max-w-2xl mx-auto mt-8"><h3 class="font-bold text-lg mb-2">Connection Error</h3><p>${error.message}</p></div>`;
+                    return null;
+                }
+            }
+
+            function parseAsObject(dataArray, keyColumn = 0, valueColumn = 1) {
+                if (!dataArray || !Array.isArray(dataArray)) return {};
+                return dataArray.reduce((obj, row) => {
+                    if (row && row[keyColumn] && String(row[keyColumn]).trim() !== '') {
+                        obj[String(row[keyColumn]).trim()] = row[valueColumn];
+                    }
+                    return obj;
+                }, {});
+            }
+
+            function parseAsHeaders(dataArray) {
+                 if (!dataArray || !Array.isArray(dataArray) || dataArray.length < 1) return [];
+                let headerRowIndex = -1;
+                for(let i = 0; i < dataArray.length; i++) {
+                    if(Array.isArray(dataArray[i]) && dataArray[i].some(cell => cell !== null && cell !== '')) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
+                if(headerRowIndex === -1) return [];
+                const headers = dataArray[headerRowIndex].map(h => String(h).trim());
+                const dataRows = dataArray.slice(headerRowIndex + 1);
+                return dataRows.map(row => {
+                    if(Array.isArray(row) && row.some(cell => cell !== null && cell !== '')) {
                         const obj = {};
                         headers.forEach((header, index) => {
-                            let value = values[index] ? values[index].trim().replace(/"/g, '') : '';
-                            if (value === '#NAME?' || value === '#REF!') value = '...';
-                            obj[header] = value;
+                            if (header) obj[header] = row[index];
                         });
-                        data.push(obj);
+                        return obj;
                     }
-                }
-                return { parsed: data, raw: lines };
-            };
-            
-            const parseSimpleCSV = (csv) => {
-                if (!csv) return {};
-                const metrics = {};
-                const lines = csv.replace(/\r/g, '').split('\n');
-                lines.forEach(line => {
-                    const parts = line.split(',');
-                    if (parts.length >= 2) {
-                        const key = parts[0].trim().replace(/"/g, '');
-                        let value = parts[1].trim().replace(/"/g, '');
-                        if (value === '#NAME?' || value === '#REF!') value = '...';
-                        if (key) metrics[key] = value;
-                    }
-                });
-                return metrics;
-            };
+                    return null;
+                }).filter(Boolean);
+            }
 
-            const parseLmsStatsCSV = (csv) => {
-                if (!csv) return null;
-                const lines = csv.replace(/\r/g, '').split('\n');
-                const getValue = (lineIndex, colIndex) => {
-                    if (lines.length > lineIndex) {
-                        const values = lines[lineIndex].match(/(?:"[^"]*"|[^,]+)/g) || [];
-                        if (values.length > colIndex) {
-                            let value = values[colIndex].trim().replace(/"/g, '').replace(/,/g, '');
-                             if (value === '#NAME?' || value === '#REF!') return '...';
-                            return value;
-                        }
-                    }
-                    return 'N/A';
-                };
-                const totalLearners = getValue(7, 1);
-                const testsTaken = getValue(8, 1);
-
-                return {
-                    totalLearners: !isNaN(parseInt(totalLearners)) ? parseInt(totalLearners).toLocaleString() : totalLearners,
-                    testsTaken: !isNaN(parseInt(testsTaken)) ? parseInt(testsTaken).toLocaleString() : testsTaken,
-                    avgTimeSpent: getValue(10, 1)
-                };
-            };
-
-            const parseBatchReportsCSV = (csv) => {
-                if (!csv) return null;
-                const lines = csv.replace(/\r/g, '').split('\n');
-                
-                const getValue = (rowIndex, colIndex) => {
-                    if (lines.length > rowIndex && lines[rowIndex]) { 
-                        const values = lines[rowIndex].split(',');
-                        if (values.length > colIndex && values[colIndex]) { 
-                            let value = values[colIndex].trim().replace(/"/g, '');
-                            if (value === '#NAME?' || value === '#REF!') return '...';
-                            return value;
-                        }
-                    }
-                    return 'N/A';
-                };
-
-                return {
-                    totalEnrolled: getValue(0, 1),     // Cell B1
-                    liveBatches: getValue(1, 1),       // Cell B2
-                    avgAttendance: getValue(2, 1),     // Cell B3
-                    avgLPS: getValue(3, 1),            // Cell B4
-                    testsCompletion: getValue(4, 1)     // Cell B5
-                };
-            };
-
-            const parseLmsTrendsCSV = (csv) => {
-                if (!csv) return [];
-                const lines = csv.replace(/\r/g, '').split('\n').slice(1);
-                const data = [];
-
-                lines.forEach(line => {
-                    const parts = line.split(',');
-                    if (parts.length >= 3 && parts[0].trim() && parts[1].trim() && parts[2].trim()) {
-                        const dateStr = parts[0].trim().replace(/"/g, '');
-                        const doubtsStr = parts[1].trim();
-                        const ticketsStr = parts[2].trim();
-                        
-                        const dateParts = dateStr.split('/');
-                        if (dateParts.length === 3) {
-                            const date = new Date(dateParts[2], dateParts[0] - 1, dateParts[1]);
-                            const doubts = parseInt(doubtsStr, 10);
-                            const tickets = parseInt(ticketsStr, 10);
-
-                            if (!isNaN(date.getTime()) && !isNaN(doubts) && !isNaN(tickets)) {
-                                data.push({
-                                    date: date,
-                                    doubts: doubts,
-                                    tickets: tickets
-                                });
-                            }
-                        }
-                    }
-                });
-                
-                data.sort((a, b) => a.date - b.date);
-                return data;
-            };
-
-            const parseAccaSplitCSV = (csv) => {
-                if (!csv) return null;
-                const lines = csv.replace(/\r/g, '').split('\n');
-                const getValue = (lineIndex, colIndex) => {
-                    if (lines.length > lineIndex) {
-                        const values = lines[lineIndex].match(/(?:"[^"]*"|[^,]+)/g) || [];
-                        if (values.length > colIndex) {
-                             let value = values[colIndex].trim().replace(/"/g, '');
-                             if (value === '#NAME?' || value === '#REF!') return '...';
-                             return value;
-                        }
-                    }
-                    return 'N/A';
-                };
-                return {
-                    subjectiveCount: getValue(0, 4),
-                    subjectivePercent: getValue(1, 4),
-                    nonSubjectiveCount: getValue(2, 4),
-                    nonSubjectivePercent: getValue(3, 4),
-                    totalQuestions: getValue(4, 4)
-                };
-            };
-
-            const fetchAndParseData = async (url, parser = parseCSV, retries = 3, delay = 1500) => {
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch(`${url}&t=${new Date().getTime()}`);
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        const text = await response.text();
-                        if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {
-                            throw new Error("Received an HTML page instead of CSV data. Retrying...");
-                        }
-                        if (text.includes("Sorry, the file you have requested does not exist.")) throw new Error("Data source not found.");
-                        
-                        const parsedData = parser(text);
-
-                        if (parser === parseBatchReportsCSV) {
-                            let needsRetry = false;
-                            for (const key in parsedData) {
-                                if (parsedData[key] === '...') {
-                                    needsRetry = true;
-                                    break;
-                                }
-                            }
-                            if (needsRetry && i < retries - 1) {
-                                console.warn(`Batch data still calculating, retrying in ${delay/1000}s...`);
-                                await new Promise(res => setTimeout(res, delay));
-                                continue;
-                            }
-                        }
-                        
-                        return parsedData;
-                    } catch (error) {
-                        console.error(`Attempt ${i + 1} to fetch from ${url} failed:`, error.message);
-                        if (i < retries - 1) {
-                            await new Promise(res => setTimeout(res, delay * (i + 1)));
-                        } else {
-                            console.error("Could not fetch or parse data after multiple attempts:", error);
-                            return null;
-                        }
-                    }
-                }
-            };
-
+            // --- UI Helpers ---
             const getIconForMetric = (label) => {
-                const lowerLabel = label.toLowerCase();
+                const lowerLabel = String(label).toLowerCase();
                 if (lowerLabel.includes('enrolled') || lowerLabel.includes('learners')) return 'fas fa-user-graduate';
                 if (lowerLabel.includes('attendance')) return 'fas fa-user-check';
                 if (lowerLabel.includes('lps')) return 'fas fa-chart-line';
@@ -604,10 +664,9 @@
                 if (isNaN(value)) return 'neutral';
                 
                 let thresholds = { bad: 35, medium: 70 };
-                if (label.includes('LPS')) {
+                if (String(label).includes('LPS')) {
                     thresholds = { bad: 35, medium: 75 };
                 }
-
                 if (value <= thresholds.bad) return 'bad';
                 if (value > thresholds.bad && value <= thresholds.medium) return 'medium';
                 return 'good';
@@ -620,147 +679,237 @@
                 return 'text-[var(--text-color)]';
             };
 
-            const renderOverviewPage = async (container, data, batchData) => {
-                if (!data || !data.parsed || data.parsed.length === 0) { showError(container, "Could not load overview data. It might be temporarily unavailable. Please try refreshing."); return; }
-                
-                const groupedData = data.parsed.reduce((acc, row) => { const topLevel = row['Top-Level Box']; if (topLevel) { if (!acc[topLevel]) acc[topLevel] = []; acc[topLevel].push(row); } return acc; }, {});
-                
-                let content = '';
-                for (const [title, rows] of Object.entries(groupedData)) {
-                    const isUserAnalytics = title.toLowerCase().includes('user analytics');
-                    const isStudentSupport = title.toLowerCase().includes('student support');
-
-                    content += `<div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
-                        <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4">
-                            <i class="${getIconForMetric(title)}"></i><span>${title}</span>
-                        </h2>`;
-
-                    if (title.trim() === 'Batches Information' && batchData) {
-                        const generalMetrics = [
-                            { 'Data Header': 'Total Enrolled Students', 'Value': batchData.totalEnrolled, isPerformance: false },
-                            { 'Data Header': 'Live Batches Count', 'Value': batchData.liveBatches, isPerformance: false }
-                        ];
-                        const performanceMetrics = [
-                            { 'Data Header': 'Average Attendance %', 'Value': batchData.avgAttendance, isPerformance: true },
-                            { 'Data Header': 'Average LPS', 'Value': batchData.avgLPS, isPerformance: true },
-                            { 'Data Header': 'Tests Completion %', 'Value': batchData.testsCompletion, isPerformance: true }
-                        ];
-                        
-                        const createBatchMetricCard = (metric) => {
-                            const colorState = metric.isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
-                            const colorClass = metric.isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
-                            return `<div class="metric-card h-full" data-color-state="${colorState}">
-                                <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center justify-center text-center space-y-2 min-w-0 rounded-3xl h-full">
-                                    <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                    <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
-                                    <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
-                                </div>
-                            </div>`;
-                        };
-
-                        content += `
-                            <div class="space-y-6">
-                                <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
-                                    <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">General Information</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${generalMetrics.map(metric => createBatchMetricCard(metric)).join('')}
-                                    </div>
-                                </div>
-                                <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
-                                    <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">Performance Data</h3>
-                                    <div class="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3">
-                                        <div class="w-[calc(50%-0.5rem)] sm:w-auto">
-                                            ${createBatchMetricCard(performanceMetrics[0])}
-                                        </div>
-                                         <div class="w-[calc(50%-0.5rem)] sm:w-auto">
-                                            ${createBatchMetricCard(performanceMetrics[1])}
-                                        </div>
-                                         <div class="w-full max-w-[180px] sm:max-w-none sm:w-auto mx-auto sm:mx-0">
-                                            ${createBatchMetricCard(performanceMetrics[2])}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    } else if (title.trim() !== 'Batches Information') {
-                        const subBoxes = rows.reduce((acc, row) => { const subHeader = row['Sub-Box Header']; if (subHeader) { if (!acc[subHeader]) acc[subHeader] = []; acc[subHeader].push(row); } return acc; }, {});
-                        const chunkedSubBoxes = Object.entries(subBoxes).reduce((resultArray, item, index) => { 
-                            const chunkIndex = Math.floor(index/2);
-                            if(!resultArray[chunkIndex]) { resultArray[chunkIndex] = [] }
-                            resultArray[chunkIndex].push(item);
-                            return resultArray;
-                        }, []);
-
-                        content += chunkedSubBoxes.map(row => `
-                            <div class="grid grid-cols-1 ${row.length > 1 ? 'md:grid-cols-2' : ''} gap-8">
-                                ${row.map(([subTitle, metrics]) => {
-                                    const cardContainerClasses = isUserAnalytics 
-                                        ? 'grid grid-cols-3 gap-4' 
-                                        : isStudentSupport 
-                                            ? 'grid grid-cols-2 gap-4' 
-                                            : 'flex flex-wrap justify-center gap-4';
-
-                                    return `
-                                    <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl flex flex-col h-full">
-                                        <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">${subTitle}</h3>
-                                        <div class="card-grid ${cardContainerClasses} mt-auto">
-                                            ${metrics.sort((a, b) => a.Order - b.Order).map(metric => {
-                                                const val = parseInt(metric.Value, 10);
-                                                let colorState = 'neutral';
-                                                let colorClass = 'text-[var(--text-color)]';
-                                                if (metric['Data Header'].toLowerCase().includes('unanswered') || metric['Data Header'].toLowerCase().includes('open')) {
-                                                    colorState = val >= 10 ? 'bad' : 'good';
-                                                    colorClass = getPerformanceColorClass(colorState);
-                                                }
-                                                return `<div class="metric-card" data-color-state="${colorState}">
-                                                    <div class="p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl">
-                                                        <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
-                                                        <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric['Value'] || 'N/A'}</div>
-                                                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
-                                                    </div>
-                                                </div>`
-                                            }).join('')}
-                                        </div>
-                                    </div>
-                                    `
-                                }).join('')}
-                            </div>
-                        `).join('');
-                    }
-                    content += '</div>';
-                }
-                container.innerHTML = `<div class="space-y-12">${content}</div>`;
+            const triggerAnimations = (container) => {
+                setTimeout(() => {
+                    container.querySelectorAll('.bar-chart-bar').forEach(bar => {
+                        bar.classList.add('animate-in');
+                    });
+                    container.querySelectorAll('.rating-scale-fill').forEach(fill => {
+                        fill.classList.add('animate-in');
+                    });
+                }, 100);
             };
 
-            const renderDailyMetricsPage = (container, data, lmsStats) => {
-                if (!data) { showError(container, "Could not load daily metrics data."); return; }
-                const latestData = data.parsed;
-                const getLatestMetric = (metricName) => { const entries = latestData.filter(d => d['Cumulative'] && d['Cumulative'].trim() === metricName); if (entries.length === 0) return { WEB: 'N/A', ANDROID: 'N/A', iOS: 'N/A' }; return entries.sort((a, b) => new Date(b['Date']) - new Date(a['Date']))[0]; };
-                const dau = getLatestMetric('DAU');
-                const mau = getLatestMetric('MAU');
-                const rating = getLatestMetric('Rating');
-                const numRatings = getLatestMetric('Number of Ratings');
+            // --- NEW UI Component Generators ---
+            const createBarChartCard = (title, data) => {
+                const numberFormatter = new Intl.NumberFormat('en-US');
+                const values = data.map(d => d.value);
+                const maxValue = Math.max(...values, 1); // Avoid division by zero
+                
+                const rowsHtml = data.map(item => `
+                    <div class="bar-chart-row p-1 rounded-lg">
+                        <div class="bar-chart-label">${item.label}</div>
+                        <div class="bar-chart-bar-container">
+                            <div class="bar-chart-bar" style="--target-width: ${ (item.value / maxValue) * 100 }%;"></div>
+                        </div>
+                        <div class="bar-chart-value">${numberFormatter.format(item.value)}</div>
+                    </div>
+                `).join('');
 
-                const getRatingColor = (rating) => {
-                    const val = parseFloat(rating);
-                    if (isNaN(val)) return 'text-[var(--text-color)]';
-                    return val >= 4 ? 'text-green-500' : 'text-[var(--text-color)]';
+                return `
+                    <div class="sub-box bg-[var(--sub-box-bg)] p-4 md:p-6 rounded-2xl border border-[var(--card-border)] flex flex-col h-full">
+                        <h3 class="text-lg md:text-xl font-bold text-[var(--text-color)] opacity-90 mb-4 text-center">${title}</h3>
+                        <div class="space-y-3 mt-auto">
+                            ${rowsHtml}
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const createSingleBarChartCard = (title, openData, totalData) => {
+                const numberFormatter = new Intl.NumberFormat('en-US');
+                const openValue = openData.value;
+                let barColorClass = 'good';
+                if (openValue >= 10) barColorClass = 'bad';
+                else if (openValue >= 5) barColorClass = 'medium';
+
+                return `
+                    <div class="sub-box bg-[var(--sub-box-bg)] p-4 md:p-6 rounded-2xl border border-[var(--card-border)] flex flex-col h-full">
+                        <h3 class="text-lg md:text-xl font-bold text-[var(--text-color)] opacity-90 mb-4 text-center">${title}</h3>
+                        <div class="space-y-3 mt-auto">
+                            <div class="bar-chart-row p-1 rounded-lg">
+                                <div class="bar-chart-label">${openData.label}</div>
+                                <div class="bar-chart-bar-container">
+                                    <div class="bar-chart-bar ${barColorClass}" style="--target-width: ${openValue > 0 ? (openValue / (openValue + 5)) * 100 : 0}%;"></div>
+                                </div>
+                                <div class="bar-chart-value">${numberFormatter.format(openValue)}</div>
+                            </div>
+                            <div class="text-center pt-2">
+                                <span class="text-sm text-[var(--text-muted-color)]">${totalData.label}: </span>
+                                <span class="font-semibold text-[var(--text-color)]">${numberFormatter.format(totalData.value)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const createRatingScaleCard = (title, icon, rating, totalRatings) => {
+                const ratingValue = parseFloat(rating) || 0;
+                const totalRatingsValue = parseInt(String(totalRatings).replace(/,/g, ''), 10) || 0;
+                let ratingColorClass = 'bad';
+                if (ratingValue >= 4.0) ratingColorClass = 'good';
+                else if (ratingValue >= 3.5) ratingColorClass = 'medium';
+
+                return `
+                    <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] space-y-4">
+                        <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${icon}"></i>${title}</h4>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold text-2xl text-[var(--text-color)]">${ratingValue.toFixed(1)}</span>
+                            <div class="rating-scale-container">
+                                <div class="rating-scale-track">
+                                    <div class="rating-scale-fill ${ratingColorClass}" style="--target-width: ${(ratingValue / 5) * 100}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-center text-sm text-[var(--text-muted-color)] -mt-1">${new Intl.NumberFormat('en-US').format(totalRatingsValue)} Ratings</p>
+                    </div>
+                `;
+            };
+
+
+            // --- Page Rendering Functions ---
+            const renderOverviewPage = (container, allData) => {
+                if (!allData || !allData.daily_metrics || !allData.batch_information || !allData.aad_lms_tickets) {
+                    showError(container, "Could not load all necessary data for the overview. Please try refreshing or check the individual reports.");
+                    return;
+                }
+                const dailyMetrics = allData.daily_metrics;
+                const batchInfoData = allData.batch_information;
+                const supportInfo = allData.aad_lms_tickets;
+                
+                const getCellValue = (data, row, col) => {
+                    const val = (data && data[row] && data[row][col] != null) ? data[row][col] : '--';
+                    const valStr = String(val);
+                    if (valStr.includes('#REF!') || valStr.includes('#NAME?')) return '--';
+                    return val;
                 };
 
-                const createPlatformCard = (label, value) => `
-                    <div class="metric-card p-3 rounded-2xl text-center border border-[var(--card-border)] flex-1">
-                        <div class="metric-value text-2xl md:text-3xl font-semibold tracking-tight">${value || 'N/A'}</div>
-                        <div class="text-xs text-[var(--text-muted-color)]">${label}</div>
-                    </div>
-                `;
+                const parseNumeric = (val) => {
+                    if (val === '--' || val === null || val === undefined) return 0;
+                    return parseInt(String(val).replace(/,/g, ''), 10) || 0;
+                }
                 
-                const createRatingCard = (label, value, icon, colorClass = 'text-[var(--text-color)]') => `
-                    <div class="metric-card flex-grow p-4 flex flex-col items-center text-center space-y-2 rounded-3xl" data-color-state="${colorClass.includes('green') ? 'good' : 'neutral'}">
-                        <div class="text-2xl text-[var(--icon-color)]"><i class="${icon}"></i></div>
-                        <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${value || 'N/A'}</div>
-                        <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
+                const batchInfo = {
+                    'Total enrolled students': getCellValue(batchInfoData, 0, 1),
+                    'Live batches count': getCellValue(batchInfoData, 1, 1),
+                    'Average Attendance %': getCellValue(batchInfoData, 2, 1),
+                    'Average LPS': getCellValue(batchInfoData, 3, 1),
+                    'Test Completion %': getCellValue(batchInfoData, 4, 1)
+                };
+
+                const dauData = [
+                    { label: 'Web', value: parseNumeric(getCellValue(dailyMetrics, 5, 1)) },
+                    { label: 'Android', value: parseNumeric(getCellValue(dailyMetrics, 5, 2)) },
+                    { label: 'iOS', value: parseNumeric(getCellValue(dailyMetrics, 5, 3)) }
+                ];
+
+                const mauData = [
+                    { label: 'Web', value: parseNumeric(getCellValue(dailyMetrics, 6, 1)) },
+                    { label: 'Android', value: parseNumeric(getCellValue(dailyMetrics, 6, 2)) },
+                    { label: 'iOS', value: parseNumeric(getCellValue(dailyMetrics, 6, 3)) }
+                ];
+
+                const openDoubtsData = { label: 'Open', value: parseNumeric(getCellValue(supportInfo, 1, 7)) };
+                const totalDoubtsData = { label: 'Total Doubts', value: parseNumeric(getCellValue(supportInfo, 0, 7)) };
+                const openTicketsData = { label: 'Open', value: parseNumeric(getCellValue(supportInfo, 3, 7)) };
+                const totalTicketsData = { label: 'Total Tickets', value: parseNumeric(getCellValue(supportInfo, 2, 7)) };
+
+                const userAnalyticsContent = createBarChartCard('Daily Active Users (DAU)', dauData) + createBarChartCard('Monthly Active Users (MAU)', mauData);
+                const supportContent = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        ${createSingleBarChartCard('Ask a Doubt', openDoubtsData, totalDoubtsData)}
+                        ${createSingleBarChartCard('LMS Tickets', openTicketsData, totalTicketsData)}
                     </div>
                 `;
+
+                const batchInfoContent = () => {
+                    const generalMetrics = [
+                        { 'Data Header': 'Total Enrolled Students', 'Value': batchInfo['Total enrolled students'], isPerformance: false },
+                        { 'Data Header': 'Live Batches Count', 'Value': batchInfo['Live batches count'], isPerformance: false }
+                    ];
+                    const performanceMetrics = [
+                        { 'Data Header': 'Average Attendance %', 'Value': batchInfo['Average Attendance %'], isPerformance: true },
+                        { 'Data Header': 'Average LPS', 'Value': batchInfo['Average LPS'], isPerformance: true },
+                        { 'Data Header': 'Tests Completion %', 'Value': batchInfo['Test Completion %'], isPerformance: true }
+                    ];
+                    
+                    const createBatchMetricCard = (metric) => {
+                        const colorState = metric.isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
+                        const colorClass = metric.isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
+                        return `<div class="metric-card h-full" data-color-state="${colorState}">
+                            <div class="flex-grow flex-shrink-0 p-4 flex flex-col items-center justify-center text-center space-y-2 min-w-0 rounded-3xl h-full">
+                                <div class="text-2xl text-[var(--icon-color)]"><i class="${getIconForMetric(metric['Data Header'])}"></i></div>
+                                <div class="metric-value text-2xl md:text-3xl font-bold ${colorClass} tracking-tight">${metric.Value || 'N/A'}</div>
+                                <div class="text-xs font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
+                            </div>
+                        </div>`;
+                    };
+                    return `
+                        <div class="space-y-6">
+                            <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">General Information</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    ${generalMetrics.map(metric => createBatchMetricCard(metric)).join('')}
+                                </div>
+                            </div>
+                            <div class="sub-box bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                <h3 class="text-xl font-bold text-center text-[var(--text-color)] opacity-90 mb-4">Performance Data</h3>
+                                <div class="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-3">
+                                     <div class="w-[calc(50%-0.5rem)] sm:w-auto">
+                                        ${createBatchMetricCard(performanceMetrics[0])}
+                                    </div>
+                                     <div class="w-[calc(50%-0.5rem)] sm:w-auto">
+                                        ${createBatchMetricCard(performanceMetrics[1])}
+                                    </div>
+                                     <div class="w-full max-w-[180px] sm:max-w-none sm:w-auto mx-auto sm:mx-0">
+                                        ${createBatchMetricCard(performanceMetrics[2])}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+
+                container.innerHTML = `
+                    <div class="space-y-12">
+                        <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4"><i class="fas fa-users"></i>User Analytics</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">${userAnalyticsContent}</div>
+                        </div>
+                        <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4"><i class="fas fa-headset"></i>Student Support</h2>
+                            ${supportContent}
+                        </div>
+                        <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-3xl space-y-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center flex justify-center items-center gap-4"><i class="fas fa-chalkboard-teacher"></i>Batches Information</h2>
+                            ${batchInfoContent()}
+                        </div>
+                    </div>
+                `;
+                triggerAnimations(container);
+            };
+
+            const renderDailyMetricsPage = (container, data) => {
+                if (!data) { showError(container, "Could not load daily metrics data."); return; }
+                const getCellValue = (row, col) => {
+                    const val = (data[row] && data[row][col] != null) ? data[row][col] : 'N/A';
+                    return String(val).includes('#REF!') ? 'N/A' : val;
+                };
+                const parseNumeric = (val) => {
+                    if (val === 'N/A' || val === null || val === undefined) return 0;
+                    return parseInt(String(val).replace(/,/g, ''), 10) || 0;
+                }
+
+                const dauData = [
+                    { label: 'Web', value: parseNumeric(getCellValue(5, 1)) },
+                    { label: 'Android', value: parseNumeric(getCellValue(5, 2)) },
+                    { label: 'iOS', value: parseNumeric(getCellValue(5, 3)) }
+                ];
+                const mauData = [
+                    { label: 'Web', value: parseNumeric(getCellValue(6, 1)) },
+                    { label: 'Android', value: parseNumeric(getCellValue(6, 2)) },
+                    { label: 'iOS', value: parseNumeric(getCellValue(6, 3)) }
+                ];
 
                 const createLmsStatCard = (label, value, icon) => `
                     <div class="metric-card flex-grow p-4 flex flex-col items-center text-center space-y-2 rounded-3xl">
@@ -770,64 +919,34 @@
                     </div>
                 `;
                 
-                let lmsStatsContent = '';
-                if(lmsStats) {
-                    lmsStatsContent = `
-                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
-                            <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-chart-bar"></i>LMS Web Stats</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                ${createLmsStatCard('Total Learners', lmsStats.totalLearners, getIconForMetric('learners'))}
-                                ${createLmsStatCard('Tests Taken', lmsStats.testsTaken, getIconForMetric('tests'))}
-                                ${createLmsStatCard('Avg Time Spent', lmsStats.avgTimeSpent, getIconForMetric('time'))}
-                            </div>
+                const lmsStatsContent = `
+                    <div class="metric-card sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
+                        <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-chart-bar"></i>LMS Web Stats</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            ${createLmsStatCard('Total Learners', getCellValue(7, 1), getIconForMetric('learners'))}
+                            ${createLmsStatCard('Tests Taken', getCellValue(8, 1), getIconForMetric('tests'))}
+                            ${createLmsStatCard('Avg Time Spent', getCellValue(10, 1), getIconForMetric('time'))}
                         </div>
-                    `;
-                }
-
+                    </div>`;
                 container.innerHTML = `
                     <div class="space-y-8">
-                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
+                        <div class="metric-card sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="fas fa-users"></i>Active Users</h3>
-                            <div class="flex flex-col sm:flex-row gap-8">
-                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)] flex-1">
-                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Daily Active (DAU)</h4>
-                                    <div class="flex justify-center gap-4">
-                                        ${createPlatformCard('Web', dau.WEB)}
-                                        ${createPlatformCard('Android', dau.ANDROID)}
-                                        ${createPlatformCard('iOS', dau.iOS)}
-                                    </div>
-                                </div>
-                                <div class="bg-[var(--sub-box-bg)] p-4 rounded-xl border border-[var(--card-border)] flex-1">
-                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] mb-4">Monthly Active (MAU)</h4>
-                                    <div class="flex justify-center gap-4">
-                                        ${createPlatformCard('Web', mau.WEB)}
-                                        ${createPlatformCard('Android', dau.ANDROID)}
-                                        ${createPlatformCard('iOS', dau.iOS)}
-                                    </div>
-                                </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                ${createBarChartCard('Daily Active (DAU)', dauData)}
+                                ${createBarChartCard('Monthly Active (MAU)', mauData)}
                             </div>
                         </div>
                         ${lmsStatsContent}
-                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
+                        <div class="metric-card sub-box bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl">
                             <h3 class="text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center flex items-center justify-center gap-3"><i class="${getIconForMetric('rating')}"></i>Store Ratings</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] space-y-4">
-                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('android')}"></i>Android</h4>
-                                    <div class="flex justify-center gap-6">
-                                        ${createRatingCard('Avg. Rating', rating.ANDROID, 'fas fa-star', getRatingColor(rating.ANDROID))}
-                                        ${createRatingCard('# of Ratings', numRatings.ANDROID, 'fas fa-user-edit')}
-                                    </div>
-                                </div>
-                                <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] space-y-4">
-                                    <h4 class="text-lg font-semibold text-center text-[var(--text-muted-color)] flex items-center justify-center gap-2"><i class="${getIconForMetric('ios')}"></i>iOS</h4>
-                                    <div class="flex justify-center gap-6">
-                                        ${createRatingCard('Avg. Rating', rating.iOS, 'fas fa-star', getRatingColor(rating.iOS))}
-                                        ${createRatingCard('# of Ratings', numRatings.iOS, 'fas fa-user-edit')}
-                                    </div>
-                                </div>
+                                ${createRatingScaleCard('Android', getIconForMetric('android'), getCellValue(1, 2), getCellValue(2, 2))}
+                                ${createRatingScaleCard('iOS', getIconForMetric('ios'), getCellValue(1, 3), getCellValue(2, 3))}
                             </div>
                         </div>
                     </div>`;
+                triggerAnimations(container);
             };
 
             const getSuccessRateColor = (rateStr) => {
@@ -847,22 +966,23 @@
             };
 
             const renderCourseChecksPage = (container, data, days = 10) => {
-                if (!data || !data.raw || data.raw.length < 1) { showError(container, "Could not load Course Checks data."); return; }
+                if (!data || !data.parsed || data.parsed.length === 0) { showError(container, "Could not load Course Checks data."); return; }
                 
-                const firstLine = data.raw[0].split(',');
-                const successRate = firstLine.length > 2 ? firstLine[2].trim().replace(/"/g, '') : 'N/A';
+                const successRate = data.raw[0][2] ? String(data.raw[0][2]).trim() : 'N/A';
                 const successRateColor = getSuccessRateColor(successRate);
                 const successRateState = getSuccessRateColorState(successRate);
-
                 const allChartData = data.parsed
-                    .filter(row => row['Pass %'] && row['Pass %'].trim() !== '' && !isNaN(parseFloat(row['Pass %'])))
+                    .filter(row => row['Date'] && row['Pass %'] && String(row['Pass %']).trim() !== '' && !isNaN(parseFloat(row['Pass %'])))
                     .map(row => ({
                         date: row['Date'],
                         value: parseFloat(row['Pass %'])
                     }));
+                if (allChartData.length === 0) {
+                    showError(container, "No valid data found for Course Checks chart.");
+                    return;
+                }
                 
                 const chartData = allChartData.slice(-days);
-
                 container.innerHTML = `
                     <div class="space-y-8">
                         <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-8 rounded-3xl text-center" data-color-state="${successRateState}">
@@ -888,7 +1008,6 @@
                          </div>
                     </div>
                 `;
-
                 const timelineButtons = container.querySelectorAll('#timeline-toggle .timeline-btn');
                 timelineButtons.forEach(btn => {
                     if (parseInt(btn.dataset.days) === days) {
@@ -899,19 +1018,16 @@
                         renderCourseChecksPage(container, data, parseInt(btn.dataset.days));
                     });
                 });
-
                 const ctx = document.getElementById('courseChecksChartCanvas').getContext('2d');
-                if (courseChecksChart) {
-                    courseChecksChart.destroy();
+                if (chartInstances.courseChecksChart) {
+                    chartInstances.courseChecksChart.destroy();
                 }
-
                 const isLightMode = document.body.classList.contains('light-mode');
                 const isMobile = window.innerWidth < 768;
                 const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                 const tickColor = isLightMode ? '#515154' : '#a1a1a6';
                 const bodyFont = "'Inter', sans-serif";
-
-                courseChecksChart = new Chart(ctx, {
+                chartInstances.courseChecksChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: chartData.map(d => d.date),
@@ -990,51 +1106,24 @@
                 });
             };
 
-            const renderQuestionRepoPage = (container, summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData) => {
-                if (!summaryData || !accaDailyData || !cfaDailyData || !overallDailyData || !accaSplitData) {
+            const renderQuestionRepoPage = (container, accaData, cfaData, overallData) => {
+                if (!accaData || !cfaData || !overallData) {
                     showError(container, "Could not load all necessary Question Repository data. Please try refreshing.");
                     return;
                 }
-
                 const destroyCharts = () => {
-                    if (accaPieChart) accaPieChart.destroy();
-                    if (accaLineChart) accaLineChart.destroy();
-                    if (cfaPieChart) cfaPieChart.destroy();
-                    if (cfaLineChart) cfaLineChart.destroy();
-                    if (overallLineChart) overallLineChart.destroy();
+                    if (chartInstances.accaPieChart) chartInstances.accaPieChart.destroy();
+                    if (chartInstances.accaLineChart) chartInstances.accaLineChart.destroy();
+                    if (chartInstances.cfaPieChart) chartInstances.cfaPieChart.destroy();
+                    if (chartInstances.cfaLineChart) chartInstances.cfaLineChart.destroy();
+                    if (chartInstances.overallLineChart) chartInstances.overallLineChart.destroy();
                 };
                 destroyCharts();
-
-                const qrfStatusRows = summaryData.parsed.filter(r => r['Top-Level Box'] === 'QRF Status');
-                
-                const getValue = (rows, group, header) => {
-                    const row = rows.find(r => r['Sub-Box Header'] === group && r['Data Header'] === header);
-                    return row ? row['Value'] : '0';
-                };
-
-                const accaData = {
-                    draft: getValue(qrfStatusRows, 'ACCA', 'Draft'),
-                    approved: getValue(qrfStatusRows, 'ACCA', 'Approved'),
-                    completion: getValue(qrfStatusRows, 'ACCA', 'Completion')
-                };
-                const cfaData = {
-                    draft: getValue(qrfStatusRows, 'CFA', 'Draft'),
-                    approved: getValue(qrfStatusRows, 'CFA', 'Approved'),
-                    completion: getValue(qrfStatusRows, 'CFA', 'Completion')
-                };
-                const overallData = {
-                    draft: getValue(qrfStatusRows, 'Overall', 'Draft'),
-                    approved: getValue(qrfStatusRows, 'Overall', 'Approved'),
-                    total: getValue(qrfStatusRows, 'Overall', 'Total'),
-                    completion: getValue(qrfStatusRows, 'Overall', 'Completion')
-                };
-
                 const parseNumericValue = (val) => val ? parseInt(String(val).replace(/,/g, ''), 10) : 0;
-
-                const accaDraft = parseNumericValue(accaData.draft);
-                const accaApproved = parseNumericValue(accaData.approved);
-                const cfaDraft = parseNumericValue(cfaData.draft);
-                const cfaApproved = parseNumericValue(cfaData.approved);
+                const accaDraft = parseNumericValue(accaData.summary.draft);
+                const accaApproved = parseNumericValue(accaData.summary.approved);
+                const cfaDraft = parseNumericValue(cfaData.summary.draft);
+                const cfaApproved = parseNumericValue(cfaData.summary.approved);
                 
                 const getCompletionColorState = (valueStr) => {
                     const value = parseFloat(valueStr);
@@ -1047,11 +1136,11 @@
                 container.innerHTML = `
                     <div class="space-y-8">
                         <div id="acca-qrf-content" class="qrf-content-section space-y-12">
-                            <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                               <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
-                               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                                   <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
-                                   <div class="flex flex-col justify-center space-y-4">
+                            <div class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Question Status</h2>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                                    <div class="lg:col-span-1 relative h-60 md:h-72"><canvas id="accaPieChartCanvas"></canvas></div>
+                                    <div class="flex flex-col justify-center space-y-4">
                                         <div class="pie-legend-item flex items-center justify-between bg-[var(--sub-box-bg)] p-4 rounded-2xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
@@ -1066,67 +1155,66 @@
                                             </div>
                                             <span class="text-2xl font-semibold text-[var(--text-color)]">${accaApproved.toLocaleString()}</span>
                                         </div>
-                                   </div>
-                                   <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(accaData.completion)}">
-                                       <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.completion))} tracking-tighter">${accaData.completion || 'N/A'}</div>
-                                       <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
-                                   </div>
-                               </div>
-                               <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
-                                   <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-                                       <div class="flex items-center gap-2 md:gap-4">
-                                           <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="acca">
-                                               <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
-                                               <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
-                                               <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
-                                           </div>
-                                       </div>
-                                       <div class="md:ml-auto flex items-center gap-2" id="acca-legend-toggle"></div>
-                                   </div>
-                                   <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
-                                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
-                                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
                                     </div>
-                               </div>
-                                <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
-                                    <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
-                                            <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
-                                            <div class="flex justify-around items-center gap-4">
-                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectiveCount}</div>
-                                                    <div class="text-sm text-[var(--text-muted-color)]">Count</div>
-                                                </div>
-                                                <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                    <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.nonSubjectivePercent}</div>
-                                                    <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
-                                                </div>
+                                    <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(accaData.summary.completion)}">
+                                        <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(accaData.summary.completion))} tracking-tighter">${accaData.summary.completion || 'N/A'}</div>
+                                        <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
+                                    </div>
+                                </div>
+                                <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
+                                    <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
+                                        <div class="flex items-center gap-2 md:gap-4">
+                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                            <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="acca">
+                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
+                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
+                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
                                             </div>
                                         </div>
-                                        <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
-                                            <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
-                                            <div class="flex justify-around items-center gap-4">
+                                        <div class="flex items-center gap-2" id="acca-legend-toggle"></div>
+                                    </div>
+                                    <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="accaLineChartCanvas"></canvas></div>
+                                     <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                         <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                     </div>
+                                </div>
+                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                     <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">ACCA Questions Split</h2>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
+                                             <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
+                                             <div class="flex justify-around items-center gap-4">
                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectiveCount}</div>
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaData.summary.nonSubjectiveCount}</div>
                                                      <div class="text-sm text-[var(--text-muted-color)]">Count</div>
                                                  </div>
                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
-                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaSplitData.subjectivePercent}</div>
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${accaData.summary.nonSubjectivePercent}</div>
                                                      <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
                                                  </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] mt-8 flex justify-center items-center gap-6">
-                                        <h3 class="text-xl sm:text-2xl font-bold">Total Questions</h3>
-                                        <div class="text-4xl sm:text-5xl font-bold">${accaSplitData.totalQuestions}</div>
-                                    </div>
-                                </div>
+                                             </div>
+                                         </div>
+                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
+                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
+                                             <div class="flex justify-around items-center gap-4">
+                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                      <div class="value text-3xl sm:text-4xl font-bold">${accaData.summary.subjectiveCount}</div>
+                                                      <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                  </div>
+                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                      <div class="value text-3xl sm:text-4xl font-bold">${accaData.summary.subjectivePercent}</div>
+                                                      <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                  </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] mt-8 flex justify-center items-center gap-6">
+                                         <h3 class="text-xl sm:text-2xl font-bold">Total Questions</h3>
+                                         <div class="text-4xl sm:text-5xl font-bold">${accaData.summary.totalQuestions}</div>
+                                     </div>
+                                 </div>
                             </div>
                         </div>
-
                         <div id="cfa-qrf-content" class="qrf-content-section space-y-12 hidden">
                              <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                  <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">CFA Question Status</h2>
@@ -1148,13 +1236,13 @@
                                              <span class="text-2xl font-semibold text-[var(--text-color)]">${cfaApproved.toLocaleString()}</span>
                                          </div>
                                      </div>
-                                     <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(cfaData.completion)}">
-                                         <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.completion))} tracking-tighter">${cfaData.completion || 'N/A'}</div>
+                                     <div class="qrf-scorecard text-center p-6 bg-[var(--sub-box-bg)] rounded-3xl border border-[var(--card-border)]" data-color-state="${getCompletionColorState(cfaData.summary.completion)}">
+                                         <div class="value text-5xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(cfaData.summary.completion))} tracking-tighter">${cfaData.summary.completion || 'N/A'}</div>
                                          <div class="text-lg text-[var(--text-muted-color)] mt-1">Completion</div>
                                      </div>
                                  </div>
                                  <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl">
-                                     <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                                     <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
                                          <div class="flex items-center gap-2 md:gap-4">
                                              <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
                                              <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="cfa">
@@ -1163,16 +1251,50 @@
                                                  <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
                                              </div>
                                          </div>
-                                         <div class="md:ml-auto flex items-center gap-2" id="cfa-legend-toggle"></div>
+                                         <div class="flex items-center gap-2" id="cfa-legend-toggle"></div>
                                      </div>
                                      <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="cfaLineChartCanvas"></canvas></div>
-                                      <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
-                                          <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
-                                      </div>
+                                     <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                         <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                     </div>
+                                 </div>
+                                 <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
+                                     <h2 class="text-2xl md:text-3xl font-bold text-[var(--text-color)] text-center">CFA Questions Split</h2>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
+                                             <h3 class="text-xl font-bold text-center mb-4">Non-Subjective Questions</h3>
+                                             <div class="flex justify-around items-center gap-4">
+                                                 <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${cfaData.summary.nonSubjectiveCount}</div>
+                                                     <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                 </div>
+                                                 <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                     <div class="value text-3xl sm:text-4xl font-bold">${cfaData.summary.nonSubjectivePercent}</div>
+                                                     <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <div class="split-box bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)]">
+                                             <h3 class="text-xl font-bold text-center mb-4">Subjective Questions</h3>
+                                             <div class="flex justify-around items-center gap-4">
+                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                      <div class="value text-3xl sm:text-4xl font-bold">${cfaData.summary.subjectiveCount}</div>
+                                                      <div class="text-sm text-[var(--text-muted-color)]">Count</div>
+                                                  </div>
+                                                  <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex-1 text-center border border-[var(--card-border)]">
+                                                      <div class="value text-3xl sm:text-4xl font-bold">${cfaData.summary.subjectivePercent}</div>
+                                                      <div class="text-sm text-[var(--text-muted-color)]">Percentage</div>
+                                                  </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="bg-[var(--sub-box-bg)] p-6 rounded-2xl border border-[var(--card-border)] mt-8 flex justify-center items-center gap-6">
+                                         <h3 class="text-xl sm:text-2xl font-bold">Total Questions</h3>
+                                         <div class="text-4xl sm:text-5xl font-bold">${cfaData.summary.totalQuestions}</div>
+                                     </div>
                                  </div>
                              </div>
                         </div>
-
                         <div id="overall-qrf-content" class="qrf-content-section space-y-12 hidden">
                             <div class="bg-[var(--card-bg)] backdrop-blur-xl p-6 md:p-8 border border-[var(--card-border)] rounded-3xl space-y-8">
                                 <div class="border-b border-[var(--card-border)] pb-4 mb-6 md:mb-8">
@@ -1182,50 +1304,48 @@
                                     <div class="space-y-4">
                                         <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Draft</span>
-                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.draft || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.summary.draft || 'N/A'}</span>
                                         </div>
                                         <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Approved</span>
-                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.approved || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.summary.approved || 'N/A'}</span>
                                         </div>
                                         <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-4 rounded-xl flex justify-between items-center border border-[var(--card-border)]">
                                             <span class="text-lg font-medium text-[var(--text-muted-color)]">Total</span>
-                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.total || 'N/A'}</span>
+                                            <span class="value text-2xl md:text-3xl font-semibold text-[var(--text-color)]">${overallData.summary.total || 'N/A'}</span>
                                         </div>
                                     </div>
-                                    <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.completion)}">
-                                        <div class="value text-6xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.completion))} tracking-tighter">${overallData.completion || 'N/A'}</div>
+                                    <div class="qrf-scorecard bg-[var(--sub-box-bg)] p-6 rounded-3xl text-center border border-transparent" data-color-state="${getCompletionColorState(overallData.summary.completion)}">
+                                        <div class="value text-6xl sm:text-7xl font-bold ${getPerformanceColorClass(getCompletionColorState(overallData.summary.completion))} tracking-tighter">${overallData.summary.completion || 'N/A'}</div>
                                         <div class="text-xl text-[var(--text-muted-color)] mt-1">Completion</div>
                                     </div>
                                 </div>
                                 <div class="bg-[var(--sub-box-bg)] p-6 border border-[var(--card-border)] rounded-2xl mt-8">
-                                   <div class="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-                                       <div class="flex items-center gap-2 md:gap-4">
-                                           <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
-                                           <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="overall">
-                                               <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
-                                               <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
-                                               <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
-                                           </div>
-                                       </div>
-                                       <div class="md:ml-auto flex items-center gap-2" id="overall-legend-toggle"></div>
-                                   </div>
-                                   <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="overallLineChartCanvas"></canvas></div>
-                                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
-                                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                    <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
+                                        <div class="flex items-center gap-2 md:gap-4">
+                                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">Trend:</h4>
+                                            <div class="timeline-toggle bg-black/20 rounded-full p-1 flex gap-1" data-chart-type="overall">
+                                                <button data-days="7" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">7 Days</button>
+                                                <button data-days="14" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full active">14 Days</button>
+                                                <button data-days="30" class="timeline-btn px-3 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2" id="overall-legend-toggle"></div>
                                     </div>
-                               </div>
+                                    <div class="min-h-[300px] sm:min-h-[350px]"><canvas id="overallLineChartCanvas"></canvas></div>
+                                     <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                                         <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                                     </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
-
                 const isLightMode = document.body.classList.contains('light-mode');
                 const bodyFont = "'Inter', sans-serif";
                 const textColor = isLightMode ? '#1d1d1f' : '#f5f5f7';
                 const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                 const tickColor = isLightMode ? '#515154' : '#a1a1a6';
-
                 const renderPieChart = (canvasId, data, total) => {
                     const ctx = document.getElementById(canvasId).getContext('2d');
                     return new Chart(ctx, {
@@ -1268,34 +1388,30 @@
                         }]
                     });
                 };
-                accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaApproved], accaDraft + accaApproved);
-                cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaApproved], cfaDraft + cfaApproved);
+                chartInstances.accaPieChart = renderPieChart('accaPieChartCanvas', [accaDraft, accaApproved], accaDraft + accaApproved);
+                chartInstances.cfaPieChart = renderPieChart('cfaPieChartCanvas', [cfaDraft, cfaApproved], cfaDraft + cfaApproved);
                 
                 const renderLineChart = (canvasId, dailyData, days, visibleDatasets) => {
                     const isMobile = window.innerWidth < 768;
                     
-                    const chartData = dailyData.parsed
+                    const chartData = dailyData
                         .filter(d => {
-                            if (!d.Date || !d.Draft || !d.Approved) return false;
+                            if (!d.Date || d.Draft == null || d.Approved == null || d.Draft === '' || d.Approved === '') return false;
                             const itemDate = new Date(d.Date);
                             return !isNaN(itemDate.getTime());
                         })
                         .slice(-days);
-
                     const chartLabels = chartData.map(d => {
                         const date = new Date(d.Date);
                         return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                     });
-
                     const yAxisConfig = { 
                         grid: { color: gridColor }, 
                         ticks: { color: tickColor, font: { family: bodyFont } } 
                     };
-
                     if (visibleDatasets[0] === 1 && visibleDatasets[1] === 0) {
                         yAxisConfig.min = 0;
                     }
-
                     const ctx = document.getElementById(canvasId).getContext('2d');
                     return new Chart(ctx, {
                         type: 'line',
@@ -1360,16 +1476,15 @@
                 };
                 
                  const calculateNiceStep = (range, targetSteps) => {
-                         if (range === 0) return 1;
-                         const rawStep = range / targetSteps;
-                         const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
-                         const residual = rawStep / magnitude;
-                         if (residual > 5) return 10 * magnitude;
-                         if (residual > 2) return 5 * magnitude;
-                         if (residual > 1) return 2 * magnitude;
-                         return magnitude;
+                     if (range === 0) return 1;
+                     const rawStep = range / targetSteps;
+                     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+                     const residual = rawStep / magnitude;
+                     if (residual > 5) return 10 * magnitude;
+                     if (residual > 2) return 5 * magnitude;
+                     if (residual > 1) return 2 * magnitude;
+                     return magnitude;
                  };
-
                 const setupSubPage = (chartType, dailyData) => {
                     const canvasId = `${chartType}LineChartCanvas`;
                     const timelineToggle = document.querySelector(`.timeline-toggle[data-chart-type="${chartType}"]`);
@@ -1378,7 +1493,6 @@
                     let chartInstance;
                     let currentDays = 14;
                     let visibleDatasets = [1, 1];
-
                     const updateChart = () => {
                         if (chartInstance) chartInstance.destroy();
                         chartInstance = renderLineChart(canvasId, dailyData, currentDays, visibleDatasets);
@@ -1387,31 +1501,27 @@
                             chartInstance.setDatasetVisibility(index, val === 1);
                         });
                         chartInstance.update();
-
-                        if (chartType === 'acca') accaLineChart = chartInstance;
-                        else if (chartType === 'cfa') cfaLineChart = chartInstance;
-                        else if (chartType === 'overall') overallLineChart = chartInstance;
-
-
+                        if (chartType === 'acca') chartInstances.accaLineChart = chartInstance;
+                        else if (chartType === 'cfa') chartInstances.cfaLineChart = chartInstance;
+                        else if (chartType === 'overall') chartInstances.overallLineChart = chartInstance;
                         legendContainer.innerHTML = '';
                         chartInstance.data.datasets.forEach((dataset, index) => {
                             const button = document.createElement('button');
-                            const isVisible = visibleDatasets[index] === 1;
-                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105 ${!isVisible ? 'opacity-40' : ''}`;
+                            button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105 ${visibleDatasets[index] !== 1 ? 'opacity-40' : ''}`;
                             button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${dataset.borderColor}"></div> ${dataset.label}`;
                             
                             button.onclick = () => {
-                                const currentlyVisible = visibleDatasets.filter(v => v === 1).length;
-                                if (currentlyVisible === 1 && isVisible) {
-                                    return; // Prevent deselecting the last item
+                                const isCurrentlyVisible = visibleDatasets[index] === 1;
+                                const totalVisible = visibleDatasets.filter(v => v === 1).length;
+                                if (totalVisible === 1 && isCurrentlyVisible) {
+                                    return;
                                 }
-                                visibleDatasets[index] = visibleDatasets[index] === 1 ? 0 : 1;
+                                visibleDatasets[index] = isCurrentlyVisible ? 0 : 1;
                                 updateChart();
                             };
                             legendContainer.appendChild(button);
                         });
                     }
-
                     timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             timelineToggle.querySelector('.active')?.classList.remove('active');
@@ -1425,25 +1535,29 @@
                     timelineToggle.querySelector(`[data-days="${currentDays}"]`)?.classList.add('active');
                     updateChart();
                 };
-                setupSubPage('acca', accaDailyData);
-                setupSubPage('cfa', cfaDailyData);
-                setupSubPage('overall', overallDailyData);
+                setupSubPage('acca', accaData.daily);
+                setupSubPage('cfa', cfaData.daily);
+                setupSubPage('overall', overallData.daily);
             };
 
             const renderBatchReportsPage = (container, data) => {
                 if (!data) { showError(container, "Could not load Batch Reports data."); return; }
+                const getCellValue = (data, row, col) => {
+                    const val = (data && data[row] && data[row][col] != null) ? data[row][col] : '--';
+                    const valStr = String(val);
+                    if (valStr.includes('#REF!') || valStr.includes('#NAME?')) return '--';
+                    return val;
+                };
 
                 const generalData = [
-                    { 'Data Header': 'Total Enrolled Students', 'Value': data.totalEnrolled },
-                    { 'Data Header': 'Live Batches Count', 'Value': data.liveBatches }
+                    { 'Data Header': 'Total Enrolled Students', 'Value': getCellValue(data, 0, 1) },
+                    { 'Data Header': 'Live Batches Count', 'Value': getCellValue(data, 1, 1) }
                 ];
-
                 const performanceData = [
-                    { 'Data Header': 'Average Attendance %', 'Value': data.avgAttendance },
-                    { 'Data Header': 'Average LPS', 'Value': data.avgLPS },
-                    { 'Data Header': 'Tests Completion %', 'Value': data.testsCompletion }
+                    { 'Data Header': 'Average Attendance %', 'Value': getCellValue(data, 2, 1) },
+                    { 'Data Header': 'Average LPS', 'Value': getCellValue(data, 3, 1) },
+                    { 'Data Header': 'Tests Completion %', 'Value': getCellValue(data, 4, 1) }
                 ];
-
                 const createMetricCard = (metric, isPerformance = false) => {
                     const colorState = isPerformance ? getPerformanceColorState(metric['Data Header'], metric.Value) : 'neutral';
                     const colorClass = isPerformance ? getPerformanceColorClass(colorState) : 'text-[var(--text-color)]';
@@ -1453,16 +1567,15 @@
                         <div class="text-sm font-medium text-[var(--text-muted-color)]">${metric['Data Header']}</div>
                     </div>`;
                 };
-
                 container.innerHTML = `
                     <div class="space-y-10">
-                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                        <div class="metric-card sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
                             <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">General</h3>
                             <div class="grid grid-cols-2 gap-6">
                                 ${generalData.map(metric => createMetricCard(metric, false)).join('')}
                             </div>
                         </div>
-                        <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
+                        <div class="metric-card sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl">
                             <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 mb-6 text-center">Performance Data</h3>
                             <div class="flex flex-col items-center gap-6 md:grid md:grid-cols-3">
                                 <div class="w-full grid grid-cols-2 md:col-span-2 gap-6">
@@ -1478,15 +1591,12 @@
                 `;
             };
 
-            const renderAskADoubtPage = (container, summaryData, trendsData) => {
+            const renderAskADoubtPage = (container, summaryData, trendsData, totalTrendsData) => {
                 if (!summaryData) { showError(container, "Could not load Support data."); return; }
                 
-                const metrics = summaryData; 
-                
-                const getMetricValue = (key) => metrics[key] || 'N/A';
+                const getMetricValue = (key) => summaryData[key] || 'N/A';
                 const openDoubts = parseInt(getMetricValue('Open Doubts'), 10);
                 const openTickets = parseInt(getMetricValue('Open Support Tickets'), 10);
-
                 const getConditionalColor = (value) => {
                     if (isNaN(value)) return 'text-[var(--text-color)]';
                     return value >= 10 ? 'text-red-500' : 'text-green-500';
@@ -1501,7 +1611,6 @@
                      if (isNaN(value)) return 'neutral';
                     return value >= 10 ? 'bad' : 'good';
                 }
-
                 const createMetricCard = (label, value, icon, colorClass = 'text-[var(--text-color)]', state = 'neutral') => `
                     <div class="metric-card flex-1 flex-shrink-0 p-4 flex flex-col items-center text-center space-y-2 min-w-0 rounded-3xl" data-color-state="${state}">
                         <div class="text-2xl ${colorClass}"><i class="${icon}"></i></div>
@@ -1509,18 +1618,17 @@
                         <div class="text-xs font-medium text-[var(--text-muted-color)]">${label}</div>
                     </div>
                 `;
-
                 container.innerHTML = `
                     <div class="space-y-8">
-                         <div class="flex flex-col sm:flex-row gap-8 items-start">
-                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
+                         <div class="metric-card flex flex-col sm:flex-row gap-8 items-start p-6 rounded-3xl">
+                             <div class="sub-box bg-[var(--sub-box-bg)] p-8 border border-[var(--card-border)] rounded-2xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">Ask a Doubt</h3>
                                  <div class="card-grid force-row flex flex-nowrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Doubts', getMetricValue('Total Doubts'), 'fas fa-question-circle')}
                                      ${createMetricCard('Open Doubts', getMetricValue('Open Doubts'), getConditionalIcon(openDoubts, 'fas fa-exclamation-circle', 'fas fa-check-circle'), getConditionalColor(openDoubts), getConditionalState(openDoubts))}
                                  </div>
                              </div>
-                             <div class="sub-box bg-[var(--card-bg)] backdrop-blur-xl p-8 border border-[var(--card-border)] rounded-3xl space-y-6 flex-1 w-full">
+                             <div class="sub-box bg-[var(--sub-box-bg)] p-8 border border-[var(--card-border)] rounded-2xl space-y-6 flex-1 w-full">
                                  <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center flex items-center justify-center gap-3">LMS Tickets</h3>
                                  <div class="card-grid force-row flex flex-nowrap justify-center gap-4 mt-auto">
                                      ${createMetricCard('Total Support Tickets', getMetricValue('Total Support Tickets'), 'fas fa-ticket-alt')}
@@ -1528,183 +1636,185 @@
                                  </div>
                              </div>
                          </div>
-                         <div id="support-trends-section" class="bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl"></div>
+                         <div id="support-trends-section" class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl"></div>
+                         <div id="total-support-trends-section" class="metric-card bg-[var(--card-bg)] backdrop-blur-xl p-6 border border-[var(--card-border)] rounded-2xl"></div>
                     </div>
                 `;
-
-                if (supportLineChart) supportLineChart.destroy();
+                if (chartInstances.supportLineChart) chartInstances.supportLineChart.destroy();
+                if (chartInstances.totalSupportLineChart) chartInstances.totalSupportLineChart.destroy();
                 const trendsContainer = container.querySelector('#support-trends-section');
                 if (!trendsData) {
-                    trendsContainer.innerHTML = `<p class="text-center text-[var(--text-muted-color)]">Could not load trends data.</p>`;
-                    return;
-                }
-
-                trendsContainer.innerHTML = `
-                    <div class="flex flex-col items-center mb-6 gap-4">
-                        <div class="flex items-center gap-2 sm:gap-4">
-                            <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Trends for:</h4>
-                            <div id="support-type-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
-                                <button data-type="doubts" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">Ask a Doubt</button>
-                                <button data-type="tickets" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">LMS Tickets</button>
+                    trendsContainer.innerHTML = `<p class="text-center text-[var(--text-muted-color)]">Could not load open items trends data.</p>`;
+                } else {
+                    trendsContainer.innerHTML = `
+                        <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center mb-6">Open Doubts & Tickets</h3>
+                        <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
+                            <div class="flex items-center gap-2 md:gap-4">
+                                <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Trends For:</h4>
+                                <div id="support-timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
+                                    <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">7 Days</button>
+                                    <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
+                                    <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                                </div>
                             </div>
+                            <div class="flex items-center gap-2" id="support-legend-toggle"></div>
                         </div>
-                        <div id="support-timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1 scale-90">
-                             <button data-days="7" class="timeline-btn px-4 py-1.5 text-xs font-semibold rounded-full active">7 Days</button>
-                             <button data-days="14" class="timeline-btn px-4 py-1.5 text-xs font-semibold rounded-full">14 Days</button>
-                             <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                        <div class="min-h-[300px] sm:min-h-[400px]">
+                            <canvas id="supportLineChartCanvas"></canvas>
                         </div>
-                    </div>
-                    <div class="min-h-[300px] sm:min-h-[400px]">
-                        <canvas id="supportLineChartCanvas"></canvas>
-                    </div>
-                    <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
-                        <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
-                    </div>
-                `;
-                
+                        <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                            <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                        </div>
+                    `;
+                    setupSupportChart('support', trendsData, [
+                        { label: 'Open Doubts', dataKey: 'doubts', color: 'rgb(239, 68, 68)' },
+                        { label: 'Open Tickets', dataKey: 'tickets', color: 'rgb(59, 130, 246)' }
+                    ]);
+                }
+                const totalTrendsContainer = container.querySelector('#total-support-trends-section');
+                if (!totalTrendsData) {
+                    totalTrendsContainer.innerHTML = `<p class="text-center text-[var(--text-muted-color)]">Could not load total items trends data.</p>`;
+                } else {
+                    totalTrendsContainer.innerHTML = `
+                        <h3 class="text-xl md:text-2xl font-bold text-[var(--text-color)] opacity-90 text-center mb-6">Total Doubts & Tickets</h3>
+                        <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
+                            <div class="flex items-center gap-2 md:gap-4">
+                                <h4 class="text-sm font-semibold text-[var(--text-muted-color)]">View Trends For:</h4>
+                                <div id="total-support-timeline-toggle" class="timeline-toggle bg-[var(--sub-box-bg)] rounded-full p-1 flex flex-wrap justify-center gap-1">
+                                    <button data-days="7" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full active">7 Days</button>
+                                    <button data-days="14" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">14 Days</button>
+                                    <button data-days="30" class="timeline-btn px-4 py-1.5 text-sm font-semibold rounded-full">30 Days</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2" id="total-support-legend-toggle"></div>
+                        </div>
+                        <div class="min-h-[300px] sm:min-h-[400px]">
+                            <canvas id="totalSupportLineChartCanvas"></canvas>
+                        </div>
+                        <div class="mt-4 p-4 bg-[var(--sub-box-bg)] rounded-2xl text-center text-sm text-[var(--text-muted-color)] md:hidden">
+                            <i class="fas fa-info-circle mr-2"></i>For the best experience, please view on a desktop.
+                        </div>
+                    `;
+                    setupSupportChart('total-support', totalTrendsData, [
+                        { label: 'Total Doubts', dataKey: 'totalDoubts', color: 'rgb(245, 158, 11)' },
+                        { label: 'Total Tickets', dataKey: 'totalTickets', color: 'rgb(139, 92, 246)' }
+                    ]);
+                }
+            };
+            
+            const setupSupportChart = (type, chartRawData, datasetConfigs) => {
+                const timelineToggle = document.querySelector(`#${type}-timeline-toggle`);
+                const legendContainer = document.getElementById(`${type}-legend-toggle`);
+                const canvasId = type.replace(/-(\w)/g, (matches, letter) => letter.toUpperCase()) + 'LineChartCanvas';
+                let chartInstance;
+                if (type === 'support') {
+                    if (chartInstances.supportLineChart) chartInstances.supportLineChart.destroy();
+                } else {
+                    if (chartInstances.totalSupportLineChart) chartInstances.totalSupportLineChart.destroy();
+                }
                 let currentDays = 7;
-                let visibleSupportDatasets = [1, 1]; // [doubts, tickets]
+                let visibleDatasets = [1, 1];
 
-                const renderSupportTrendChart = () => {
-                    if (supportLineChart) supportLineChart.destroy();
-
-                    const allData = dataCache.lmsTrends || [];
-                    const canvas = document.getElementById('supportLineChartCanvas');
+                const updateLegend = () => {
+                    legendContainer.innerHTML = '';
+                    datasetConfigs.forEach((config, index) => {
+                        const button = document.createElement('button');
+                        button.className = `flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 bg-[var(--sub-box-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:bg-[var(--card-hover-bg)] hover:scale-105 ${visibleDatasets[index] !== 1 ? 'opacity-40' : ''}`;
+                        button.innerHTML = `<div class="w-3 h-3 rounded-full" style="background-color: ${config.color}"></div> ${config.label}`;
+                        button.onclick = () => {
+                            const isCurrentlyVisible = visibleDatasets[index] === 1;
+                            const totalVisible = visibleDatasets.filter(v => v === 1).length;
+                            if (totalVisible === 1 && isCurrentlyVisible) return;
+                            
+                            visibleDatasets[index] = isCurrentlyVisible ? 0 : 1;
+                            renderChart(); // This will re-render chart and legend
+                        };
+                        legendContainer.appendChild(button);
+                    });
+                };
+                
+                const renderChart = () => {
+                    if (chartInstance) chartInstance.destroy();
+                    
+                    const chartDataPoints = chartRawData.slice(-currentDays);
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas) {
+                        console.error(`Canvas with ID ${canvasId} not found.`);
+                        return;
+                    }
                     const ctx = canvas.getContext('2d');
+                    
                     const isLightMode = document.body.classList.contains('light-mode');
                     const tickColor = isLightMode ? '#515154' : '#a1a1a6';
-
-                    if (allData.length === 0) {
-                          ctx.clearRect(0, 0, canvas.width, canvas.height);
-                          ctx.font = "16px 'Inter', sans-serif";
-                          ctx.fillStyle = tickColor;
-                          ctx.textAlign = "center";
-                          ctx.fillText("No data available to display.", canvas.width / 2, canvas.height / 2);
-                          return;
-                    }
-
-                    const chartDataPoints = allData.slice(-currentDays);
-                    
                     if (chartDataPoints.length === 0) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         ctx.font = "16px 'Inter', sans-serif";
                         ctx.fillStyle = tickColor;
                         ctx.textAlign = "center";
                         ctx.fillText("No data available for this period.", canvas.width / 2, canvas.height / 2);
+                        legendContainer.innerHTML = ''; // Clear legend too
                         return;
                     }
                     
                     const labels = chartDataPoints.map(d => d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
-
                     const isMobile = window.innerWidth < 768;
                     const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
                     const bodyFont = "'Inter', sans-serif";
-                    
-                    supportLineChart = new Chart(ctx, {
+                    const datasets = datasetConfigs.map((config, index) => ({
+                        label: config.label,
+                        data: chartDataPoints.map(d => d[config.dataKey]),
+                        borderColor: config.color,
+                        backgroundColor: config.color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                        hidden: visibleDatasets[index] !== 1,
+                        borderWidth: isMobile ? 2 : 3,
+                        pointRadius: isMobile ? 3 : 5,
+                        pointHoverRadius: isMobile ? 6 : 8,
+                        tension: 0.4,
+                        fill: true,
+                    }));
+                    chartInstance = new Chart(ctx, {
                         type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                {
-                                    label: 'Open Doubts',
-                                    data: chartDataPoints.map(d => d.doubts),
-                                    borderColor: 'rgb(239, 68, 68)',
-                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                    hidden: !visibleSupportDatasets[0],
-                                    borderWidth: isMobile ? 2 : 3,
-                                    pointRadius: isMobile ? 3 : 5,
-                                    pointHoverRadius: isMobile ? 6 : 8,
-                                    tension: 0.4,
-                                    fill: true,
-                                },
-                                {
-                                    label: 'Open Tickets',
-                                    data: chartDataPoints.map(d => d.tickets),
-                                    borderColor: 'rgb(59, 130, 246)',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    hidden: !visibleSupportDatasets[1],
-                                    borderWidth: isMobile ? 2 : 3,
-                                    pointRadius: isMobile ? 3 : 5,
-                                    pointHoverRadius: isMobile ? 6 : 8,
-                                    tension: 0.4,
-                                    fill: true,
-                                }
-                            ]
-                        },
+                        data: { labels, datasets },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
-                                    enabled: true,
-                                    mode: 'index', 
-                                    intersect: false,
+                                    enabled: true, mode: 'index', intersect: false,
                                     backgroundColor: 'rgba(0,0,0,0.8)',
                                     titleFont: { family: bodyFont, size: 14, weight: 'bold' },
                                     bodyFont: { family: bodyFont, size: 12 },
-                                    padding: 12,
-                                    cornerRadius: 8,
-                                    displayColors: true,
+                                    padding: 12, cornerRadius: 8, displayColors: true,
                                     callbacks: {
-                                        title: (tooltipItems) => {
-                                            return tooltipItems[0].label;
-                                        },
+                                        title: (tooltipItems) => tooltipItems[0].label,
                                         label: (context) => `${context.dataset.label}: ${context.raw}`
                                     }
                                 }
                             },
                             scales: {
-                                y: {
-                                    min: 0,
-                                    grid: { color: gridColor },
-                                    ticks: { 
-                                        color: tickColor, 
-                                        font: { family: bodyFont },
-                                        callback: function(value) { if (Number.isInteger(value)) { return value; } }
-                                    }
-                                },
-                                x: {
-                                    type: 'category',
-                                    grid: { display: false },
-                                    ticks: { 
-                                        color: tickColor, 
-                                        font: { family: bodyFont },
-                                        maxRotation: 0,
-                                        minRotation: 0
-                                    }
-                                }
+                                y: { min: 0, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: bodyFont }, callback: function(value) { if (Number.isInteger(value)) return value; } } },
+                                x: { type: 'category', grid: { display: false }, ticks: { color: tickColor, font: { family: bodyFont }, maxRotation: 0, minRotation: 0 } }
                             }
                         }
                     });
-                };
-                
-                const typeToggleButtons = trendsContainer.querySelectorAll('#support-type-toggle .timeline-btn');
-                typeToggleButtons.forEach((btn, index) => {
-                    btn.addEventListener('click', (e) => {
-                        const currentlyVisible = visibleSupportDatasets.filter(v => v === 1).length;
-                        if (currentlyVisible === 1 && btn.classList.contains('active')) {
-                            return; // Prevent deselecting the last item
-                        }
-                        btn.classList.toggle('active');
-                        visibleSupportDatasets[index] = visibleSupportDatasets[index] === 1 ? 0 : 1;
-                        renderSupportTrendChart();
-                    });
-                });
+                    if (type === 'support') chartInstances.supportLineChart = chartInstance;
+                    else chartInstances.totalSupportLineChart = chartInstance;
 
-                const timelineToggleButtons = trendsContainer.querySelectorAll('#support-timeline-toggle .timeline-btn');
-                timelineToggleButtons.forEach(btn => {
+                    updateLegend();
+                };
+
+                timelineToggle.querySelectorAll('.timeline-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        timelineToggleButtons.forEach(b => b.classList.remove('active'));
+                        timelineToggle.querySelectorAll('.timeline-btn').forEach(b => b.classList.remove('active'));
                         e.target.classList.add('active');
                         currentDays = parseInt(e.target.dataset.days);
-                        renderSupportTrendChart();
+                        renderChart();
                     });
                 });
-
-                renderSupportTrendChart();
+                renderChart();
             };
-            
+
             const renderReportsPage = (container) => {
                 const reports = [
                     { title: 'LMS Web & App Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
@@ -1716,10 +1826,35 @@
                 container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${reports.map(report => {const commonClasses = "report-button group relative bg-[var(--card-bg)] backdrop-blur-md p-8 border border-[var(--card-border)] text-[var(--text-color)] text-center flex flex-col items-center justify-center transition-all duration-300 hover:bg-[var(--card-hover-bg)] hover:border-white/20 hover:scale-105 overflow-hidden h-48";const contentHtml = `<div class="relative z-10 report-content flex flex-col items-center justify-center"><i class="${report.icon} text-4xl mb-4 text-[var(--icon-color)] transition-transform duration-300"></i><span class="text-lg font-semibold">${report.title}</span></div><i class="${report.icon} absolute -bottom-8 -right-8 text-9xl text-black/5 transition-all duration-500 group-hover:text-black/10 group-hover:scale-125 group-hover:rotate-[-10deg]"></i>`; if (report.link) { return `<a href="${report.link}" target="_blank" rel="noopener noreferrer" class="${commonClasses}">${contentHtml}</a>`;} else { return `<button id="${report.id}" class="${commonClasses}">${contentHtml}</button>`;}}).join('')}</div>`;
             };
 
+            // --- Navigation & UI Flow ---
+            const updateGreeting = () => {
+                const greetingText = document.getElementById('greeting-text');
+                const dateText = document.getElementById('date-text');
+                const hour = new Date().getHours();
+                
+                if (hour < 12) {
+                    greetingText.textContent = 'Good Morning';
+                } else if (hour < 18) {
+                    greetingText.textContent = 'Good Afternoon';
+                } else {
+                    greetingText.textContent = 'Good Evening';
+                }
+
+                dateText.textContent = new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                setTimeout(() => {
+                    headerGreeting.style.opacity = '1';
+                }, 200);
+            };
+
+
             const updateFooterText = (sectionId) => {
                 const footerContent = document.getElementById('footer-content');
                 if (!footerContent) return;
-
                 const texts = {
                     'overview-section': 'Showing selected important data from all Product Report Sheets.',
                     'reports-section': 'Select any report you want to view.',
@@ -1748,7 +1883,6 @@
                     } else {
                         headerRefreshButton.classList.add('hidden');
                     }
-
                     if (sheetUrl) {
                         openSheetButton.href = sheetUrl;
                         openSheetButton.classList.remove('hidden');
@@ -1771,80 +1905,44 @@
                 const activeContent = document.getElementById(`${tabId}-section`);
                 activeContent.classList.remove('hidden');
                 updateFooterText(`${tabId}-section`);
-
                 if (tabId === 'overview') {
-                    if (!dataCache.overview || !dataCache.batchReports) {
-                        showLoading(activeContent);
-                        const [overviewData, batchData] = await Promise.all([
-                            dataCache.overview ? Promise.resolve(dataCache.overview) : fetchAndParseData(OVERVIEW_URL),
-                            dataCache.batchReports ? Promise.resolve(dataCache.batchReports) : fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV)
-                        ]);
-                        
-                        if (overviewData && batchData) {
-                            dataCache.overview = overviewData;
-                            dataCache.batchReports = batchData;
-                            await renderOverviewPage(activeContent, dataCache.overview, dataCache.batchReports);
-                        } else {
-                            showError(activeContent, "Failed to fetch overview data. Please try again.");
-                        }
-                    } else {
-                        await renderOverviewPage(activeContent, dataCache.overview, dataCache.batchReports);
-                    }
+                    renderOverviewPage(activeContent, dataCache);
                 } else if (tabId === 'reports') {
                     renderReportsPage(document.getElementById('reports-section'));
                 }
             };
 
-            const showDailyMetrics = async () => {
+            const showDailyMetrics = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const dailySection = document.getElementById('daily-section');
                 dailySection.classList.remove('hidden');
-                setPageHeader('LMS Web & App Metrics', SHEET_URLS['daily-section']);
+                const title = window.innerWidth < 768 ? 'LMS Metrics' : 'LMS Web & App Metrics';
+                setPageHeader(title, SHEET_URLS['daily-section']);
                 updateFooterText('daily-section');
                 
-                const needsDailyFetch = !dataCache.daily;
-                const needsLmsFetch = !dataCache.lmsStats;
-
-                if (needsDailyFetch || needsLmsFetch) {
-                    showLoading(dailySection);
-                    const [dailyData, lmsStatsData] = await Promise.all([
-                        needsDailyFetch ? fetchAndParseData(DAILY_METRICS_URL) : Promise.resolve(dataCache.daily),
-                        needsLmsFetch ? fetchAndParseData(DAILY_METRICS_URL, parseLmsStatsCSV) : Promise.resolve(dataCache.lmsStats)
-                    ]);
-                    
-                    if (dailyData && lmsStatsData) {
-                        dataCache.daily = dailyData;
-                        dataCache.lmsStats = lmsStatsData;
-                        renderDailyMetricsPage(dailySection, dataCache.daily, dataCache.lmsStats);
-                    } else {
-                        showError(dailySection, "Failed to fetch daily metrics data. Please try again.");
-                    }
+                const dailyMetricsData = dataCache.daily_metrics;
+                if (dailyMetricsData) {
+                    renderDailyMetricsPage(dailySection, dailyMetricsData);
                 } else {
-                    renderDailyMetricsPage(dailySection, dataCache.daily, dataCache.lmsStats);
+                    showError(dailySection, "Daily metrics data not found.");
                 }
             };
 
-            const showCourseChecksPage = async () => {
+            const showCourseChecksPage = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const courseChecksSection = document.getElementById('course-checks-section');
                 courseChecksSection.classList.remove('hidden');
                 setPageHeader('LMS Checks', SHEET_URLS['course-checks-section']);
                 updateFooterText('course-checks-section');
-                if (!dataCache.courseChecks) {
-                    showLoading(courseChecksSection);
-                    const newData = await fetchAndParseData(COURSE_CHECKS_URL);
-                     if (newData) {
-                        dataCache.courseChecks = newData;
-                        renderCourseChecksPage(courseChecksSection, dataCache.courseChecks);
-                    } else {
-                        showError(courseChecksSection, "Failed to fetch LMS checks data. Please try again.");
-                    }
+                const courseChecksData = dataCache.lms_course_checks;
+                if (courseChecksData) {
+                    renderCourseChecksPage(courseChecksSection, { parsed: parseAsHeaders(courseChecksData), raw: courseChecksData });
                 } else {
-                    renderCourseChecksPage(courseChecksSection, dataCache.courseChecks);
+                    showError(courseChecksSection, "LMS checks data not found.");
                 }
             };
 
-            const showQuestionRepo = async () => {
+            const showQuestionRepo = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const questionRepoSection = document.getElementById('question-repo-section');
                 questionRepoSection.classList.remove('hidden');
@@ -1863,7 +1961,6 @@
                 pageHeaderCenterContent.innerHTML = '';
                 pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center p-2';
                 pageHeaderCenterContent.appendChild(qrfNav);
-
                 const qrfNavItems = qrfNav.querySelectorAll('.qrf-nav-item');
                 const switchQrfTab = (tabId) => {
                     document.querySelectorAll('.qrf-content-section').forEach(sec => sec.classList.add('hidden'));
@@ -1877,88 +1974,75 @@
                         }
                     });
                 };
-
                 qrfNav.addEventListener('click', (e) => {
                     if(e.target.matches('.qrf-nav-item')) {
                         switchQrfTab(e.target.dataset.qrfTab);
                     }
                 });
-
-                const needsFetch = !dataCache.questionRepo || !dataCache.accaDaily || !dataCache.cfaDaily || !dataCache.overallDaily || !dataCache.accaSplit;
-                if (needsFetch) {
-                    showLoading(questionRepoSection);
-                    const [summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData] = await Promise.all([
-                        fetchAndParseData(QUESTION_REPO_URL),
-                        fetchAndParseData(ACCA_DAILY_URL),
-                        fetchAndParseData(CFA_DAILY_URL),
-                        fetchAndParseData(OVERALL_DAILY_URL),
-                        fetchAndParseData(ACCA_SPLIT_URL, parseAccaSplitCSV)
-                    ]);
-
-                    if (summaryData && accaDailyData && cfaDailyData && overallDailyData && accaSplitData) {
-                        dataCache.questionRepo = summaryData;
-                        dataCache.accaDaily = accaDailyData;
-                        dataCache.cfaDaily = cfaDailyData;
-                        dataCache.overallDaily = overallDailyData;
-                        dataCache.accaSplit = accaSplitData;
-                        renderQuestionRepoPage(questionRepoSection, summaryData, accaDailyData, cfaDailyData, overallDailyData, accaSplitData);
-                    } else {
-                        showError(questionRepoSection, "Failed to fetch one or more data sources. Please try again.");
-                    }
+                const accaSheetData = dataCache.qrf_acca;
+                const cfaSheetData = dataCache.qrf_cfa;
+                const overallSheetData = dataCache.qrf_overall;
+                if (accaSheetData && cfaSheetData && overallSheetData) {
+                    const accaData = {
+                        summary: {
+                            draft: accaSheetData[1][7], approved: accaSheetData[3][7], total: accaSheetData[4][7], completion: accaSheetData[5][7],
+                            subjectiveCount: accaSheetData[6][7], subjectivePercent: accaSheetData[7][7], nonSubjectiveCount: accaSheetData[8][7], nonSubjectivePercent: accaSheetData[9][7], totalQuestions: accaSheetData[10][7]
+                        },
+                        daily: parseAsHeaders(accaSheetData)
+                    };
+                    const cfaData = {
+                        summary: {
+                            draft: cfaSheetData[1][7], approved: cfaSheetData[3][7], total: cfaSheetData[4][7], completion: cfaSheetData[5][7],
+                            nonSubjectiveCount: cfaSheetData[7][7], nonSubjectivePercent: cfaSheetData[8][7], subjectiveCount: cfaSheetData[9][7], subjectivePercent: cfaSheetData[10][7], totalQuestions: cfaSheetData[11][7]
+                        },
+                        daily: parseAsHeaders(cfaSheetData)
+                    };
+                    const overallData = {
+                        summary: {
+                            draft: overallSheetData[1][7], approved: overallSheetData[2][7], total: overallSheetData[3][7], completion: overallSheetData[4][7]
+                        },
+                        daily: parseAsHeaders(overallSheetData)
+                    };
+                    renderQuestionRepoPage(questionRepoSection, accaData, cfaData, overallData);
                 } else {
-                     renderQuestionRepoPage(questionRepoSection, dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.overallDaily, dataCache.accaSplit);
+                    showError(questionRepoSection, "Failed to find QRF data. Please try again.");
                 }
                 switchQrfTab('acca');
             };
 
-            const showBatchReportsPage = async () => {
+            const showBatchReportsPage = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const batchReportsSection = document.getElementById('batch-reports-section');
                 batchReportsSection.classList.remove('hidden');
                 setPageHeader('Batch Reports', SHEET_URLS['batch-reports-section']);
                 updateFooterText('batch-reports-section');
-
-                if (!dataCache.batchReports) {
-                    showLoading(batchReportsSection);
-                    const batchData = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
-
-                    if (batchData) {
-                        dataCache.batchReports = batchData;
-                        renderBatchReportsPage(batchReportsSection, dataCache.batchReports);
-                    } else {
-                        showError(batchReportsSection, "Failed to fetch batch reports data. Please try again.");
-                    }
+                const batchData = dataCache.batch_information;
+                if (batchData) {
+                    renderBatchReportsPage(batchReportsSection, batchData);
                 } else {
-                    renderBatchReportsPage(batchReportsSection, dataCache.batchReports);
+                    showError(batchReportsSection, "Failed to fetch batch reports data. Please try again.");
                 }
             };
 
-            const showAskADoubtPage = async () => {
+            const showAskADoubtPage = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
                 const askADoubtSection = document.getElementById('ask-a-doubt-section');
                 askADoubtSection.classList.remove('hidden');
                 setPageHeader('LMS Support', SHEET_URLS['ask-a-doubt-section']);
                 updateFooterText('ask-a-doubt-section');
                 
-                const needsSummaryFetch = !dataCache.lmsSupport;
-                const needsTrendsFetch = !dataCache.lmsTrends;
-
-                if (needsSummaryFetch || needsTrendsFetch) {
-                    showLoading(askADoubtSection);
-                    const [summaryData, trendsData] = await Promise.all([
-                        needsSummaryFetch ? fetchAndParseData(LMS_SUPPORT_URL, parseSimpleCSV) : Promise.resolve(dataCache.lmsSupport),
-                        needsTrendsFetch ? fetchAndParseData(LMS_TRENDS_URL, parseLmsTrendsCSV) : Promise.resolve(dataCache.lmsTrends)
-                    ]);
-                    
-                    if (summaryData && trendsData) {
-                        dataCache.lmsSupport = summaryData;
-                        dataCache.lmsTrends = trendsData;
-                        renderAskADoubtPage(askADoubtSection, dataCache.lmsSupport, dataCache.lmsTrends);
-                    } else {
-                        showError(askADoubtSection, "Failed to fetch LMS support data. Please try again.");
-                    }
+                const supportData = dataCache.aad_lms_tickets;
+                if (supportData) {
+                    renderAskADoubtPage(askADoubtSection, 
+                        {
+                            'Total Doubts': supportData[0][7], 'Open Doubts': supportData[1][7],
+                            'Total Support Tickets': supportData[2][7], 'Open Support Tickets': supportData[3][7]
+                        },
+                        supportData.slice(1).map(row => ({ date: new Date(row[0]), doubts: row[1], tickets: row[2] })).filter(d => !isNaN(d.date.getTime()) && d.doubts !== '' && d.tickets !== ''),
+                        supportData.slice(1).map(row => ({ date: new Date(row[0]), totalDoubts: row[3], totalTickets: row[4] })).filter(d => !isNaN(d.date.getTime()) && d.totalDoubts !== '' && d.totalTickets !== '')
+                    );
                 } else {
-                    renderAskADoubtPage(askADoubtSection, dataCache.lmsSupport, dataCache.lmsTrends);
+                    showError(askADoubtSection, "Failed to fetch LMS support data. Please try again.");
                 }
             };
             
@@ -1972,35 +2056,48 @@
             const refreshData = async () => {
                 const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
                 if (!activeSection) return;
+                showLoading(activeSection);
+                
+                await fetchAllData(true);
                 
                 const activeTabButton = document.querySelector('.nav-item.active');
                 const mainTabId = activeTabButton ? activeTabButton.dataset.tab : null;
-
                 if (mainTabId === 'overview' || activeSection.id === 'overview-section') {
-                    dataCache.overview = null;
-                    dataCache.batchReports = null;
                     await switchTab('overview');
                 } else if (mainTabId === 'reports') {
                     switch(activeSection.id) {
-                        case 'batch-reports-section': dataCache.batchReports = null; await showBatchReportsPage(); break;
-                        case 'daily-section': dataCache.daily = null; dataCache.lmsStats = null; await showDailyMetrics(); break;
-                        case 'course-checks-section': dataCache.courseChecks = null; await showCourseChecksPage(); break;
-                        case 'question-repo-section': dataCache.questionRepo = null; dataCache.accaDaily = null; dataCache.cfaDaily = null; dataCache.overallDaily = null; dataCache.accaSplit = null; await showQuestionRepo(); break;
-                        case 'ask-a-doubt-section': dataCache.lmsSupport = null; dataCache.lmsTrends = null; await showAskADoubtPage(); break;
+                        case 'batch-reports-section': showBatchReportsPage(); break;
+                        case 'daily-section': showDailyMetrics(); break;
+                        case 'course-checks-section': showCourseChecksPage(); break;
+                        case 'question-repo-section': showQuestionRepo(); break;
+                        case 'ask-a-doubt-section': showAskADoubtPage(); break;
+                        default: showReportsList();
                     }
                 }
             };
             
+            // --- Initial Load & Event Listeners ---
             const initialLoad = async () => {
-                loadingOverlay.classList.remove('hidden');
-                dataCache.batchReports = await fetchAndParseData(WEEKLY_BATCH_REPORTS_URL, parseBatchReportsCSV);
-                
-                await switchTab('overview'); 
-                renderReportsPage(document.getElementById('reports-section'));
-                updateFooterText('overview-section');
+                loadingOverlay.style.opacity = '1';
+                loadingOverlay.style.pointerEvents = 'auto';
+                loadingOverlay.style.display = 'flex';
+                updateGreeting();
 
+                const minLoadTime = new Promise(resolve => setTimeout(resolve, 2000));
+                const dataFetch = fetchAllData();
+
+                const [_, data] = await Promise.all([minLoadTime, dataFetch]);
+
+                if(data){
+                    header.classList.remove('hidden');
+                    await switchTab('overview'); 
+                    renderReportsPage(document.getElementById('reports-section'));
+                    updateFooterText('overview-section');
+                }
+                
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
+                    loadingOverlay.style.pointerEvents = 'none';
                     loadingOverlay.style.display = 'none';
                 }, 500);
             };
@@ -2011,26 +2108,32 @@
                 }
             });
 
-            themeToggle.addEventListener('click', () => {
+            const handleThemeToggle = () => {
                 document.body.classList.toggle('light-mode');
-                const activeSectionId = Array.from(pageContents).find(s => !s.classList.contains('hidden'))?.id;
-                if (activeSectionId === 'course-checks-section' && dataCache.courseChecks) {
-                    renderCourseChecksPage(document.getElementById('course-checks-section'), dataCache.courseChecks);
+                const activeSection = Array.from(pageContents).find(s => !s.classList.contains('hidden'));
+                if (!activeSection) return;
+                const activeTabButton = document.querySelector('.nav-item.active');
+                const mainTabId = activeTabButton ? activeTabButton.dataset.tab : null;
+                if (mainTabId === 'reports') {
+                     switch(activeSection.id) {
+                        case 'batch-reports-section': showBatchReportsPage(); break;
+                        case 'daily-section': showDailyMetrics(); break;
+                        case 'course-checks-section': showCourseChecksPage(); break;
+                        case 'question-repo-section': showQuestionRepo(); break;
+                        case 'ask-a-doubt-section': showAskADoubtPage(); break;
+                    }
                 }
-                if (activeSectionId === 'question-repo-section' && dataCache.questionRepo) {
-                    renderQuestionRepoPage(document.getElementById('question-repo-section'), dataCache.questionRepo, dataCache.accaDaily, dataCache.cfaDaily, dataCache.overallDaily, dataCache.accaSplit);
-                }
-                if (activeSectionId === 'ask-a-doubt-section' && dataCache.lmsSupport) {
-                    renderAskADoubtPage(document.getElementById('ask-a-doubt-section'), dataCache.lmsSupport, dataCache.lmsTrends);
-                }
-            });
+            };
+
+            themeToggleDesktop.addEventListener('click', handleThemeToggle);
+            themeToggleMobile.addEventListener('click', handleThemeToggle);
+
             
             headerBackButton.addEventListener('click', showReportsList);
             
             mainContent.addEventListener('click', (event) => {
                 const target = event.target.closest('button');
                 if (!target) return;
-
                 if (target.id === 'show-daily-metrics-btn') showDailyMetrics();
                 else if (target.id === 'show-question-repo-btn') showQuestionRepo();
                 else if (target.id === 'show-course-checks-btn') showCourseChecksPage();
@@ -2042,18 +2145,14 @@
                 const mainRefreshIcon = mainHeaderRefreshButton.querySelector('i');
                 const headerRefreshIcon = headerRefreshButton.querySelector('i');
                 const activeIcon = mainRefreshIcon?.offsetParent ? mainRefreshIcon : headerRefreshIcon;
-
                 if (!activeIcon || activeIcon.classList.contains('animate-spin')) return;
                 
                 activeIcon.classList.add('animate-spin');
-
                 const minSpinTime = new Promise(resolve => setTimeout(resolve, 750));
-
                 Promise.all([refreshData(), minSpinTime]).finally(() => {
                     activeIcon.classList.remove('animate-spin');
                 });
             };
-
             headerRefreshButton.addEventListener('click', handleRefreshClick);
             mainHeaderRefreshButton.addEventListener('click', handleRefreshClick);
             
@@ -2064,120 +2163,68 @@
                 } else {
                     document.getElementById('page-footer').classList.remove('visible');
                 }
+                // New logic for greeting visibility
+                if (headerGreeting) {
+                    headerGreeting.style.opacity = (scrollTop > 20) ? '0' : '1';
+                }
             });
 
-            // --- Access Control Logic ---
-            const showMessage = (element, text, isError = false) => {
-                element.textContent = text;
-                element.style.color = isError ? '#ef4444' : 'var(--text-muted-color)';
+            // --- Passcode Logic ---
+            let currentPasscode = '';
+            const updatePasscodeDots = () => {
+                const dots = passcodeDots.querySelectorAll('.passcode-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('filled', index < currentPasscode.length);
+                    dot.classList.remove('success');
+                });
             };
-
-            const handleEmailRequest = async () => {
-                const email = emailInput.value.trim().toLowerCase();
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    showMessage(accessMessage, 'Please enter a valid email.', true);
-                    return;
+            const handlePasscodeEntry = (key) => {
+                if (key === 'backspace') {
+                    currentPasscode = currentPasscode.slice(0, -1);
+                } else if (currentPasscode.length < 4) {
+                    currentPasscode += key;
                 }
-                
-                requestAccessBtn.disabled = true;
-                requestAccessBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
-
-                try {
-                    // Use text/plain to avoid CORS preflight issues
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'cors', 
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: email
-                    });
-                    
-                    localStorage.setItem('dashboardUserEmail', email);
-                    initialView.classList.add('hidden');
-                    pendingView.classList.remove('hidden');
-
-                } catch (error) {
-                    showMessage(accessMessage, 'Could not send request. Check connection.', true);
-                } finally {
-                    requestAccessBtn.disabled = false;
-                    requestAccessBtn.innerHTML = 'Request Access';
-                }
-            };
-            
-            const checkAccessStatus = async () => {
-                const email = localStorage.getItem('dashboardUserEmail');
-                if (!email) return;
-
-                checkStatusBtn.disabled = true;
-                checkStatusBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>';
-                showMessage(statusMessage, 'Checking status...');
-
-                try {
-                    const response = await fetch(`${ACCESS_CONTROL_SHEET_URL}&t=${new Date().getTime()}`);
-                    if (!response.ok) throw new Error('Network error');
-                    const csv = await response.text();
-                    const lines = csv.replace(/\r/g, '').split('\n');
-                    let userStatus = 'Not Found';
-
-                    for (let i = 1; i < lines.length; i++) {
-                        const parts = lines[i].split(',');
-                        if (parts[0] && parts[0].trim().toLowerCase() === email) {
-                            userStatus = parts[1] ? parts[1].trim() : 'Pending';
-                            break;
-                        }
-                    }
-
-                    if (userStatus === 'Allow') {
-                        initialView.classList.add('hidden');
-                        pendingView.classList.add('hidden');
-                        grantedView.classList.remove('hidden');
+                updatePasscodeDots();
+                if (currentPasscode.length === 4) {
+                    if (currentPasscode === CORRECT_PASSCODE) {
+                        passcodeDots.querySelectorAll('.passcode-dot').forEach(dot => dot.classList.add('success'));
+                        
                         setTimeout(() => {
-                            accessOverlay.style.opacity = '0';
-                            setTimeout(() => {
-                                accessOverlay.style.display = 'none';
-                                document.querySelector('header').classList.remove('hidden');
-                                document.querySelector('main').classList.remove('hidden');
-                                initialLoad();
-                            }, 500);
-                        }, 1500);
-                    } else if (userStatus === 'Deny') {
-                        showMessage(statusMessage, 'Access has been denied.', true);
-                        localStorage.removeItem('dashboardUserEmail');
+                            passcodeContainer.style.opacity = '0';
+                            passcodeContainer.style.transform = 'scale(0.9)';
+                        }, 100); 
                         setTimeout(() => {
-                            pendingView.classList.add('hidden');
-                            initialView.classList.remove('hidden');
-                            statusMessage.textContent = '';
-                            accessMessage.textContent = '';
-                            emailInput.value = '';
-                        }, 2000);
+                            passcodeOverlay.style.opacity = '0';
+                            passcodeOverlay.style.pointerEvents = 'none';
+                            initialLoad();
+                        }, 400);
                     } else {
-                         showMessage(statusMessage, 'Access is still pending approval.');
+                        passcodeDots.classList.add('shake');
+                        passcodeError.textContent = 'Incorrect Passcode';
+                        setTimeout(() => {
+                            passcodeDots.classList.remove('shake');
+                            passcodeError.textContent = '';
+                            currentPasscode = '';
+                            updatePasscodeDots();
+                        }, 800);
                     }
-
-                } catch (error) {
-                    showMessage(statusMessage, 'Could not check status. Try again later.', true);
-                } finally {
-                     checkStatusBtn.disabled = false;
-                     checkStatusBtn.innerHTML = 'Check My Status';
                 }
             };
-
-            requestAccessBtn.addEventListener('click', handleEmailRequest);
-            checkStatusBtn.addEventListener('click', checkAccessStatus);
-            emailInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    requestAccessBtn.click();
+            passcodeKeypad.addEventListener('click', (e) => {
+                const key = e.target.closest('.passcode-keypad-btn')?.dataset.key;
+                if (key) {
+                    handlePasscodeEntry(key);
                 }
             });
-
-            // Check if user has already requested access
-            const storedEmail = localStorage.getItem('dashboardUserEmail');
-            if (storedEmail) {
-                emailInput.value = storedEmail;
-                checkAccessStatus(); // Immediately check status on page load if email exists
-                initialView.classList.add('hidden');
-                pendingView.classList.remove('hidden');
-            }
+            document.addEventListener('keydown', (e) => {
+                if (passcodeOverlay.style.pointerEvents !== 'none') {
+                    if (e.key >= '0' && e.key <= '9') {
+                        handlePasscodeEntry(e.key);
+                    } else if (e.key === 'Backspace') {
+                        handlePasscodeEntry('backspace');
+                    }
+                }
+            });
         });
     </script>
 </body>
