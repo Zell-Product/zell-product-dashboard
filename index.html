@@ -412,6 +412,17 @@
             .card-grid .flex-grow { min-width: 0; }
             #header-greeting { display: none; }
         }
+
+        /* --- START: Mobile QRF Header Fix --- */
+            /* Target the right-side button container ONLY on the QRF page */
+            #page-header:has(#qrf-navigation-bar-sticky) .absolute.right-0 {
+                gap: 0.25rem; /* Reduce gap between refresh and sheet icons */
+            }
+            /* Target the center nav bar ONLY on the QRF page */
+            #page-header:has(#qrf-navigation-bar-sticky) #page-header-center-content {
+                max-width: calc(100% - 11rem); /* Increase side margin to prevent overlap */
+            }
+            /* --- END: Mobile QRF Header Fix --- */
     </style>
 </head>
 <body class="h-screen flex flex-col">
@@ -1942,94 +1953,73 @@
                 }
             };
 
-           const showQuestionRepo = () => {
-                pageContents.forEach(content => content.classList.add('hidden'));
-                const questionRepoSection = document.getElementById('question-repo-section');
-                questionRepoSection.classList.remove('hidden');
-                updateFooterText('question-repo-section');
-                
-                // --- Start of Fix ---
-                
-                // This part is the ORIGINAL code, which works perfectly for desktop.
-                setPageHeader('', SHEET_URLS['question-repo-section']);
-                
-                const qrfNav = document.createElement('nav');
-                qrfNav.id = 'qrf-navigation-bar-sticky';
-                qrfNav.className = 'flex justify-center items-center gap-1';
-                qrfNav.innerHTML = `
-                    <button data-qrf-tab="acca" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
-                    <button data-qrf-tab="cfa" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
-                    <button data-qrf-tab="overall" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
-                `;
-                pageHeaderCenterContent.innerHTML = '';
-                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center p-2';
-                pageHeaderCenterContent.appendChild(qrfNav);
-
-                // This NEW block of code runs ONLY on mobile to prevent the UI clash.
-                if (window.innerWidth < 768) {
-                    // We increase the space reserved for the side buttons from 10rem to 12rem.
-                    // This shrinks the center navigation container just enough to avoid collision.
-                    pageHeaderCenterContent.style.maxWidth = 'calc(100% - 12rem)';
-                }
-
-                // --- End of Fix ---
-
-                const qrfNavItems = qrfNav.querySelectorAll('.qrf-nav-item');
-                const switchQrfTab = (tabId) => {
-                    document.querySelectorAll('.qrf-content-section').forEach(sec => sec.classList.add('hidden'));
-                    const activeContent = document.getElementById(`${tabId}-qrf-content`);
-                    if (activeContent) activeContent.classList.remove('hidden');
-                    
-                    qrfNavItems.forEach(item => {
-                        item.classList.remove('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
-                        if(item.dataset.qrfTab === tabId) {
-                           item.classList.add('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
-                        }
-                    });
-                };
-                qrfNav.addEventListener('click', (e) => {
-                    if(e.target.matches('.qrf-nav-item')) {
-                        switchQrfTab(e.target.dataset.qrfTab);
-                    }
-                });
-                const accaSheetData = dataCache.qrf_acca;
-                const cfaSheetData = dataCache.qrf_cfa;
-                const overallSheetData = dataCache.qrf_overall;
-                if (accaSheetData && cfaSheetData && overallSheetData) {
-                    const accaData = {
-                        summary: {
-                            draft: accaSheetData[1][7], approved: accaSheetData[3][7], total: accaSheetData[4][7], completion: accaSheetData[5][7],
-                            subjectiveCount: accaSheetData[6][7], subjectivePercent: accaSheetData[7][7], nonSubjectiveCount: accaSheetData[8][7], nonSubjectivePercent: accaSheetData[9][7], totalQuestions: accaSheetData[10][7]
-                        },
-                        daily: parseAsHeaders(accaSheetData)
-                    };
-                    const cfaData = {
-                        summary: {
-                            draft: cfaSheetData[1][7], approved: cfaSheetData[3][7], total: cfaSheetData[4][7], completion: cfaSheetData[5][7],
-                            nonSubjectiveCount: cfaSheetData[7][7], nonSubjectivePercent: cfaSheetData[8][7], subjectiveCount: cfaSheetData[9][7], subjectivePercent: cfaSheetData[10][7], totalQuestions: cfaSheetData[11][7]
-                      _ I have identified the exact location of the issue and implemented a robust workaround directly in the `fetchAllData` function.
-
-This updated code now includes a retry mechanism. If the initial data fetch fails to retrieve the "Batches Information," it will automatically wait for three seconds and try again. This delay gives the `IMPORTRANGE` formulas in your Google Sheet enough time to load, ensuring the data is available on the second attempt.
-
-I have placed comments in the code to clearly mark the beginning and end of the fix. You can now copy the entire contents of this document and replace your existing code. This should resolve the issue you're facing 100% of the time.        },
-                        daily: parseAsHeaders(cfaSheetData)
-                    };
-                    const overallData = {
-                        summary: {
-                            draft: overallSheetData[1][7], approved: overallSheetData[2][7], total: overallSheetData[3][7], completion: overallSheetData[4][7]
-                        },
-                        daily: parseAsHeaders(overallSheetData)
-              . I have identified the exact location of the issue and implemented a robust workaround directly in the `fetchAllData` function.
-
-This updated code now includes a retry mechanism. If the initial data fetch fails to retrieve the "Batches Information," it will automatically wait for three seconds and try again. This delay gives the `IMPORTRANGE` formulas in your Google Sheet enough time to load, ensuring the data is available on the second attempt.
-
-I have placed comments in the code to clearly mark the beginning and end of the fix. You can now copy the entire contents of this document and replace your existing code. This should resolve the issue you're facing 100% of the time.      };
-                    renderQuestionRepoPage(questionRepoSection, accaData, cfaData, overallData);
-                } else {
-                    showError(questionRepoSection, "Failed to find QRF data. Please try again.");
-                }
-                switchQrfTab('acca');
-            };
+            const showQuestionRepo = () => {
+                pageContents.forEach(content => content.classList.add('hidden'));
+                const questionRepoSection = document.getElementById('question-repo-section');
+                questionRepoSection.classList.remove('hidden');
+                updateFooterText('question-repo-section');
+                
+                setPageHeader('', SHEET_URLS['question-repo-section']);
+                
+                const qrfNav = document.createElement('nav');
+                qrfNav.id = 'qrf-navigation-bar-sticky';
+                qrfNav.className = 'flex justify-center items-center gap-1';
+                qrfNav.innerHTML = `
+                    <button data-qrf-tab="acca" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
+                    <button data-qrf-tab="cfa" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
+                    <button data-qrf-tab="overall" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
+                `;
+                pageHeaderCenterContent.innerHTML = '';
+                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center p-2';
+                pageHeaderCenterContent.appendChild(qrfNav);
+                const qrfNavItems = qrfNav.querySelectorAll('.qrf-nav-item');
+                const switchQrfTab = (tabId) => {
+                    document.querySelectorAll('.qrf-content-section').forEach(sec => sec.classList.add('hidden'));
+                    const activeContent = document.getElementById(`${tabId}-qrf-content`);
+                    if (activeContent) activeContent.classList.remove('hidden');
+                    
+                    qrfNavItems.forEach(item => {
+                        item.classList.remove('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        if(item.dataset.qrfTab === tabId) {
+                           item.classList.add('bg-[var(--nav-active-bg)]', 'text-[var(--nav-active-text)]');
+                        }
+                    });
+                };
+                qrfNav.addEventListener('click', (e) => {
+                    if(e.target.matches('.qrf-nav-item')) {
+                        switchQrfTab(e.target.dataset.qrfTab);
+                    }
+                });
+                const accaSheetData = dataCache.qrf_acca;
+                const cfaSheetData = dataCache.qrf_cfa;
+                const overallSheetData = dataCache.qrf_overall;
+                if (accaSheetData && cfaSheetData && overallSheetData) {
+                    const accaData = {
+                        summary: {
+                            draft: accaSheetData[1][7], approved: accaSheetData[3][7], total: accaSheetData[4][7], completion: accaSheetData[5][7],
+                            subjectiveCount: accaSheetData[6][7], subjectivePercent: accaSheetData[7][7], nonSubjectiveCount: accaSheetData[8][7], nonSubjectivePercent: accaSheetData[9][7], totalQuestions: accaSheetData[10][7]
+                        },
+                        daily: parseAsHeaders(accaSheetData)
+                    };
+                    const cfaData = {
+                        summary: {
+                            draft: cfaSheetData[1][7], approved: cfaSheetData[3][7], total: cfaSheetData[4][7], completion: cfaSheetData[5][7],
+                            nonSubjectiveCount: cfaSheetData[7][7], nonSubjectivePercent: cfaSheetData[8][7], subjectiveCount: cfaSheetData[9][7], subjectivePercent: cfaSheetData[10][7], totalQuestions: cfaSheetData[11][7]
+                        },
+                        daily: parseAsHeaders(cfaSheetData)
+                    };
+                    const overallData = {
+                        summary: {
+                            draft: overallSheetData[1][7], approved: overallSheetData[2][7], total: overallSheetData[3][7], completion: overallSheetData[4][7]
+                        },
+                        daily: parseAsHeaders(overallSheetData)
+                    };
+                    renderQuestionRepoPage(questionRepoSection, accaData, cfaData, overallData);
+                } else {
+                    showError(questionRepoSection, "Failed to find QRF data. Please try again.");
+                }
+                switchQrfTab('acca');
+            };
 
             const showBatchReportsPage = () => {
                 pageContents.forEach(content => content.classList.add('hidden'));
@@ -2250,5 +2240,3 @@ I have placed comments in the code to clearly mark the beginning and end of the 
     </script>
 </body>
 </html>
-
-
