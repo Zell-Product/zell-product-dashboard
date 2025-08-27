@@ -1949,18 +1949,40 @@
                 updateFooterText('question-repo-section');
                 
                 setPageHeader('', SHEET_URLS['question-repo-section']);
-                
-                const qrfNav = document.createElement('nav');
-                qrfNav.id = 'qrf-navigation-bar-sticky';
-                qrfNav.className = 'flex justify-center items-center gap-1';
-                qrfNav.innerHTML = `
-                    <button data-qrf-tab="acca" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">ACCA</button>
-                    <button data-qrf-tab="cfa" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">CFA</button>
-                    <button data-qrf-tab="overall" class="qrf-nav-item px-3 md:px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-colors duration-300">Overall</button>
-                `;
-                pageHeaderCenterContent.innerHTML = '';
-                pageHeaderCenterContent.className = 'bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full flex items-center justify-center p-2';
-                pageHeaderCenterContent.appendChild(qrfNav);
+                headerRefreshButton.classList.add('hidden'); 
+
+                // Create a new container that will hold both the nav and the refresh button as a single unit.
+                const newHeaderCenterGroup = document.createElement('div');
+                newHeaderCenterGroup.className = 'flex items-center justify-center gap-2';
+
+                // Define the navigation buttons with slightly reduced padding on mobile to guarantee fit.
+                const qrfNavHTML = `
+                    <nav id="qrf-navigation-bar-sticky" class="flex items-center gap-1 bg-[var(--header-bg)] backdrop-blur-lg border border-[var(--header-border)] rounded-full p-1">
+                        <button data-qrf-tab="acca" class="qrf-nav-item px-2 md:px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300">ACCA</button>
+                        <button data-qrf-tab="cfa" class="qrf-nav-item px-2 md:px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300">CFA</button>
+                        <button data-qrf-tab="overall" class="qrf-nav-item px-2 md:px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300">Overall</button>
+                    </nav>
+                `;
+
+                // Define the new refresh button. It uses the SAME ID as the original, so all existing logic works perfectly.
+                const newRefreshButtonHTML = `
+                    <button id="header-refresh-button" class="bg-[var(--card-bg)] border border-[var(--header-border)] text-[var(--nav-text-color)] hover:text-[var(--nav-text-hover)] w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white/10 flex-shrink-0">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                `;
+
+                // Combine the HTML for the nav and the new button.
+                newHeaderCenterGroup.innerHTML = qrfNavHTML + newRefreshButtonHTML;
+
+                // Replace the old header content with our new, combined element.
+                pageHeaderCenterContent.innerHTML = '';
+                pageHeaderCenterContent.className = 'flex-1 min-w-0 flex justify-center'; // Allow flexible sizing
+                pageHeaderCenterContent.appendChild(newHeaderCenterGroup);
+
+                // Find the nav element again so the rest of the function can attach listeners to it.
+                const qrfNav = document.getElementById('qrf-navigation-bar-sticky');
+
+                // --- End of Replacement Block ---
                 const qrfNavItems = qrfNav.querySelectorAll('.qrf-nav-item');
                 const switchQrfTab = (tabId) => {
                     document.querySelectorAll('.qrf-content-section').forEach(sec => sec.classList.add('hidden'));
@@ -2229,3 +2251,4 @@
     </script>
 </body>
 </html>
+
