@@ -924,16 +924,23 @@
             };
 
             const renderReportsPage = (container) => {
-                const reports = [
-                    { title: 'LMS Web & App Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn' },
-                    { title: 'LMS Checks', icon: 'fas fa-clipboard-check', id: 'show-course-checks-btn' },
-                    { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn' },
-                    { title: 'Ask a Doubt + LMS Tickets', icon: 'fas fa-headset', id: 'show-ask-a-doubt-btn' },
-                    { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', id: 'show-batch-reports-btn' },
-                    { title: 'Attendance Report', icon: 'fas fa-user-check', id: 'show-attendance-btn' },
-                ];
-                container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">${reports.map(report => `<button id="${report.id}" class="report-tile rounded-3xl p-6 flex flex-col items-center justify-center text-center aspect-[4/3]"><div class="report-tile-icon text-6xl mb-4"><i class="${report.icon}"></i></div><h3 class="text-xl font-bold text-[var(--text-color)]">${report.title}</h3></button>`).join('')}</div>`;
-            };
+            const reports = [
+                { title: 'LMS Web & App Metrics', icon: 'fas fa-chart-line', id: 'show-daily-metrics-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'LMS Checks', icon: 'fas fa-clipboard-check', id: 'show-course-checks-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'Question Repository', icon: 'fas fa-book-open', id: 'show-question-repo-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'Ask a Doubt + LMS Tickets', icon: 'fas fa-headset', id: 'show-ask-a-doubt-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'Weekly Batch Reports', icon: 'fas fa-chart-pie', id: 'show-batch-reports-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'Attendance Report', icon: 'fas fa-user-check', id: 'show-attendance-btn', isLink: false }, // <<< NEW 'isLink' property
+                { title: 'ACCA Feedback', icon: 'fas fa-comment-dots', id: 'show-acca-feedback-btn', isLink: true, href: './acca_feedback_dashboard.html' } // <<< NEW REPORT ADDED
+            ];
+            // VVV THIS LINE IS NOW SMARTER VVV
+            container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">${reports.map(report => {
+                if (report.isLink) {
+                    return `<a href="${report.href}" id="${report.id}" class="report-tile rounded-3xl p-6 flex flex-col items-center justify-center text-center aspect-[4/3]"><div class="report-tile-icon text-6xl mb-4"><i class="${report.icon}"></i></div><h3 class="text-xl font-bold text-[var(--text-color)]">${report.title}</h3></a>`;
+                }
+                return `<button id="${report.id}" class="report-tile rounded-3xl p-6 flex flex-col items-center justify-center text-center aspect-[4/3]"><div class="report-tile-icon text-6xl mb-4"><i class="${report.icon}"></i></div><h3 class="text-xl font-bold text-[var(--text-color)]">${report.title}</h3></button>`;
+            }).join('')}</div>`;
+        };
 
             // --- Navigation & UI Flow ---
             const updateGreeting = () => { const greetingText = document.getElementById('greeting-text'), dateText = document.getElementById('date-text'), hour = new Date().getHours(); if (hour < 12) greetingText.textContent = 'Good Morning'; else if (hour < 18) greetingText.textContent = 'Good Afternoon'; else greetingText.textContent = 'Good Evening'; dateText.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); setTimeout(() => headerGreeting.style.opacity = '1', 200); };
@@ -986,4 +993,5 @@
     </script>
 </body>
 </html>
+
 
