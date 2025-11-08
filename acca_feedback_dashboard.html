@@ -1,0 +1,2392 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ACCA Feedback Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Chart.js (Our new library) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Font Awesome for Icons (Matching main dashboard) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    /* === CORE THEME VARIABLES (From main dashboard) === */
+    :root {
+        /* Dark Mode (Midnight) - DEFAULT */
+        --bg-color: #1a1b1e;
+        --text-color: #f0f0f0;
+        --text-muted-color: #9a9a9e;
+        --card-bg: rgba(44, 44, 46, 0.7);
+        --card-border: rgba(255, 255, 255, 0.15);
+        --card-hover-bg: rgba(58, 58, 60, 0.8);
+        --card-hover-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+        --header-bg: rgba(28, 28, 30, 0.7);
+        --header-border: rgba(255, 255, 255, 0.15);
+        --icon-color: #ffffff;
+        --nav-text-color: #9a9a9e;
+        --nav-text-hover: #ffffff;
+        --nav-active-bg: rgba(255, 255, 255, 0.1);
+        --nav-active-text: #ffffff;
+        --sub-box-bg: rgba(28, 28, 30, 0.5);
+        --footer-bg: #1c1c1e;
+        --chart-grid-color: rgba(255, 255, 255, 0.1);
+        --chart-tick-color: #9a9a9e;
+        --good-tint: rgba(48, 209, 88, 0.15);
+        --medium-tint: rgba(255, 159, 10, 0.15);
+        --bad-tint: rgba(255, 69, 58, 0.15);
+        --bar-track-bg: rgba(55, 55, 57, 0.8);
+        
+        /* New accent color for this page */
+        --accent: #0a84ff; 
+    }
+
+    body.light-mode {
+        /* Graphite Theme (Light) */
+        --bg-color: #e5e5ea;
+        --text-color: #1c1c1e;
+        --text-muted-color: #3a3a3c;
+        --card-bg: rgba(242, 242, 247, 0.7);
+        --card-border: rgba(0, 0, 0, 0.08);
+        --card-hover-bg: rgba(255, 255, 255, 0.8);
+        --card-hover-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+        --header-bg: rgba(235, 235, 240, 0.75);
+        --header-border: rgba(0, 0, 0, 0.09);
+        --icon-color: #1c1c1e;
+        --nav-text-color: #555555;
+        --nav-text-hover: #000000;
+        --nav-active-bg: #ffffff;
+        --nav-active-text: #000000;
+        --sub-box-bg: rgba(229, 229, 234, 0.75);
+        --footer-bg: transparent;
+        --chart-grid-color: rgba(0, 0, 0, 0.08);
+        --chart-tick-color: #8d8d92;
+        --good-tint: rgba(48, 209, 88, 0.25);
+        --medium-tint: rgba(255, 159, 10, 0.25);
+        --bad-tint: rgba(255, 69, 58, 0.25);
+        --bar-track-bg: rgba(0, 0, 0, 0.06);
+        
+        /* New accent color for this page */
+        --accent: #0071e3;
+    }
+    
+    /* === RE-STYLED FEEDBACK PAGE CSS === */
+    *{box-sizing:border-box}
+    .hidden { display: none !important; }
+    
+    /* Make main content scrollable */
+    html, body {
+        height: 100%;
+        overflow: hidden; /* Prevent body scroll */
+    }
+    .main-content {
+        scroll-behavior: smooth;
+    }
+    
+    body{
+        margin:0;
+        font-family:'Inter', -apple-system, BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+        background:var(--bg-color);
+        color:var(--text-color);
+        -webkit-font-smoothing:antialiased;
+        -moz-osx-font-smoothing:grayscale; 
+        transition: background-color 0.5s ease, color 0.5s ease;
+    }
+    
+    .header-container {
+        min-height: 3.5rem;
+    }
+    @media (min-width: 768px) {
+        .header-container {
+            min-height: 4.5rem; /* 72px */
+        }
+    }
+
+    .header-btn {
+        background: var(--card-bg);
+        border: 1px solid var(--header-border);
+        color: var(--nav-text-color);
+        width: 3rem; /* 48px */
+        height: 3rem; /* 48px */
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .header-btn:hover {
+        background: var(--card-hover-bg);
+        color: var(--nav-text-hover);
+    }
+    @media (max-width: 768px) {
+        .header-btn {
+            width: 2.75rem; /* 44px */
+            height: 2.75rem; /* 44px */
+        }
+    }
+    
+    #page-header-center-content {
+        background: var(--header-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--header-border);
+        border-radius: 9999px;
+        padding: 0.75rem 2rem; /* 12px 32px */
+        transition: all 0.3s ease;
+    }
+    @media (max-width: 768px) {
+        #page-header-center-content {
+            padding: 0.5rem 1rem; /* 8px 16px */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            max-width: calc(100% - 8rem); /* Allow space for buttons */
+        }
+        #page-header-title {
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .card{
+        background:var(--card-bg);
+        backdrop-filter:blur(20px);
+        -webkit-backdrop-filter:blur(20px);
+        border:1px solid var(--card-border);
+        border-radius:1.5rem; /* 24px */
+        padding:24px; /* More padding */
+        transition: all 0.3s ease;
+    }
+    body.light-mode .card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    }
+    
+    /* NEW: Sub-box style for stats */
+    .sub-box {
+        background: var(--sub-box-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1.25rem; /* 20px */
+        padding: 16px;
+    }
+    
+    /* NEW: Overall Stats Hero Component */
+    .stats-hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    @media (min-width: 768px) {
+        /* FIX: New 1:1 grid layout */
+        .stats-hero-grid {
+            grid-template-columns: 1fr 1fr; 
+            gap: 32px;
+            align-items: center; /* Vertically center gauge and stats stack */
+        }
+    }
+    .stats-gauge-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 16px auto;
+    }
+    
+    /* FIX: GAUGE TEXT POSITIONING */
+    .stats-gauge-value {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center; /* Vertically centers the text block */
+        text-align: center;
+        transform: none; /* Remove old transform */
+        padding-top: 1.5rem; /* This will push the centered block DOWN */
+        box-sizing: border-box;
+    }
+    .stats-gauge-value .value {
+        font-size: 2.75rem; /* 44px */
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1; /* Crucial */
+    }
+    .stats-gauge-value .label {
+        font-size: 0.875rem; /* 14px */
+        font-weight: 500;
+        color: var(--text-muted-color);
+        margin-top: 0.25rem; /* Small gap */
+    }
+    /* END GAUGE FIX */
+
+    .stats-primary-list {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        text-align: center;
+    }
+    .stats-primary-item .value {
+        font-size: 1.5rem; /* 24px */
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .stats-primary-item .label {
+        font-size: 0.8125rem; /* 13px */
+        color: var(--text-muted-color);
+        font-weight: 500;
+    }
+    .stats-summary-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .rating-scale-container {
+        width: 100%;
+    }
+    .rating-scale-track {
+        height: 0.75rem; /* 12px */
+        background-color: var(--bar-track-bg); /* Use bar track */
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+    }
+    .rating-scale-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        width: 0; /* Set by JS */
+    }
+    .rating-scale-fill.good { background: linear-gradient(90deg, #34c759, #30d158); }
+    .rating-scale-fill.medium { background: linear-gradient(90deg, #ff9500, #ff9f0a); }
+    .rating-scale-fill.bad { background: linear-gradient(90deg, #ff3b30, #ff453a); }
+    .rating-scale-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem; /* 14px */
+        margin-bottom: 6px;
+    }
+    .rating-scale-label .name {
+        font-weight: 500;
+        color: var(--text-muted-color);
+    }
+    .rating-scale-label .value {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .stats-low-ratings {
+        display: flex;
+        gap: 16px;
+        background: var(--bad-tint);
+        border-radius: 1.25rem; /* 20px */
+        padding: 16px;
+    }
+    .stats-low-ratings .kpi-item {
+        flex: 1;
+        text-align: center;
+    }
+    .stats-low-ratings .kpi-item .value {
+        font-size: 2rem; /* 32px */
+        font-weight: 700;
+        color: #ff453a;
+    }
+    body.light-mode .stats-low-ratings .kpi-item .value {
+        color: #d8000c;
+    }
+    .stats-low-ratings .kpi-item .label {
+        font-size: 0.875rem; /* 14px */
+        font-weight: 500;
+        color: var(--text-muted-color);
+    }
+    /* END: Overall Stats Hero */
+
+    /* NEW: Horizontal Bar Chart for Batch Activity */
+    .bar-chart-row { 
+        display: flex; 
+        align-items: center; 
+        gap: 0.75rem; /* 12px */ 
+        width: 100%; 
+        border-radius: 0.5rem; /* 8px */ 
+    }
+    .bar-chart-label { 
+        flex-shrink: 0; 
+        width: 10rem; /* 160px */ 
+        text-align: left; 
+        font-size: 0.875rem; /* 14px */ 
+        color: var(--text-muted-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .bar-chart-bar-container { 
+        flex-grow: 1; 
+        background-color: var(--bar-track-bg); 
+        border-radius: 9999px; 
+        height: 1.75rem; /* 28px */ 
+        position: relative; 
+        overflow: hidden; 
+    }
+    .bar-chart-bar { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        height: 100%; 
+        border-radius: 9999px; 
+        background-color: var(--text-muted-color); 
+        transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1); 
+        width: 0; /* Set by JS */
+    }
+    .bar-chart-bar.animate-in { 
+        width: var(--target-width); 
+    }
+    .bar-chart-bar.color-1 { background-color: #0a84ff; }
+    .bar-chart-bar.color-2 { background-color: #ff9f0a; }
+
+    .bar-chart-value { 
+        font-weight: 600; 
+        color: var(--text-color); 
+        width: 6rem; /* 96px */ 
+        text-align: left;
+        font-size: 0.875rem; /* 14px */
+    }
+    /* END: Horizontal Bar Chart */
+
+    .ranked-list-apple-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--sub-box-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 0.75rem; /* 12px */
+        transition: all 0.3s ease;
+    }
+    .ranked-list-apple-item:hover {
+        background: var(--card-hover-bg);
+        transform: scale(1.02);
+    }
+    .rank-number {
+        font-size: 2.5rem; /* 40px */
+        font-weight: 800;
+        color: var(--text-muted-color);
+        opacity: 0.6;
+        width: 3rem; /* 48px */
+        flex-shrink: 0;
+        text-align: center;
+        line-height: 1;
+    }
+    .rank-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden; /* For text ellipsis */
+        flex-grow: 1;
+    }
+    .rank-info .name {
+        font-weight: 600;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .rank-info .score {
+        font-weight: 500;
+        font-size: 0.875rem; /* 14px */
+    }
+    .rank-info .score-bad {
+        color: #ff453a;
+    }
+    .rank-info .score-good {
+        color: #30d158;
+    }
+    /* NEW: Context for rank list */
+    .rank-context {
+        flex-shrink: 0;
+        text-align: right;
+    }
+    .rank-context .count {
+        font-size: 1.125rem; /* 18px */
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .rank-context .label {
+        font-size: 0.75rem; /* 12px */
+        color: var(--text-muted-color);
+    }
+    
+    .toggle-switch {
+        background: var(--sub-box-bg);
+        border-radius: 9999px;
+        padding: 4px;
+        display: inline-flex;
+        border: 1px solid var(--card-border);
+        position: relative;
+    }
+    .toggle-switch-btn {
+        padding: 0.375rem 1rem; /* 6px 16px */
+        font-size: 0.875rem; /* 14px */
+        font-weight: 600;
+        border-radius: 9999px;
+        color: var(--text-muted-color);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        z-index: 2;
+        cursor: pointer;
+    }
+    .toggle-switch-btn.active {
+        color: var(--nav-active-text);
+    }
+    .toggle-switch-bg {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: calc(50% - 4px); /* Assumes 2 buttons */
+        height: calc(100% - 8px);
+        border-radius: 9999px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+    }
+    body.light-mode .toggle-switch-bg {
+        background-color: var(--nav-active-bg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0 1px 2px rgba(255,255,255,0.7);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+    body:not(.light-mode) .toggle-switch-bg {
+        background-color: var(--nav-active-bg);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+    }
+    
+    .timeline-toggle {
+        background: var(--sub-box-bg);
+        border-radius: 9999px;
+        padding: 0.25rem; /* 4px */
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        justify-content: center;
+        gap: 0.25rem; /* 4px */
+        border: 1px solid var(--card-border);
+    }
+    .timeline-btn {
+        padding: 0.375rem 1rem; /* 6px 16px */
+        font-size: 0.875rem; /* 14px */
+        font-weight: 600;
+        border-radius: 9999px;
+        color: var(--text-muted-color);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        white-space: nowrap; /* Prevent button text from wrapping */
+    }
+    .timeline-btn:hover:not(.active) {
+        color: var(--text-color);
+        background: var(--card-hover-bg);
+    }
+    .timeline-btn.active {
+        color: var(--nav-active-text);
+        background-color: var(--nav-active-bg);
+    }
+    body.light-mode .timeline-btn.active {
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0 1px 2px rgba(255,255,255,0.7);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+        border-color: rgba(0,0,0,0.08);
+    }
+    body:not(.light-mode) .timeline-btn.active {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+    }
+    
+    .chart{
+        height:350px;
+    }
+    .chart-tall {
+        height: 400px;
+    }
+    
+    .table-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem; /* 16px */
+        flex-wrap: wrap; /* Allow wrapping */
+        gap: 1rem; /* 16px */
+    }
+    .count-badge {
+        background-color: var(--sub-box-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text-muted-color);
+        font-size: 0.875rem; /* 14px */
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 9999px;
+    }
+
+    /* Table styles */
+    .table-wrap{overflow:auto;border-radius:1.25rem; /* 20px */ border:1px solid var(--card-border)} 
+    table{border-collapse:collapse;width:100%;background:var(--card-bg);transition: background-color 0.3s ease;}
+    
+    /* FIX: Remove global nowrap */
+    th,td{padding:10px 12px;border-bottom:1px solid var(--card-border);font-size:14px;transition: border-color 0.3s ease, background-color 0.3s ease;} 
+    
+    /* FIX: Apply nowrap only to data cells, excluding comment cell */
+    td:not(.comment-cell) {
+        white-space: nowrap;
+    }
+    
+    /* FIX: Add table borders */
+    th:not(:first-child), td:not(:first-child) { 
+        border-left: 1px solid var(--card-border); 
+    }
+    
+    td.comment-cell {
+        white-space: normal;
+        min-width: 300px; /* Give comments space */
+        word-break: break-word;
+    }
+    /* FIX: Make Overall Avg prominent */
+    td.table-col-prominent {
+        font-weight: 700;
+        color: var(--text-color);
+        font-size: 1.05em; /* Slightly larger */
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    body.light-mode td.table-col-prominent {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    th{
+        text-align:left;
+        color:var(--text-muted-color);
+        font-weight:600;
+        background:var(--sub-box-bg);
+        position:sticky;top:0;
+        font-size:12px;
+        letter-spacing:.01em;
+        text-transform:uppercase;
+    }
+    /* NEW: Style for wrapping headers */
+    th.rating-header {
+        /* FIX: Force wrapping and prevent overflow */
+        white-space: normal !important; 
+        overflow-wrap: break-word; /* This is the modern standard */
+        
+        line-height: 1.3;
+        text-align: center;
+        vertical-align: middle;
+        max-width: 100px;
+        min-width: 90px;
+    }
+    td.rating-cell {
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    th.sortable {
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    th.sortable:hover {
+        color: var(--text-color);
+    }
+    th .sort-icon {
+        margin-left: 8px;
+        opacity: 0.5;
+    }
+    th.active .sort-icon {
+        opacity: 1;
+        color: var(--accent);
+    }
+    
+    tbody tr.clickable {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    tbody tr.clickable:hover {
+        background-color: var(--card-hover-bg);
+    }
+    
+    tr.row-flagged td {
+        background: var(--bad-tint) !important;
+    }
+    tr.row-flagged-overall td {
+        background: var(--bad-tint) !important;
+    }
+    tr.row-flagged td.flagged-cell {
+        color: #ff453a;
+        font-weight: 600;
+    }
+    body.light-mode tr.row-flagged td.flagged-cell,
+    body.light-mode tr.row-flagged-overall td.flagged-cell {
+        color: #d8000c;
+    }
+
+    /* Comment block for "problem students" */
+    .comment-card {
+        background: var(--sub-box-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1rem; /* 16px */
+        padding: 16px;
+        display: flex; /* Use flex */
+        flex-direction: column; /* Stack items vertically */
+        gap: 12px; /* Space between student and entries */
+    }
+    .comment-card .student-email {
+        font-weight: 600;
+        color: var(--text-color);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .feedback-entry {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .feedback-entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem; /* 14px */
+    }
+    .feedback-entry-date {
+        font-weight: 500;
+        color: var(--text-muted-color);
+    }
+    .feedback-entry-ratings {
+        font-size: 0.875rem; /* 14px */
+    }
+    .feedback-entry-ratings .rating-bad {
+        color: #ff453a;
+        font-weight: 600;
+    }
+    .feedback-entry-ratings .rating-medium {
+        color: #ff9f0a;
+    }
+    .feedback-entry-ratings .rating-neutral {
+        color: var(--text-muted-color);
+    }
+    .feedback-entry-ratings .rating-separator {
+        margin: 0 0.375rem; /* 6px */
+        color: var(--text-muted-color);
+        opacity: 0.5;
+    }
+    
+    .comment-card .comment-text {
+        color: var(--text-muted-color);
+        font-style: italic;
+        font-size: 0.95rem; /* 15px */
+        white-space: normal; /* Allow comments to wrap */
+        word-break: break-word;
+    }
+    .comment-card .comment-text:empty::before {
+        content: "[No comment left]";
+        color: var(--text-muted-color);
+        opacity: 0.7;
+    }
+    
+    .error-banner{
+        background: var(--bad-tint);
+        border:1px solid rgba(255, 69, 58, 0.3);
+        color: #ff453a;
+        padding:16px;
+        border-radius: 1.25rem; /* 20px */
+        margin-bottom:16px;
+        font-size:14px;
+    }
+    .error-banner ul{margin:8px 0 0 20px;padding:0;}
+    body.light-mode .error-banner { 
+        background: var(--bad-tint); 
+        border-color: rgba(255, 69, 58, 0.3); 
+        color: #d8000c; 
+    }
+    
+    .loader{position:fixed;top:16px;right:16px;width:18px;height:18px;border:2px solid var(--text-muted-color);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;opacity:0;transition:opacity .3s;z-index:20}
+    .loader.visible{opacity:1}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Skeleton Loader */
+    .skeleton {
+        background: var(--sub-box-bg);
+        border-radius: 1.5rem; /* 24px */
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+    }
+    .skeleton::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+        animation: shimmer 1.5s infinite;
+        transform: translateX(-100%);
+    }
+    body.light-mode .skeleton::after {
+         background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
+    }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        bottom: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--card-bg);
+        color: var(--text-color);
+        padding: 12px 20px;
+        border-radius: 9999px;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+        z-index: 100;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid var(--card-border);
+        backdrop-filter: blur(20px);
+        transition: bottom 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    body.light-mode .toast {
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+    }
+    .toast.show {
+        bottom: 24px;
+    }
+    
+    /* FIX: Batch Detail Page Sub-Navigation */
+    .sub-nav-wrapper {
+        text-align: center; /* Center the inline-flex nav bar */
+        /* FIX: Remove sticky. It will be part of the non-scrolling header */
+        z-index: 40;
+        padding-top: 4px; /* Small padding from top of scroll area */
+        margin-bottom: 1rem; /* 16px */
+    }
+    
+    .sub-nav-container {
+        /* FIX: Use header-bg for a more solid glass effect */
+        background: var(--header-bg); 
+        border: 1px solid var(--header-border);
+        border-radius: 9999px;
+        padding: 0.25rem; /* FIX: More compact */
+        display: inline-flex; /* FIX: Shrink-to-fit content */
+        flex-wrap: wrap; /* Allow wrapping */
+        justify-content: center;
+        gap: 0.25rem; /* FIX: More compact */
+        
+        /* FIX: Add blur */
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    
+    .sub-nav-item {
+        padding: 0.5rem 1.25rem; /* 8px 20px */
+        font-size: 0.875rem; /* 14px */
+        font-weight: 600;
+        border-radius: 9999px;
+        color: var(--text-muted-color);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    .sub-nav-item:hover:not(.active) {
+        color: var(--text-color);
+        background: var(--card-hover-bg);
+    }
+    .sub-nav-item.active {
+        color: var(--nav-active-text);
+        background-color: var(--nav-active-bg);
+    }
+    body.light-mode .sub-nav-item.active {
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0 1px 2px rgba(255,255,255,0.7);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+        border-color: rgba(0,0,0,0.08);
+    }
+    body:not(.light-mode) .sub-nav-item.active {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+    }
+    
+    /* NEW: Styles for Overall Page Nav */
+    #overall-nav-wrapper {
+        /* This is the sticky container */
+        position: sticky;
+        /* FIX: Lock to top of scrolling container */
+        top: 0;
+        z-index: 40;
+        padding-top: 4px; 
+        margin-bottom: 1rem;
+    }
+    #overall-nav-container {
+        text-align: center; /* Center the inline-flex bar */
+    }
+    #overall-nav-bar {
+        background: var(--header-bg); 
+        border: 1px solid var(--header-border);
+        border-radius: 9999px;
+        padding: 0.25rem;
+        display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    #overall-nav-bar .sub-nav-item {
+        padding: 0.5rem 1rem; /* Slightly more compact */
+    }
+
+  </style>
+</head>
+<body class="flex flex-col h-screen">
+  <div id="loader" class="loader"></div>
+  
+  <!-- New Header Structure -->
+  <header class="w-full z-50 p-2 md:p-4 flex-shrink-0">
+    <div class="w-full max-w-7xl mx-auto flex items-center justify-between relative header-container">
+        
+        <!-- 
+            *** THIS IS THE CHANGE YOU REQUESTED ***
+            
+            The <button> has been replaced with an <a> tag (a link).
+            The href="./index.html" points back to your main dashboard file.
+            The class "header-btn" is kept to make it look identical.
+            
+            NOTE: The 'hidden' class is removed from the <a> tag,
+            but the JS logic for the *batch detail* back button remains.
+            This link serves as the *main* back button.
+        -->
+        <div class="absolute left-0 top-1/2 -translate-y-1/2">
+            <a href="./index.html" id="header-back-link" class="header-btn">
+                <i class="fas fa-chevron-left text-xl"></i>
+            </a>
+            <!-- This is the original button, now only for batch detail -->
+            <button id="header-back-button" class="header-btn hidden">
+                <i class="fas fa-chevron-left text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Center Title -->
+        <div id="page-header-center-content" class="mx-auto">
+            <h1 id="page-header-title" class="text-xl md:text-2xl font-bold text-[var(--text-color)]">ACCA Feedback</h1>
+        </div>
+        
+        <!-- Theme Toggle -->
+        <div class="absolute right-0 top-1/2 -translate-y-1/2">
+             <button class="header-btn" id="themeToggleBtn" title="Toggle Theme">
+                <i class="fa-solid fa-sun"></i>
+             </button>
+        </div>
+    </div>
+    
+    <!-- FIX: Moved Sub-navigation wrapper OUT of main and INTO header -->
+    <div id="batch-nav-wrapper" class="sub-nav-wrapper hidden"> <!-- Hidden by default -->
+        <div class="sub-nav-container">
+            <button class="sub-nav-item" data-tab="overview">Overview</button>
+            <button class="sub-nav-item" data-tab="concerning">Concerning Feedback</button>
+            <button class="sub-nav-item" data-tab="all">All Feedback</button>
+            <button class="sub-nav-item" data-tab="top">Top Students</button>
+        </div>
+    </div>
+    
+    <!-- NEW: Moved Overall Nav wrapper here as well -->
+    <div id="overall-nav-wrapper" class="sub-nav-wrapper hidden"> <!-- Hidden by default -->
+        <div id="overall-nav-container">
+            <div id="overall-nav-bar">
+                <button class="sub-nav-item" data-section="overall-stats-card">Statistics</button>
+                <button class="sub-nav-item" data-section="submissions-card">Submissions</button>
+                <button class="sub-nav-item" data-section="anomalies-card">Anomalies</button>
+                <button class="sub-nav-item" data-section="rankings-card">Rankings</button>
+                <button class="sub-nav-item" data-section="all-batches-card">All Batches</button>
+            </div>
+        </div>
+    </div>
+  </header>
+
+  <!-- Using main dashboard's layout classes -->
+  <!-- FIX: Removed inline style="padding-top:20px;" -->
+  <main id="main-content" class="flex-grow overflow-y-auto w-full max-w-7xl mx-auto px-4 md:px-8 pb-8 main-content relative">
+    <div id="errorContainer"></div>
+
+    <!-- Skeleton loader -->
+    <div id="skeleton-loader" class="space-y-4 pt-5"> <!-- FIX: Added pt-5 -->
+        <!-- NEW Skeleton for new layout -->
+        <div class="card skeleton h-60 md:h-56"></div>
+        <div class="card skeleton h-96"></div>
+        <div class="card skeleton h-80"></div>
+        <div class="card skeleton h-80"></div>
+    </div>
+
+    <!-- Page 1: Overall Section -->
+    <!-- FIX: Added pt-5 (20px) here -->
+    <div id="overall-section" class="page-content hidden pt-5">
+    
+        <!-- NEW: Overall Page Sticky Nav - MOVED TO HEADER -->
+
+        <div class="space-y-6">
+            
+            <!-- NEW: Redesigned Overall Statistics Card -->
+            <div class="card" id="overall-stats-card">
+                <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90 mb-6">Overall Statistics</h2>
+                <div class="stats-hero-grid">
+                    <!-- Left Side: Gauge and Primary Stats -->
+                    <!-- FIX: Re-ordered layout -->
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="stats-gauge-container">
+                            <canvas id="overall-gauge-chart"></canvas>
+                            <div id="overall-gauge-value" class="stats-gauge-value">
+                                <div class="value">0.00</div>
+                                <div class="label">Overall Avg.</div>
+                            </div>
+                        </div>
+                        <!-- FIX: New sub-box for primary stats -->
+                        <div class="sub-box w-full max-w-sm">
+                            <div id="stats-primary-list" class="stats-primary-list">
+                                <!-- JS will inject: Total Feedbacks, Total Batches, Avg. Feedbacks/Batch -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Side: Sub-stats and Summary -->
+                    <div id="stats-summary-container" class="stats-summary-container">
+                        <!-- JS will inject: 3 Rating Scales AND Low Ratings Box -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feedback Count Graph -->
+            <div class="card" id="submissions-card">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                     <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">Feedback Submissions</h2>
+                     <!-- FIX: Default to "All Time" -->
+                     <div id="overall-timeline-toggle" class="timeline-toggle">
+                        <button data-days="14" class="timeline-btn">14 Days</button>
+                        <button data-days="30" class="timeline-btn">30 Days</button>
+                        <button data-days="90" class="timeline-btn">90 Days</button>
+                        <button data-days="all" class="timeline-btn active">All Time</button>
+                     </div>
+                </div>
+                <div class="chart-tall"><canvas id="feedback-count-chart"></canvas></div>
+            </div>
+            
+            <!-- NEW: Batch Activity Card (Renamed) -->
+            <div class="card" id="anomalies-card">
+                 <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90 mb-6">Feedback Anomalies</h2>
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                     <div>
+                         <h3 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4 text-center">Lowest Feedback Count</h3>
+                         <div id="lowest-feedback-chart" class="space-y-3">
+                             <!-- JS will inject horizontal bar chart rows -->
+                         </div>
+                     </div>
+                     <div>
+                         <h3 class="text-lg font-semibold text-[var(--text-muted-color)] mb-4 text-center">Least Recently Active</h3>
+                         <div id="least-active-chart" class="space-y-3">
+                              <!-- JS will inject horizontal bar chart rows -->
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Batch Rankings -->
+            <div class="card" id="rankings-card">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                     <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">Batch Rankings</h2>
+                     <div class="toggle-switch">
+                         <button id="rank-toggle-lowest" class="toggle-switch-btn active">Lowest 5</button>
+                         <button id="rank-toggle-best" class="toggle-switch-btn">Best 5</button>
+                         <div id="rank-toggle-bg" class="toggle-switch-bg"></div>
+                     </div>
+                </div>
+                <div class="space-y-3" id="ranked-batches-list">
+                    <!-- Apple TV ranked list will be injected here -->
+                </div>
+            </div>
+            
+            <!-- All Batches Table -->
+            <div class="card" id="all-batches-card">
+                <div class="table-header-flex">
+                    <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">All Batches</h2>
+                    <span id="total-batch-count" class="count-badge"></span>
+                </div>
+                <div class="table-wrap">
+                  <table id="batch-table">
+                    <thead id="batch-table-head"></thead>
+                    <tbody id="batch-table-body"></tbody>
+                  </table>
+                  <div id="no-batches" class="hidden text-center p-12 text-[var(--text-muted-color)]">No batch data found.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 2: Batch Detail Section -->
+    <!-- FIX: Added pt-5 (20px) here -->
+    <div id="batch-detail-section" class="page-content hidden pt-5">
+        
+        <!-- FIX: Nav bar has been MOVED TO THE HEADER -->
+
+        <!-- NEW: Sub-pages -->
+        <div id="batch-tab-overview" class="batch-tab-content space-y-6">
+            <!-- Batch-Specific Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                         <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">Feedback Count</h2>
+                         <!-- FIX: Default to "All Time" -->
+                         <div id="batch-timeline-toggle-1" class="timeline-toggle">
+                            <button data-days="14" class="timeline-btn">14 Days</button>
+                            <button data-days="30" class="timeline-btn">30 Days</button>
+                            <button data-days="90" class="timeline-btn">90 Days</button>
+                            <button data-days="all" class="timeline-btn active">All Time</button>
+                         </div>
+                    </div>
+                    <div class="chart"><canvas id="batch-feedback-chart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                         <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">Ratings &lt; 7 (%)</h2>
+                         <!-- FIX: Default to "All Time" -->
+                         <div id="batch-timeline-toggle-2" class="timeline-toggle">
+                            <button data-days="14" class="timeline-btn">14 Days</button>
+                            <button data-days="30" class="timeline-btn">30 Days</button>
+                            <button data-days="90" class="timeline-btn">90 Days</button>
+                            <button data-days="all" class="timeline-btn active">All Time</button>
+                         </div>
+                    </div>
+                    <div class="chart"><canvas id="batch-percent-low-chart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="batch-tab-concerning" class="batch-tab-content hidden">
+            <!-- Problem Students -->
+            <div class="card">
+                 <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90 mb-4">Concerning Feedback</h2>
+                 <div id="problem-students-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <!-- Comment cards will be injected here -->
+                 </div>
+            </div>
+        </div>
+
+        <div id="batch-tab-top" class="batch-tab-content hidden">
+            <!-- NEW: Top Feedback Providers -->
+            <div class="card">
+                 <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90 mb-4">Top Feedback Providers</h2>
+                 <div id="top-students-list" class="space-y-3">
+                     <!-- Ranked list will be injected here -->
+                 </div>
+            </div>
+        </div>
+            
+        <div id="batch-tab-all" class="batch-tab-content hidden">
+            <!-- All Feedback Table (with NEW toggle) -->
+            <div class="card">
+                <div class="table-header-flex">
+                    <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">All Feedback</h2>
+                    <!-- NEW: Toggle for All / Low -->
+                    <div class="toggle-switch">
+                         <button id="feedback-toggle-all" class="toggle-switch-btn active">All</button>
+                         <button id="feedback-toggle-low" class="toggle-switch-btn">Ratings &lt; 6</button>
+                         <div id="feedback-toggle-bg" class="toggle-switch-bg"></div>
+                     </div>
+                </div>
+                <div class="table-wrap">
+                  <table id="low-feedback-table">
+                    <thead id="low-feedback-table-head"></thead>
+                    <tbody id="low-feedback-table-body"></tbody>
+                  </table>
+                  <div id="no-low-feedback" class="hidden text-center p-12 text-[var(--text-muted-color)]">No feedback found.</div>
+                </div>
+            </div>
+        </div>
+            
+    </div>
+  </main>
+  
+  <div id="toast-notification" class="toast">Dashboard has been updated with the latest data.</div>
+
+  <script>
+    // ==== CONFIG ====
+    const API_URL = "https://script.google.com/macros/s/AKfycbxjUQHszkvEhyFY_Jq0BENWPX5NXRVoFs7qTX3x5jtv5x-6ldhmyVWDLb2ZlD5qlIf2fw/exec";
+    const CACHE_DURATION_MINUTES = 15;
+    const TIMESTAMP_HEADER = "Timestamp";
+    
+    // UPDATED: Constants
+    const RATING_NAMES_SHORT = [
+        "Avg. Satisfaction",
+        "Avg. Conceptual Understanding",
+        "Avg. Faculty Approachability"
+    ];
+    // FIX: These will be set in init() based on HEADERS array
+    let EMAIL_HEADER = ""; 
+    let COMMENT_HEADER = "";
+    let BATCH_HEADER = "Source Sheet"; // This is the *new* column we add during fetch
+
+    let MASTER = [];
+    let HEADERS = [];
+    let RATING_HEADERS = []; 
+    let RATING_NAMES = {}; // Dynamically populated
+    let BATCH_LIST_CACHE = [];
+    
+    let chartInstances = {}; 
+    let batchTableSort = { column: 'overallAvg', order: 'asc' };
+    let feedbackTableSort = { column: 'Date', order: 'desc' }; // NEW: Sort state for detail table
+    let currentRankMode = 'lowest';
+    let currentFeedbackFilter = 'all'; // NEW: State for detail page table
+
+    // --- DOM Elements ---
+    let loader, themeToggleBtn, themeIcon, headerBackButton, pageHeaderTitle, errorContainer, skeletonLoader, headerBackLink;
+    let overallSection, batchDetailSection, batchNavWrapper, mainContentEl, overallNavWrapper; // FIX: Added mainContentEl, overallNavWrapper
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Assign DOM Elements
+        loader = document.getElementById("loader");
+        themeToggleBtn = document.getElementById("themeToggleBtn");
+        themeIcon = themeToggleBtn.querySelector("i");
+        headerBackButton = document.getElementById("header-back-button"); // This is the <button>
+        headerBackLink = document.getElementById("header-back-link"); // This is the <a> link
+        pageHeaderTitle = document.getElementById("page-header-title");
+        errorContainer = document.getElementById("errorContainer");
+        skeletonLoader = document.getElementById("skeleton-loader");
+        overallSection = document.getElementById("overall-section");
+        batchDetailSection = document.getElementById("batch-detail-section");
+        batchNavWrapper = document.getElementById("batch-nav-wrapper"); // FIX: Get the nav wrapper by ID
+        mainContentEl = document.getElementById("main-content"); // NEW
+        overallNavWrapper = document.getElementById("overall-nav-wrapper"); // NEW
+
+        init();
+        setupTheme();
+        // This listener is ONLY for the JS-powered "Back" button on the batch detail page
+        headerBackButton.addEventListener("click", () => showPage('overall-section'));
+        setupOverallNav(); // NEW
+    });
+    
+    // --- Page Navigation ---
+    function showPage(pageId) {
+        if (pageId === 'overall-section') {
+            overallSection.classList.remove('hidden');
+            batchDetailSection.classList.add('hidden');
+            headerBackButton.classList.add('hidden'); // Hide the JS <button>
+            headerBackLink.classList.remove('hidden'); // Show the <a> link
+            batchNavWrapper.classList.add('hidden'); // FIX: Hide sub-nav
+            overallNavWrapper.classList.remove('hidden'); // NEW: Show overall nav
+            pageHeaderTitle.textContent = "ACCA Feedback";
+        } else {
+            overallSection.classList.add('hidden');
+            batchDetailSection.classList.remove('hidden');
+            headerBackButton.classList.remove('hidden'); // Show the JS <button>
+            headerBackLink.classList.add('hidden'); // Hide the <a> link
+            batchNavWrapper.classList.remove('hidden'); // FIX: Show sub-nav
+            overallNavWrapper.classList.add('hidden'); // NEW: Hide overall nav
+        }
+        mainContentEl.scrollTop = 0;
+    }
+    
+    // NEW: Overall Nav Logic
+    function setupOverallNav() {
+        const navButtons = overallNavWrapper.querySelectorAll('.sub-nav-item');
+        const sections = [
+            document.getElementById('overall-stats-card'),
+            document.getElementById('submissions-card'),
+            document.getElementById('anomalies-card'),
+            document.getElementById('rankings-card'),
+            document.getElementById('all-batches-card')
+        ];
+        
+        // Click to scroll
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.dataset.section;
+                const sectionEl = document.getElementById(sectionId);
+                if (sectionEl) {
+                    sectionEl.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+        
+        // Highlight on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navButtons.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.section === entry.target.id);
+                    });
+                }
+            });
+        }, { root: mainContentEl, threshold: 0.3, rootMargin: "-100px 0px -40% 0px" }); // Adjust threshold/margin
+
+        sections.forEach(sec => {
+            if (sec) { // Add check in case element doesn't exist
+                 observer.observe(sec);
+            }
+        });
+    }
+
+    // --- Theme Logic ---
+    function setupTheme() {
+        const applyTheme = (theme) => {
+            if (theme === 'light') {
+                document.body.classList.add("light-mode");
+                themeIcon.classList.remove("fa-moon");
+                themeIcon.classList.add("fa-sun");
+            } else {
+                document.body.classList.remove("light-mode");
+                themeIcon.classList.remove("fa-sun");
+                themeIcon.classList.add("fa-moon");
+            }
+            Object.values(chartInstances).forEach(instance => {
+                // FIX: Check if instance.render exists AND is a function
+                if (instance && typeof instance.render === 'function') {
+                    instance.render(instance.days);
+                }
+            });
+            // FIX: Redraw gauge chart *separately*
+            if (chartInstances.overallGauge && chartInstances.overallGauge.avg !== undefined) {
+                renderOverallGauge(chartInstances.overallGauge.avg, chartInstances.overallGauge.state);
+            }
+        };
+
+        const preferredTheme = localStorage.getItem('theme');
+        let initTheme = 'dark'; 
+        if (preferredTheme === 'light') {
+             initTheme = 'light';
+        } else if (!preferredTheme && window.matchMedia('(prefers-color-scheme: light)').matches) {
+             initTheme = 'light';
+        }
+        applyTheme(initTheme);
+
+        themeToggleBtn.addEventListener("click", () => {
+            const newTheme = document.body.classList.contains("light-mode") ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    }
+
+    // --- Data Fetching & Init ---
+    async function init() {
+        errorContainer.innerHTML = ''; 
+        const cachedData = localStorage.getItem('dashboardData');
+        const cacheTimestamp = localStorage.getItem('dashboardCacheTimestamp');
+        const now = Date.now();
+        const isCacheStale = !cacheTimestamp || (now - parseInt(cacheTimestamp)) > CACHE_DURATION_MINUTES * 60 * 1000;
+
+        const processAndDisplay = () => {
+            if (HEADERS.length < 7) { // Need at least 7 columns
+                 errorContainer.innerHTML = `<div class="error-banner"><strong>Fatal Error:</strong> Not enough columns found in the data source.</div>`;
+                 skeletonLoader.classList.add('hidden');
+                 return;
+            }
+            // FIX: Dynamically set headers from the *correct* indices
+            EMAIL_HEADER = HEADERS[2];   // Column C
+            RATING_HEADERS = [HEADERS[3], HEADERS[4], HEADERS[5]].filter(Boolean); // Columns D, E, F
+            COMMENT_HEADER = HEADERS[6]; // Column G
+            
+            // Re-check critical columns
+            if (RATING_HEADERS.length < 3 || !HEADERS.includes(BATCH_HEADER) || !EMAIL_HEADER || !COMMENT_HEADER) {
+                 errorContainer.innerHTML = `<div class="error-banner"><strong>Fatal Error:</strong> Critical columns (Ratings, Batch Name, Email, or Feedback) could not be identified at their expected positions (C, D, E, F, G).</div>`;
+                 skeletonLoader.classList.add('hidden');
+                 return;
+            }
+            
+            // Populate the RATING_NAMES map
+            RATING_NAMES[RATING_HEADERS[0]] = RATING_NAMES_SHORT[0];
+            RATING_NAMES[RATING_HEADERS[1]] = RATING_NAMES_SHORT[1];
+            RATING_NAMES[RATING_HEADERS[2]] = RATING_NAMES_SHORT[2];
+            
+            skeletonLoader.classList.add('hidden');
+            renderOverallPage(MASTER);
+            showPage('overall-section');
+        };
+
+        const loadFromCache = () => {
+            try { // Add try...catch for robust cache parsing
+                const parsedCache = JSON.parse(cachedData);
+                HEADERS = parsedCache.headers;
+                MASTER = parsedCache.master;
+                processAndDisplay();
+            } catch (e) {
+                console.warn("Failed to load from cache, fetching fresh data.", e);
+                localStorage.clear(); // Clear bad cache
+                fetchFreshData(false).then(success => {
+                    if (success) processAndDisplay();
+                });
+            }
+        };
+
+        const fetchFreshData = async (isUpdate = false) => {
+            loader.classList.add('visible'); // Show loader
+            try {
+                if (!API_URL || API_URL === "YOUR_APPS_SCRIPT_URL_GOES_HERE") {
+                    throw new Error("API_URL is not configured.");
+                }
+                
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(`Apps Script failed: ${data.message}`);
+                
+                const combined = [];
+                let headerRef = null;
+                const headerValidationErrors = [];
+                const sheetNames = Object.keys(data);
+
+                sheetNames.forEach(sheetName => {
+                    const sheetRows = data[sheetName];
+                    if (!sheetRows || sheetRows.length < 2) return;
+                    const headers = cleanHeaders(sheetRows[0]);
+                    const rows = sheetRows.slice(1);
+                    if (!headerRef) headerRef = headers;
+                    else if (headers.length !== headerRef.length || headers.some((h, i) => h !== headerRef[i])) {
+                        headerValidationErrors.push(`'${sheetName}' has different columns and was skipped.`);
+                        return;
+                    }
+                    rows.forEach(r => {
+                        const obj = {};
+                        headerRef.forEach((h, i) => obj[h] = r[i] ?? "");
+                        obj[BATCH_HEADER] = sheetName;
+                        combined.push(obj);
+                    });
+                });
+
+                if (headerValidationErrors.length > 0) {
+                     errorContainer.innerHTML = `<div class="error-banner"><strong>Data Warning:</strong><ul>${headerValidationErrors.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+                }
+                if (!headerRef) throw new Error("No valid data loaded. Check sheet formats.");
+
+                HEADERS = headerRef.concat(BATCH_HEADER);
+                MASTER = combined
+                    .map(r => ({ ...r, _epoch: toEpoch(r[TIMESTAMP_HEADER]) }))
+                    .filter(r => r._epoch != null && r[BATCH_HEADER]); // Process epoch *after* fetch
+                
+                const cachePayload = { headers: HEADERS, master: MASTER };
+                localStorage.setItem('dashboardData', JSON.stringify(cachePayload));
+                localStorage.setItem('dashboardCacheTimestamp', Date.now());
+
+                return true;
+            } catch (e) {
+                console.error("Data fetch failed:", e);
+                let errorMsg = e.message;
+                if (e.message === "Failed to fetch") {
+                    errorMsg += ". This is often a network, CORS, or API endpoint error. Please check your connection.";
+                }
+                if (!isUpdate) {
+                    errorContainer.innerHTML = `<div class="error-banner"><strong>Fatal Error:</strong> ${errorMsg}</div>`;
+                    skeletonLoader.classList.add('hidden');
+                }
+                return false;
+            } finally {
+                loader.classList.remove('visible'); // Hide loader
+            }
+        };
+
+        if (cachedData && !isCacheStale) {
+            loadFromCache();
+            const success = await fetchFreshData(true);
+            if (success) {
+                renderOverallPage(MASTER);
+                showToast();
+            }
+        } else {
+            const success = await fetchFreshData(false);
+            if (success) {
+                processAndDisplay();
+            }
+        }
+    }
+
+    // --- PAGE 1: OVERALL ---
+    
+    function renderOverallPage(allRows) {
+        // 1. Calculate Batch Stats (This must run first)
+        const batchStats = {};
+        allRows.forEach(row => {
+            const batchName = row[BATCH_HEADER];
+            if (!batchStats[batchName]) {
+                batchStats[batchName] = {
+                    name: batchName,
+                    ratings: [],
+                    lowCount: 0,
+                    totalFeedbacks: 0,
+                    lecSum: 0, lecCount: 0,
+                    conSum: 0, conCount: 0,
+                    facSum: 0, facCount: 0,
+                    lastFeedbackEpoch: 0, // NEW
+                };
+            }
+            const batch = batchStats[batchName];
+            const lec = num(row[RATING_HEADERS[0]]);
+            const con = num(row[RATING_HEADERS[1]]);
+            const fac = num(row[RATING_HEADERS[2]]);
+            
+            if (row._epoch > batch.lastFeedbackEpoch) {
+                batch.lastFeedbackEpoch = row._epoch;
+            }
+            
+            let entryHasRating = false;
+            if (!isNaN(lec)) { batch.ratings.push(lec); if (lec < 7) batch.lowCount++; batch.lecSum += lec; batch.lecCount++; entryHasRating = true; }
+            if (!isNaN(con)) { batch.ratings.push(con); if (con < 7) batch.lowCount++; batch.conSum += con; batch.conCount++; entryHasRating = true; }
+            if (!isNaN(fac)) { batch.ratings.push(fac); if (fac < 7) batch.lowCount++; batch.facSum += fac; batch.facCount++; entryHasRating = true; }
+            
+            batch.totalFeedbacks++; 
+        });
+
+        BATCH_LIST_CACHE = Object.values(batchStats).map(batch => {
+            const totalRatings = batch.ratings.length;
+            const overallAvg = totalRatings > 0 ? (batch.ratings.reduce((a, b) => a + b, 0) / totalRatings) : 0;
+            const pctLow = totalRatings > 0 ? (batch.lowCount / totalRatings) : 0;
+            const score = overallAvg * (1 - pctLow); 
+
+            return {
+                name: batch.name,
+                avgLec: batch.lecCount > 0 ? (batch.lecSum / batch.lecCount) : 0,
+                avgCon: batch.conCount > 0 ? (batch.conSum / batch.conCount) : 0,
+                avgFac: batch.facCount > 0 ? (batch.facSum / batch.facCount) : 0,
+                score: score,
+                pctLow: pctLow,
+                totalFeedbacks: batch.totalFeedbacks,
+                overallAvg: overallAvg,
+                lastFeedbackEpoch: batch.lastFeedbackEpoch, // NEW
+                ratings: batch.ratings,
+                // FIX: Add the missing properties for overall calculation
+                lecCount: batch.lecCount,
+                conCount: batch.conCount,
+                facCount: batch.facCount,
+                lowCount: batch.lowCount
+            };
+        });
+        
+        // 2. Calculate Overall Stats (from batch stats)
+        const totalBatches = BATCH_LIST_CACHE.length;
+        const totalFeedbacks = allRows.length;
+        const avgFeedbacksPerBatch = totalBatches > 0 ? (totalFeedbacks / totalBatches) : 0;
+
+        // Calculate weighted averages
+        const totalRatings = BATCH_LIST_CACHE.reduce((sum, b) => sum + (b.ratings ? b.ratings.length : 0), 0);
+        const totalLecCount = BATCH_LIST_CACHE.reduce((sum, b) => sum + b.lecCount, 0);
+        const totalConCount = BATCH_LIST_CACHE.reduce((sum, b) => sum + b.conCount, 0);
+        const totalFacCount = BATCH_LIST_CACHE.reduce((sum, b) => sum + b.facCount, 0);
+
+        const avgLec = totalLecCount > 0 ? (BATCH_LIST_CACHE.reduce((sum, b) => sum + (b.avgLec * b.lecCount), 0) / totalLecCount) : 0;
+        const avgConcept = totalConCount > 0 ? (BATCH_LIST_CACHE.reduce((sum, b) => sum + (b.avgCon * b.conCount), 0) / totalConCount) : 0;
+        const avgFaculty = totalFacCount > 0 ? (BATCH_LIST_CACHE.reduce((sum, b) => sum + (b.avgFac * b.facCount), 0) / totalFacCount) : 0;
+        
+        // Simpler, more accurate Overall Avg
+        const totalRatingsSum = BATCH_LIST_CACHE.reduce((sum, b) => sum + (b.ratings ? b.ratings.reduce((a,c) => a+c, 0) : 0), 0);
+        const totalAvgCorrect = totalRatings > 0 ? (totalRatingsSum / totalRatings) : 0;
+
+        const totalLowRatings = BATCH_LIST_CACHE.reduce((sum, b) => sum + b.lowCount, 0);
+        const pctLow = totalRatings > 0 ? (totalLowRatings / totalRatings) * 100 : 0;
+        
+        // 3. Render NEW Overall Stats Hero
+        renderOverallStatsHero(totalAvgCorrect, totalFeedbacks, totalBatches, avgFeedbacksPerBatch, avgLec, avgConcept, avgFaculty, totalLowRatings, pctLow);
+
+        // 4. Render Feedback Count Chart
+        let existingChart = Chart.getChart('feedback-count-chart');
+        if (existingChart) existingChart.destroy();
+        if (chartInstances.overallFeedback && chartInstances.overallFeedback.chart) {
+            chartInstances.overallFeedback.chart.destroy();
+        }
+        chartInstances.overallFeedback = createTimelineChart(
+            'feedback-count-chart',
+            'overall-timeline-toggle',
+            allRows,
+            [{ label: 'Feedback Count', dataFn: (rows) => rows.length, color: '#0a84ff' }]
+        );
+        chartInstances.overallFeedback.render('all'); // FIX: Default to "all"
+        
+        // 5. NEW: Render Batch Activity Charts
+        renderBatchActivityCharts();
+        
+        // 6. Render Top 5 Lowest/Best Batches
+        setupRankToggle();
+        renderRankedList(currentRankMode);
+        
+        // 7. Render All Batches Table
+        renderBatchTable();
+    }
+    
+    // NEW: Function to render the redesigned stats hero
+    function renderOverallStatsHero(totalAvg, totalFeedbacks, totalBatches, avgFeedbacksPerBatch, avgLec, avgConcept, avgFaculty, totalLowRatings, pctLow) {
+        // 1. Render Gauge Chart
+        renderOverallGauge(totalAvg, getState(totalAvg));
+        
+        // 2. Render Primary Stats (under gauge)
+        // FIX: Wrap in a sub-box
+        document.getElementById('stats-primary-list').innerHTML = `
+            <div class="stats-primary-item">
+                <div class="value">${totalFeedbacks}</div>
+                <div class="label">Total Feedbacks</div>
+            </div>
+            <div class="stats-primary-item">
+                <div class="value">${totalBatches}</div>
+                <div class="label">Total Batches</div>
+            </div>
+            <div class="stats-primary-item">
+                <div class="value">${fmt(avgFeedbacksPerBatch, 1)}</div>
+                <div class="label">Avg. Feedbacks / Batch</div>
+            </div>
+        `;
+        
+        // 3. Render Summary Stats (right side)
+        // FIX: Re-ordered layout
+        const summaryContainer = document.getElementById('stats-summary-container');
+        summaryContainer.innerHTML = `
+            <!-- Rating Scales -->
+            <div class="sub-box space-y-4">
+                ${createRatingScale(RATING_NAMES_SHORT[0], avgLec)}
+                ${createRatingScale(RATING_NAMES_SHORT[1], avgConcept)}
+                ${createRatingScale(RATING_NAMES_SHORT[2], avgFaculty)}
+            </div>
+            
+            <!-- FIX: Moved Low Ratings Box Here -->
+            <div class="sub-box"> <!-- Removed mt-2, added sub-box -->
+                <div class="stats-low-ratings">
+                    <div class="kpi-item">
+                        <div class="value">${totalLowRatings}</div>
+                        <div class="label">Ratings &lt; 7</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="value">${fmt(pctLow, 1)}%</div>
+                        <div class="label">% &lt; 7</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Animate rating scale fills
+        setTimeout(() => {
+            summaryContainer.querySelectorAll('.rating-scale-fill').forEach(fill => {
+                const targetWidth = fill.dataset.targetWidth;
+                fill.style.width = targetWidth;
+            });
+        }, 100);
+    }
+    
+    // NEW: Helper for Overall Stats rating scales
+    function createRatingScale(label, rating) {
+        const state = getState(rating);
+        const percent = (rating / 10) * 100;
+        return `
+            <div>
+                <div class="rating-scale-label">
+                    <span class="name">${label}</span>
+                    <span class="value ${state}">${fmt(rating, 2)}</span>
+                </div>
+                <div class="rating-scale-track">
+                    <div class="rating-scale-fill ${state}" data-target-width="${percent}%"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // NEW: Helper for Overall Stats gauge chart
+    function renderOverallGauge(avg, state) {
+        const canvas = document.getElementById('overall-gauge-chart');
+        if (!canvas) return;
+        
+        let existingChart = Chart.getChart(canvas);
+        if (existingChart) existingChart.destroy();
+        
+        const isLightMode = document.body.classList.contains('light-mode');
+        const trackColor = getComputedStyle(document.documentElement).getPropertyValue('--bar-track-bg');
+        let color = '#0a84ff'; // Default accent
+        if (state === 'good') color = '#30d158';
+        if (state === 'medium') color = '#ff9f0a';
+        if (state === 'bad') color = '#ff453a';
+
+        document.getElementById('overall-gauge-value').querySelector('.value').textContent = fmt(avg, 2);
+        
+        chartInstances.overallGauge = {
+            avg: avg,
+            state: state,
+            chart: new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [avg, 10 - avg],
+                        backgroundColor: [color, trackColor],
+                        borderColor: [color, trackColor],
+                        borderWidth: 1,
+                        circumference: 270, // 3/4 circle
+                        rotation: 225, // Start at bottom-left
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '80%', // FIX: Increased from 75% to make ring thinner
+                    plugins: {
+                        tooltip: { enabled: false }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
+                    }
+                }
+            })
+        };
+    }
+    
+    // NEW: Function to render batch activity charts
+    function renderBatchActivityCharts() {
+        const lowestCountContainer = document.getElementById('lowest-feedback-chart');
+        const leastActiveContainer = document.getElementById('least-active-chart');
+        
+        // 1. Lowest Feedback Count
+        const sortedByCount = [...BATCH_LIST_CACHE].sort((a, b) => a.totalFeedbacks - b.totalFeedbacks);
+        const lowestCountData = sortedByCount.slice(0, 5);
+        const maxCount = lowestCountData.length > 0 ? lowestCountData[lowestCountData.length - 1].totalFeedbacks : 0;
+        
+        lowestCountContainer.innerHTML = lowestCountData.map(batch => {
+            const width = maxCount > 0 ? (batch.totalFeedbacks / maxCount) * 100 : 0;
+            return `
+                <div class="bar-chart-row">
+                    <div class="bar-chart-label" title="${batch.name}">${batch.name}</div>
+                    <div class="bar-chart-bar-container">
+                        <div class="bar-chart-bar color-1" style="--target-width: ${width}%;"></div>
+                    </div>
+                    <div class="bar-chart-value">${batch.totalFeedbacks}</div>
+                </div>
+            `;
+        }).join('');
+        
+        // 2. Least Recently Active
+        const now = Date.now();
+        const sortedByDate = [...BATCH_LIST_CACHE]
+            .filter(b => b.lastFeedbackEpoch > 0)
+            .sort((a, b) => a.lastFeedbackEpoch - b.lastFeedbackEpoch);
+        const leastActiveData = sortedByDate.slice(0, 5);
+        const maxDaysAgo = leastActiveData.length > 0 ? (now - leastActiveData[leastActiveData.length - 1].lastFeedbackEpoch) / (1000 * 60 * 60 * 24) : 0;
+
+        leastActiveContainer.innerHTML = leastActiveData.map(batch => {
+            const daysAgo = (now - batch.lastFeedbackEpoch) / (1000 * 60 * 60 * 24);
+            const width = maxDaysAgo > 0 ? (daysAgo / maxDaysAgo) * 100 : 0;
+            const dateStr = new Date(batch.lastFeedbackEpoch).toLocaleDateString('en-GB');
+            return `
+                <div class="bar-chart-row">
+                    <div class="bar-chart-label" title="${batch.name}">${batch.name}</div>
+                    <div class="bar-chart-bar-container">
+                        <div class="bar-chart-bar color-2" style="--target-width: ${width}%;"></div>
+                    </div>
+                    <div class="bar-chart-value">${Math.floor(daysAgo)} days ago</div>
+                </div>
+            `;
+        }).join('');
+        
+        // Animate bars
+        setTimeout(() => {
+            document.querySelectorAll('#lowest-feedback-chart .bar-chart-bar, #least-active-chart .bar-chart-bar').forEach(bar => {
+                bar.classList.add('animate-in');
+            });
+        }, 100);
+    }
+    
+    function renderRankedList(mode) {
+        const listContainer = document.getElementById('ranked-batches-list');
+        listContainer.innerHTML = '';
+        currentRankMode = mode;
+        
+        const sortedList = [...BATCH_LIST_CACHE].sort((a, b) => {
+            return mode === 'lowest' ? a.score - b.score : b.score - a.score;
+        });
+        
+        const scoreClass = mode === 'lowest' ? 'score-bad' : 'score-good';
+        const scoreLabel = mode === 'lowest' ? `% &lt; 7` : `Avg. Rating`;
+
+        sortedList.slice(0, 5).forEach((batch, index) => {
+            const scoreValue = mode === 'lowest' ? fmt(batch.pctLow * 100, 1) + '%' : fmt(batch.overallAvg, 2);
+            // NEW: Added context for total feedbacks
+            listContainer.innerHTML += `
+                <div class="ranked-list-apple-item">
+                    <span class="rank-number">${index + 1}</span>
+                    <div class="rank-info">
+                        <span class="name" title="${batch.name}">${batch.name}</span>
+                        <span class="score ${scoreClass}">${scoreValue} ${scoreLabel}</span>
+                    </div>
+                    <div class="rank-context">
+                        <div class="count">${batch.totalFeedbacks}</div>
+                        <div class="label">Feedbacks</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function setupRankToggle() {
+        const lowestBtn = document.getElementById('rank-toggle-lowest');
+        const bestBtn = document.getElementById('rank-toggle-best');
+        const bg = document.getElementById('rank-toggle-bg');
+        
+        const setToggle = (mode) => {
+            if (mode === 'lowest') {
+                lowestBtn.classList.add('active');
+                bestBtn.classList.remove('active');
+                bg.style.transform = 'translateX(0%)';
+                bg.style.width = lowestBtn.offsetWidth + 'px';
+            } else {
+                lowestBtn.classList.remove('active');
+                bestBtn.classList.add('active');
+                bg.style.transform = `translateX(${lowestBtn.offsetWidth + 4}px)`; // 4px is gap
+                bg.style.width = bestBtn.offsetWidth + 'px';
+            }
+            currentRankMode = mode;
+            renderRankedList(mode);
+        }
+        
+        lowestBtn.addEventListener('click', () => setToggle('lowest'));
+        bestBtn.addEventListener('click', () => setToggle('best'));
+        
+        // Use timeout to ensure offsetWidth is correct
+        setTimeout(() => {
+            if (lowestBtn && lowestBtn.offsetWidth > 0) { // Add check
+                 bg.style.width = lowestBtn.offsetWidth + 'px';
+            }
+        }, 100);
+    }
+    
+    function renderBatchTable() {
+        const head = document.getElementById('batch-table-head');
+        const body = document.getElementById('batch-table-body');
+        const batchList = [...BATCH_LIST_CACHE];
+        
+        document.getElementById('total-batch-count').textContent = `${batchList.length} Batches`;
+        
+        // FIX: Added 'rating-header' class
+        head.innerHTML = `
+            <tr>
+                <th class="sortable" data-col="name">Batch Name <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable" data-col="totalFeedbacks">Total Feedbacks <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable" data-col="overallAvg">Overall Avg. <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable rating-header" data-col="avgLec">${RATING_NAMES_SHORT[0]} <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable rating-header" data-col="avgCon">${RATING_NAMES_SHORT[1]} <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable rating-header" data-col="avgFac">${RATING_NAMES_SHORT[2]} <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                <th class="sortable" data-col="pctLow">% &lt; 7 <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            </tr>
+        `;
+        
+        const sortCol = batchTableSort.column;
+        const sortOrder = batchTableSort.order;
+        
+        batchList.sort((a, b) => {
+            let valA, valB;
+            if (sortCol === 'name') {
+                valA = a.name; valB = b.name;
+            } else {
+                valA = a[sortCol]; valB = b[sortCol];
+            }
+            
+            if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        head.querySelectorAll('th.sortable').forEach(th => {
+            th.classList.remove('active');
+            th.querySelector('.sort-icon').innerHTML = '<i class="fa-solid fa-sort"></i>';
+            if (th.dataset.col === sortCol) {
+                th.classList.add('active');
+                th.querySelector('.sort-icon').innerHTML = sortOrder === 'asc' 
+                    ? '<i class="fa-solid fa-sort-up"></i>' 
+                    : '<i class="fa-solid fa-sort-down"></i>';
+            }
+        });
+
+        body.innerHTML = '';
+        if (batchList.length === 0) {
+            document.getElementById('no-batches').classList.remove('hidden');
+        } else {
+             document.getElementById('no-batches').classList.add('hidden');
+        }
+        
+        batchList.forEach(batch => {
+            const tr = document.createElement('tr');
+            tr.className = `${batch.overallAvg < 7 ? 'row-flagged-overall' : ''} clickable`;
+            // FIX: Added 'rating-cell' class
+            tr.innerHTML = `
+                <td title="${batch.name}" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${batch.name}</td>
+                <td class="rating-cell">${batch.totalFeedbacks}</td>
+                <td class="table-col-prominent rating-cell ${getState(batch.overallAvg)}">${fmt(batch.overallAvg, 2)}</td>
+                <td class="rating-cell ${getState(batch.avgLec)}">${fmt(batch.avgLec, 2)}</td>
+                <td class="rating-cell ${getState(batch.avgCon)}">${fmt(batch.avgCon, 2)}</td>
+                <td class="rating-cell ${getState(batch.avgFac)}">${fmt(batch.avgFac, 2)}</td>
+                <td class="rating-cell ${batch.pctLow > 0.2 ? 'bad' : (batch.pctLow > 0.1 ? 'medium' : 'good')}">${fmt(batch.pctLow * 100, 1)}%</td>
+            `;
+            tr.addEventListener('click', () => {
+                const batchRows = MASTER.filter(row => row[BATCH_HEADER] === batch.name);
+                renderBatchDetailPage(batch.name, batchRows);
+            });
+            body.appendChild(tr);
+        });
+        
+        head.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (batchTableSort.column === col) {
+                    batchTableSort.order = batchTableSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    batchTableSort.column = col;
+                    batchTableSort.order = (col === 'name') ? 'asc' : (col === 'overallAvg' ? 'asc' : 'desc');
+                }
+                renderBatchTable();
+            });
+        });
+    }
+
+    // --- PAGE 2: BATCH DETAIL ---
+
+    function renderBatchDetailPage(batchName, batchRows) {
+        pageHeaderTitle.textContent = batchName;
+        showPage('batch-detail-section');
+        currentFeedbackFilter = 'all'; // Reset to "all" every time
+        feedbackTableSort = { column: 'Date', order: 'desc' }; // Reset sort
+        
+        // NEW: Sub-nav logic
+        // FIX: Find the nav bar in the *header*
+        const navContainer = document.querySelector('#batch-nav-wrapper .sub-nav-container');
+        const navItems = navContainer.querySelectorAll('.sub-nav-item');
+        const tabContents = batchDetailSection.querySelectorAll('.batch-tab-content');
+        
+        const switchTab = (tabId) => {
+            tabContents.forEach(content => {
+                content.classList.toggle('hidden', content.id !== `batch-tab-${tabId}`);
+            });
+            navItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.tab === tabId);
+            });
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => switchTab(item.dataset.tab));
+        });
+        
+        // Default to overview tab
+        switchTab('overview');
+        
+        
+        // 1. Render Charts
+        let existingChart = Chart.getChart('batch-feedback-chart');
+        if (existingChart) existingChart.destroy();
+        if (chartInstances.batchFeedback && chartInstances.batchFeedback.chart) {
+            chartInstances.batchFeedback.chart.destroy();
+        }
+        chartInstances.batchFeedback = createTimelineChart(
+            'batch-feedback-chart',
+            'batch-timeline-toggle-1',
+            batchRows,
+            [{ label: 'Feedback Count', dataFn: (rows) => rows.length, color: '#0a84ff' }]
+        );
+        chartInstances.batchFeedback.render('all'); // FIX: Default to "all"
+
+        existingChart = Chart.getChart('batch-percent-low-chart');
+        if (existingChart) existingChart.destroy();
+        if (chartInstances.batchPercentLow && chartInstances.batchPercentLow.chart) {
+            chartInstances.batchPercentLow.chart.destroy();
+        }
+        chartInstances.batchPercentLow = createTimelineChart(
+            'batch-percent-low-chart',
+            'batch-timeline-toggle-2',
+            batchRows,
+            [{ 
+                label: '% < 7', 
+                dataFn: (rows) => {
+                    let lowCount = 0;
+                    let totalCount = 0;
+                    rows.forEach(row => {
+                        RATING_HEADERS.forEach(header => {
+                            const val = num(row[header]);
+                            if (!isNaN(val)) {
+                                totalCount++;
+                                if (val < 7) lowCount++;
+                            }
+                        });
+                    });
+                    return totalCount > 0 ? (lowCount / totalCount) * 100 : 0;
+                }, 
+                color: '#ff453a',
+                yMax: 100
+            }]
+        );
+        chartInstances.batchPercentLow.render('all'); // FIX: Default to "all"
+
+        // 2. Student Insights (Concerning Feedback + Top Students)
+        const studentFeedback = {};
+        batchRows.forEach(row => {
+            const email = row[EMAIL_HEADER];
+            if (!email || email.trim() === '') return;
+            
+            if (!studentFeedback[email]) {
+                studentFeedback[email] = { entries: [], allRatings: [] };
+            }
+            
+            let hasBadRating = false;
+            let individualRatings = {};
+            let commentText = (row[COMMENT_HEADER] || "");
+            let hasMinTwoWordComment = commentText.split(' ').filter(Boolean).length >= 2;
+            
+            RATING_HEADERS.forEach(header => {
+                const val = num(row[header]);
+                individualRatings[header] = val; // Store the rating
+                if (!isNaN(val)) {
+                    studentFeedback[email].allRatings.push(val); // Add to overall avg
+                    // NEW LOGIC: Rating < 6 AND comment has 2+ words
+                    if (val < 6 && hasMinTwoWordComment) {
+                        hasBadRating = true;
+                    }
+                }
+            });
+            
+            if (hasBadRating) {
+                studentFeedback[email].entries.push({
+                    ratings: individualRatings,
+                    comment: commentText,
+                    date: row._epoch
+                });
+            }
+        });
+
+        // 2a. Render "Concerning Feedback" (NEW LOGIC)
+        const problemStudents = Object.entries(studentFeedback)
+            .filter(([email, data]) => data.entries.length > 0) // Any student with at least ONE entry meeting criteria
+            .sort((a, b) => b[1].entries.length - a[1].entries.length); // Sort by number of bad entries
+            
+        const problemList = document.getElementById('problem-students-list');
+        problemList.innerHTML = '';
+        if (problemStudents.length > 0) {
+            problemStudents.forEach(([email, data]) => {
+                const entriesHtml = data.entries
+                    .sort((a,b) => b.date - a.date) // Show newest first
+                    .map(entry => {
+                        const ratingsHtml = RATING_HEADERS.map(header => {
+                            const val = entry.ratings[header];
+                            // NEW: Highlight < 6
+                            const state = isNaN(val) ? 'neutral' : (val < 6 ? 'bad' : (val < 7 ? 'medium' : 'good'));
+                            const colorClass = state === 'bad' ? 'rating-bad' : (state === 'medium' ? 'rating-medium' : 'rating-neutral');
+                            return `<span class="${colorClass}">${isNaN(val) ? 'N/A' : val}</span>`;
+                        }).join('<span class="rating-separator">/</span>');
+
+                        return `
+                        <div class="feedback-entry">
+                            <div class="feedback-entry-header">
+                                <span class="feedback-entry-date">${new Date(entry.date).toLocaleDateString('en-GB')}</span>
+                                <span class="feedback-entry-ratings">${ratingsHtml}</span>
+                            </div>
+                            <p class="comment-text">${entry.comment}</p>
+                        </div>
+                        `;
+                    }).join('');
+                
+                problemList.innerHTML += `
+                    <div class="comment-card">
+                        <div class="student-email">${email} (${data.entries.length} concerning entries)</div>
+                        ${entriesHtml}
+                    </div>
+                `;
+            });
+        } else {
+            problemList.innerHTML = `<p class="text-[var(--text-muted-color)] text-center">No feedback entries found with ratings below 6 and a comment of at least 2 words.</p>`;
+        }
+        
+        // 2b. NEW: Render "Top Feedback Providers"
+        const topStudentsList = document.getElementById('top-students-list');
+        topStudentsList.innerHTML = '';
+        
+        const studentFrequency = Object.entries(studentFeedback).map(([email, data]) => {
+            const total = data.allRatings.length;
+            const avg = total > 0 ? (data.allRatings.reduce((a,b) => a+b, 0) / total) : 0;
+            return {
+                email: email,
+                count: data.allRatings.length / RATING_HEADERS.length, // Count entries, not individual ratings
+                avg: avg
+            }
+        })
+        .filter(s => s.count > 0) // Only show students who left ratings
+        .sort((a,b) => b.count - a.count)
+        .slice(0, 5);
+
+        if (studentFrequency.length > 0) {
+            studentFrequency.forEach((student, index) => {
+                topStudentsList.innerHTML += `
+                    <div class="ranked-list-apple-item">
+                        <span class="rank-number">${index + 1}</span>
+                        <div class="rank-info">
+                            <span class="name" title="${student.email}">${student.email}</span>
+                            <span class="score ${getState(student.avg)}">Overall Avg: ${fmt(student.avg, 2)}</span>
+                        </div>
+                        <div class="rank-context">
+                            <div class="count">${student.count.toFixed(0)}</div>
+                            <div class="label">Feedbacks</div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+             topStudentsList.innerHTML = `<p class="text-[var(--text-muted-color)] text-center">No student feedback found for this batch.</p>`;
+        }
+
+        // 3. Render All Low Feedback Table (with toggle)
+        setupFeedbackTableToggle(batchRows);
+        renderFeedbackTable(batchRows, currentFeedbackFilter);
+    }
+    
+    // NEW: Setup for the feedback table toggle
+    function setupFeedbackTableToggle(batchRows) {
+        const allBtn = document.getElementById('feedback-toggle-all');
+        const lowBtn = document.getElementById('feedback-toggle-low');
+        const bg = document.getElementById('feedback-toggle-bg');
+        
+        const setToggle = (mode) => {
+            if (mode === 'all') {
+                allBtn.classList.add('active');
+                lowBtn.classList.remove('active');
+                bg.style.transform = 'translateX(0%)';
+                bg.style.width = allBtn.offsetWidth + 'px';
+            } else {
+                allBtn.classList.remove('active');
+                lowBtn.classList.add('active');
+                bg.style.transform = `translateX(${allBtn.offsetWidth + 4}px)`; // 4px is gap
+                bg.style.width = lowBtn.offsetWidth + 'px';
+            }
+            currentFeedbackFilter = mode;
+            feedbackTableSort = { column: 'Date', order: 'desc' }; // Reset sort on toggle
+            renderFeedbackTable(batchRows, mode);
+        }
+        
+        allBtn.addEventListener('click', () => setToggle('all'));
+        lowBtn.addEventListener('click', () => setToggle('low'));
+        
+        // Use timeout to ensure offsetWidth is correct
+        setTimeout(() => {
+            if (allBtn && allBtn.offsetWidth > 0) { // Add check
+                 bg.style.width = allBtn.offsetWidth + 'px';
+            }
+        }, 100);
+    }
+    
+    // NEW: Renamed and modified from renderLowFeedbackTable
+    function renderFeedbackTable(batchRows, filterMode) {
+        let rowsToRender;
+        if (filterMode === 'low') {
+            rowsToRender = batchRows.filter(row => {
+                // NEW: Logic uses < 6
+                return RATING_HEADERS.some(header => {
+                    const val = num(row[header]);
+                    return !isNaN(val) && val < 6;
+                });
+            });
+        } else {
+            rowsToRender = [...batchRows];
+        }
+        
+        const tableHead = document.getElementById('low-feedback-table-head');
+        const tableBody = document.getElementById('low-feedback-table-body');
+        const noFeedback = document.getElementById('no-low-feedback');
+        
+        // NEW: "Date" instead of "Timestamp"
+        const tableHeaders = ["Date", EMAIL_HEADER, ...RATING_HEADERS, COMMENT_HEADER];
+        
+        // NEW: Add sorting
+        const sortCol = feedbackTableSort.column;
+        const sortOrder = feedbackTableSort.order;
+        
+        rowsToRender.sort((a, b) => {
+            let valA, valB;
+            if (sortCol === 'Date') {
+                valA = a._epoch; valB = b._epoch;
+            } else if (RATING_HEADERS.includes(sortCol)) {
+                valA = num(a[sortCol]); valB = num(b[sortCol]);
+            } else {
+                valA = a[sortCol]; valB = b[sortCol];
+            }
+            
+            if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+        
+        // Render headers with sort icons
+        tableHead.innerHTML = `<tr>${tableHeaders.map(h => {
+            const simpleName = RATING_NAMES[h] || h;
+            // FIX: Add class for wrapping
+            const isRatingHeader = RATING_HEADERS.includes(h);
+            const thClass = isRatingHeader ? 'rating-header' : '';
+            
+            let sortIcon = '';
+            if (h === sortCol) {
+                sortIcon = sortOrder === 'asc' ? '<i class="fa-solid fa-sort-up"></i>' : '<i class="fa-solid fa-sort-down"></i>';
+            } else {
+                sortIcon = '<i class="fa-solid fa-sort"></i>';
+            }
+            return `<th class="sortable ${thClass}" data-col="${h}">${simpleName} <span class="sort-icon">${sortIcon}</span></th>`
+        }).join('')}</tr>`;
+        
+        
+        tableBody.innerHTML = '';
+        if (rowsToRender.length > 0) {
+            noFeedback.classList.add('hidden');
+            rowsToRender.forEach(row => {
+                const tr = document.createElement('tr');
+                let hasLowRating = false;
+                
+                let cellsHtml = '';
+                tableHeaders.forEach(header => {
+                    const val = row[header];
+                    // FIX: Add class for centering
+                    const isRatingHeader = RATING_HEADERS.includes(header);
+                    const cellClass = isRatingHeader ? 'rating-cell' : (header === COMMENT_HEADER ? 'comment-cell' : '');
+            
+                    if (header === "Date") { // Use "Date" key
+                        cellsHtml += `<td class="${cellClass}">${new Date(row._epoch).toLocaleDateString('en-GB')}</td>`;
+                    } else if (RATING_HEADERS.includes(header)) {
+                        const n = num(val);
+                        const isFlagged = !isNaN(n) && n < 6; // NEW: < 6
+                        if (isFlagged) hasLowRating = true;
+                        cellsHtml += `<td class="${cellClass} ${isFlagged ? 'flagged-cell' : ''}">${!isNaN(n) ? n : 'N/A'}</td>`;
+                    } else if (header === COMMENT_HEADER) {
+                        cellsHtml += `<td class="${cellClass}">${cellToText(val)}</td>`;
+                    } else {
+                        cellsHtml += `<td class="${cellClass}">${cellToText(val)}</td>`;
+                    }
+                });
+                
+                // Add flagged class to row if it has any low rating
+                if (hasLowRating) {
+                    tr.classList.add('row-flagged');
+                }
+                
+                tr.innerHTML = cellsHtml;
+                tableBody.appendChild(tr);
+            });
+        } else {
+            noFeedback.classList.remove('hidden');
+            noFeedback.textContent = filterMode === 'low' 
+                ? 'No feedback with ratings below 6 found for this batch.'
+                : 'No feedback found for this batch.';
+        }
+        
+        // Add sort click listeners
+        tableHead.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (feedbackTableSort.column === col) {
+                    feedbackTableSort.order = feedbackTableSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    feedbackTableSort.column = col;
+                    feedbackTableSort.order = 'desc'; // Default desc for all
+                }
+                renderFeedbackTable(batchRows, filterMode);
+            });
+        });
+    }
+    
+    // --- Charting ---
+    function createTimelineChart(canvasId, toggleId, allRows, datasetsConfig) {
+        const chartContainer = document.getElementById(canvasId);
+        if (!chartContainer) {
+            console.error(`Chart container with ID "${canvasId}" not found.`);
+            return { render: () => {}, chart: null, days: 0 };
+        }
+        const chartCtx = chartContainer.getContext('2d');
+        const toggleContainer = document.getElementById(toggleId);
+        
+        let chartInstance = { days: 'all', chart: null, render: null }; // FIX: Default to 'all'
+        
+        const render = (days) => {
+            if (typeof days === 'string' && days !== 'all') {
+                days = parseInt(days);
+            }
+            chartInstance.days = days;
+            
+            // FIX: Aggressively destroy chart instance
+            const existingChart = Chart.getChart(canvasId);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+            if (chartInstance.chart) {
+                chartInstance.chart.destroy();
+                chartInstance.chart = null;
+            }
+            
+            // 1. Set active button
+            if (toggleContainer) { // Add check for toggle container
+                toggleContainer.querySelectorAll('.timeline-btn').forEach(btn => {
+                    btn.classList.toggle('active', String(btn.dataset.days) === String(days));
+                });
+            }
+
+            // 2. Aggregate data
+            let relevantRows;
+            let sortedData;
+            
+            if (days === 'all') {
+                relevantRows = [...allRows].sort((a,b) => a._epoch - b._epoch);
+                const dataByDay = new Map();
+                relevantRows.forEach(row => {
+                    const key = new Date(row._epoch).toISOString().split('T')[0];
+                    if (!dataByDay.has(key)) dataByDay.set(key, []);
+                    dataByDay.get(key).push(row);
+                });
+                sortedData = [...dataByDay.entries()].sort((a,b) => new Date(a[0]) - new Date(b[0]));
+            } else {
+                const today = new Date();
+                today.setHours(23, 59, 59, 999);
+                const minEpoch = today.getTime() - (days * 24 * 60 * 60 * 1000);
+                
+                relevantRows = allRows.filter(r => r._epoch >= minEpoch);
+                const dataByDay = new Map();
+                
+                for (let i = 0; i < days; i++) {
+                    const d = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
+                    const key = d.toISOString().split('T')[0];
+                    dataByDay.set(key, []);
+                }
+                
+                relevantRows.forEach(row => {
+                    const key = new Date(row._epoch).toISOString().split('T')[0];
+                    if (dataByDay.has(key)) {
+                        dataByDay.get(key).push(row);
+                    }
+                });
+                sortedData = [...dataByDay.entries()].sort((a,b) => new Date(a[0]) - new Date(b[0]));
+            }
+            
+            const labels = sortedData.map(d => new Date(d[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+            
+            // 3. Get Chart Options
+            const isLightMode = document.body.classList.contains('light-mode');
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-color');
+            const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color');
+            const bodyFont = "'Inter', sans-serif";
+            const isMobile = window.innerWidth < 768;
+            
+            // Determine X-axis ticks
+            let maxTicks = isMobile ? 6 : 10;
+            if (days === 'all') maxTicks = isMobile ? 4 : 8;
+            else if (days === 90) maxTicks = isMobile ? 8 : 12;
+            else if (days === 30) maxTicks = isMobile ? 8 : 10;
+
+            const datasets = datasetsConfig.map(config => ({
+                label: config.label,
+                data: sortedData.map(([key, rows]) => config.dataFn(rows)),
+                borderColor: config.color,
+                backgroundColor: config.color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                borderWidth: isMobile ? 2 : 3,
+                pointRadius: (days === 'all' || days > 90) ? 0 : (isMobile ? 3 : 4), // Hide points on large datasets
+                pointHoverRadius: (days === 'all' || days > 90) ? 4 : (isMobile ? 6 : 7),
+                tension: 0.4,
+                fill: false, // FIX: Set fill to false to remove ugly blob
+            }));
+
+            chartInstance.chart = new Chart(chartCtx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true, mode: 'index', intersect: false,
+                            backgroundColor: 'rgba(29, 29, 31, 0.95)',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            titleColor: '#f5f5f7',
+                            bodyColor: '#a1a1a6',
+                            titleFont: { family: bodyFont, size: 13, weight: 'bold' },
+                            bodyFont: { family: bodyFont, size: 12 },
+                            padding: 10, cornerRadius: 8, displayColors: true,
+                            callbacks: {
+                                label: (context) => {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    let val = context.parsed.y;
+                                    if (val !== null) {
+                                        label += val.toFixed(context.dataset.label.includes('%') ? 1 : 0);
+                                        if (context.dataset.label.includes('%')) label += '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: datasetsConfig[0].yMax || undefined,
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: { 
+                                color: tickColor, 
+                                font: { family: bodyFont },
+                                callback: (val) => datasetsConfig[0].label.includes('%') ? val + '%' : (Number.isInteger(val) ? val : null)
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                color: tickColor, 
+                                font: { family: bodyFont }, 
+                                maxTicksLimit: maxTicks
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        if (toggleContainer) { // Add check
+            toggleContainer.querySelectorAll('.timeline-btn').forEach(btn => {
+                btn.addEventListener('click', () => render(btn.dataset.days));
+            });
+        }
+        
+        chartInstance.render = render;
+        return chartInstance;
+    }
+
+    // --- Helpers ---
+    function cleanHeaders(arr) { return arr.map(h => String(h).replace(/^\uFEFF/, "").trim()); }
+    function num(v){ if (v==null||v==="") return NaN; const n=Number(String(v).replace(/[^\d.\-]/g,"")); return isNaN(n)?NaN:n; }
+    function toEpoch(cell){
+        if (cell==null||cell==="") return null;
+        const n = Number(cell);
+        if (!isNaN(n) && String(cell).trim()!=="" && !/[a-zA-Z]/.test(String(cell))) {
+            return Date.UTC(1899,11,30) + Math.round(n*86400000);
+        }
+        const p = Date.parse(cell); if (!isNaN(p)) return p;
+        const m = String(cell).trim().match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (m){ const d=+m[1], mo=+m[2]-1, y=(+m[3]<100?2000+ +m[3]:+m[3]); const hh=+(m[4]||0), mm=+(m[5]||0), ss=+(m[6]||0); return Date.UTC(y,mo,d,hh,mm,ss); }
+        return null;
+    }
+    function fmt(n, decimals = 2){ return (n==null||isNaN(n)) ? "—" : n.toFixed(decimals); }
+    function setText(id, t){ const el = document.getElementById(id); if (el) el.textContent = t; }
+    function cellToText(c){ return c==null ? "" : String(c); }
+    
+    // FIX: Updated logic for Gauge/Overall stats ONLY
+    function getState(rating) {
+        if (rating > 7) return 'good';
+        if (rating >= 5) return 'medium';
+        if (rating > 0) return 'bad';
+        return 'neutral';
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast-notification");
+        if (toast) {
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 4000);
+        }
+    }
+  </script>
+</body>
+</html>
