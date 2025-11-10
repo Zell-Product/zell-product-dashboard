@@ -866,7 +866,7 @@
             This link serves as the *main* back button.
         -->
         <div class="absolute left-0 top-1/2 -translate-y-1/2">
-            <a href="./index.html" id="header-back-link" class="header-btn">
+        <a href="./index.html#show-reports" id="header-back-link" class="header-btn">
                 <i class="fas fa-chevron-left text-xl"></i>
             </a>
             <!-- This is the original button, now only for batch detail -->
@@ -881,7 +881,12 @@
         </div>
         
         <!-- Theme Toggle -->
-        <div class="absolute right-0 top-1/2 -translate-y-1/2">
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2"> <!-- MODIFIED: Added flex wrapper -->
+             <!-- NEW: Open Sheet Button -->
+             <a href="https://docs.google.com/spreadsheets/d/1WmEth7sgYjN1h0CbhHwkmUTVGzyAH0P9OpG1_5T0IsQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="header-btn" title="Open Google Sheet">
+                <i class="fas fa-external-link-alt"></i>
+             </a>
+             <!-- Existing Theme Toggle -->
              <button class="header-btn" id="themeToggleBtn" title="Toggle Theme">
                 <i class="fa-solid fa-sun"></i>
              </button>
@@ -1065,6 +1070,28 @@
                     <div class="chart"><canvas id="batch-percent-low-chart"></canvas></div>
                 </div>
             </div>
+            
+            <!-- 
+                *** THIS IS THE CHANGE YOU REQUESTED (HTML) ***
+                
+                I've added a new card here for the 'Average Rating Trend'.
+                It's placed within the 'batch-tab-overview' div,
+                after the initial grid, to appear as a new full-width row.
+            -->
+            <div class="card">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                     <h2 class="text-xl font-bold text-[var(--text-color)] opacity-90">Average Rating Trend</h2>
+                     <div id="batch-timeline-toggle-3" class="timeline-toggle">
+                        <button data-days="14" class="timeline-btn">14 Days</button>
+                        <button data-days="30" class="timeline-btn">30 Days</button>
+                        <button data-days="90" class="timeline-btn">90 Days</button>
+                        <button data-days="all" class="timeline-btn active">All Time</button>
+                     </div>
+                </div>
+                <div class="chart"><canvas id="batch-avg-rating-chart"></canvas></div>
+            </div>
+            <!-- *** END OF CHANGE *** -->
+            
         </div>
         
         <div id="batch-tab-concerning" class="batch-tab-content hidden">
@@ -1112,6 +1139,13 @@
     </div>
   </main>
   
+  <!-- NEW: Footer for Batch Detail Page -->
+  <footer id="page-footer" class="text-center text-sm text-[var(--text-muted-color)] py-8 px-4 transition-all duration-500 opacity-0 -translate-y-4">
+    <div id="footer-content" class="max-w-2xl mx-auto">
+        <!-- JS will insert content here -->
+    </div>
+  </footer>
+
   <div id="toast-notification" class="toast">Dashboard has been updated with the latest data.</div>
 
   <script>
@@ -1146,6 +1180,7 @@
     // --- DOM Elements ---
     let loader, themeToggleBtn, themeIcon, headerBackButton, pageHeaderTitle, errorContainer, skeletonLoader, headerBackLink;
     let overallSection, batchDetailSection, batchNavWrapper, mainContentEl, overallNavWrapper; // FIX: Added mainContentEl, overallNavWrapper
+    let pageFooter, footerContent; // <<< NEW
 
     document.addEventListener("DOMContentLoaded", () => {
         // Assign DOM Elements
@@ -1168,6 +1203,9 @@
         // This listener is ONLY for the JS-powered "Back" button on the batch detail page
         headerBackButton.addEventListener("click", () => showPage('overall-section'));
         setupOverallNav(); // NEW
+        
+        pageFooter = document.getElementById("page-footer"); // <<< NEW
+        footerContent = document.getElementById("footer-content"); // <<< NEW
     });
     
     // --- Page Navigation ---
@@ -1180,6 +1218,7 @@
             batchNavWrapper.classList.add('hidden'); // FIX: Hide sub-nav
             overallNavWrapper.classList.remove('hidden'); // NEW: Show overall nav
             pageHeaderTitle.textContent = "ACCA Feedback";
+            updateFooter('overall-section'); // MODIFIED: No tabId needed
         } else {
             overallSection.classList.add('hidden');
             batchDetailSection.classList.remove('hidden');
@@ -1187,6 +1226,8 @@
             headerBackLink.classList.add('hidden'); // Hide the <a> link
             batchNavWrapper.classList.remove('hidden'); // FIX: Show sub-nav
             overallNavWrapper.classList.add('hidden'); // NEW: Hide overall nav
+            // MODIFIED: Pass the default active tab ('overview') to hide footer initially
+            updateFooter('batch-detail-section', 'overview'); 
         }
         mainContentEl.scrollTop = 0;
     }
@@ -1256,11 +1297,9 @@
         };
 
         const preferredTheme = localStorage.getItem('theme');
-        let initTheme = 'dark'; 
+        let initTheme = 'dark'; // Default to dark
         if (preferredTheme === 'light') {
-             initTheme = 'light';
-        } else if (!preferredTheme && window.matchMedia('(prefers-color-scheme: light)').matches) {
-             initTheme = 'light';
+             initTheme = 'light'; // Only switch to light if explicitly set in localStorage
         }
         applyTheme(initTheme);
 
@@ -1500,7 +1539,16 @@
             'feedback-count-chart',
             'overall-timeline-toggle',
             allRows,
-            [{ label: 'Feedback Count', dataFn: (rows) => rows.length, color: '#0a84ff' }]
+            [{ 
+                label: 'Feedback Count', 
+                // *** THIS IS A CHANGE ***
+                // dataFn now returns an object
+                dataFn: (rows) => ({ 
+                    y: rows.length > 0 ? rows.length : null, // Use null for no data
+                    count: rows.length 
+                }), 
+                color: '#0a84ff' 
+            }]
         );
         chartInstances.overallFeedback.render('all'); // FIX: Default to "all"
         
@@ -1863,6 +1911,7 @@
             navItems.forEach(item => {
                 item.classList.toggle('active', item.dataset.tab === tabId);
             });
+            updateFooter('batch-detail-section', tabId); // <<< NEW: Update footer on every tab switch
         };
 
         navItems.forEach(item => {
@@ -1883,7 +1932,15 @@
             'batch-feedback-chart',
             'batch-timeline-toggle-1',
             batchRows,
-            [{ label: 'Feedback Count', dataFn: (rows) => rows.length, color: '#0a84ff' }]
+            [{ 
+                label: 'Feedback Count', 
+                // *** THIS IS A CHANGE ***
+                dataFn: (rows) => ({ 
+                    y: rows.length > 0 ? rows.length : null, // Use null for no data
+                    count: rows.length 
+                }), 
+                color: '#0a84ff' 
+            }]
         );
         chartInstances.batchFeedback.render('all'); // FIX: Default to "all"
 
@@ -1898,6 +1955,7 @@
             batchRows,
             [{ 
                 label: '% < 7', 
+                // *** THIS IS A CHANGE ***
                 dataFn: (rows) => {
                     let lowCount = 0;
                     let totalCount = 0;
@@ -1910,13 +1968,57 @@
                             }
                         });
                     });
-                    return totalCount > 0 ? (lowCount / totalCount) * 100 : 0;
+                    // Return object with null for 'y' if no data
+                    return { 
+                        y: totalCount > 0 ? (lowCount / totalCount) * 100 : null,
+                        count: rows.length 
+                    };
                 }, 
                 color: '#ff453a',
                 yMax: 100
             }]
         );
         chartInstances.batchPercentLow.render('all'); // FIX: Default to "all"
+
+        // *** THIS IS THE CHANGE YOU REQUESTED (JavaScript) ***
+        existingChart = Chart.getChart('batch-avg-rating-chart');
+        if (existingChart) existingChart.destroy();
+        if (chartInstances.batchAvgRating && chartInstances.batchAvgRating.chart) {
+            chartInstances.batchAvgRating.chart.destroy();
+        }
+        chartInstances.batchAvgRating = createTimelineChart(
+            'batch-avg-rating-chart',  // New canvas ID
+            'batch-timeline-toggle-3', // New toggle ID
+            batchRows,
+            [{ 
+                label: 'Average Rating', 
+                dataFn: (rows) => {
+                    // Logic to calculate avg rating for the day
+                    let totalRatings = 0;
+                    let totalSum = 0;
+                    rows.forEach(row => {
+                        RATING_HEADERS.forEach(header => {
+                            const val = num(row[header]);
+                            if (!isNaN(val)) { 
+                                totalSum += val; 
+                                totalRatings++; 
+                            }
+                        });
+                    });
+                    // Return object, with 'y: null' if no ratings,
+                    // so the point is not plotted.
+                    return { 
+                        y: totalRatings > 0 ? (totalSum / totalRatings) : null,
+                        count: rows.length // This is the feedback count for the tooltip
+                    };
+                }, 
+                color: '#30d158', // 'good' green color
+                yMax: 10 // Set Y-axis max to 10
+            }]
+        );
+        chartInstances.batchAvgRating.render('all'); // Default to "all"
+        // *** END OF CHANGE ***
+
 
         // 2. Student Insights (Concerning Feedback + Top Students)
         const studentFeedback = {};
@@ -2189,6 +2291,16 @@
     }
     
     // --- Charting ---
+    
+    // *** THIS IS THE CHANGE YOU REQUESTED (JavaScript) ***
+    //
+    // I've modified this function to support the new requirements:
+    // 1. `dataFn` now returns an object `{ y: value, count: rowCount }`.
+    //    - `y: null` is used to skip plotting for empty dates.
+    // 2. Added `parsing: { yAxisKey: 'y' }` to tell Chart.js to use the 'y' property.
+    // 3. Added an `afterLabel` callback to the tooltip to display the 'count'
+    //    property, which we've named 'Total Feedback'.
+    //
     function createTimelineChart(canvasId, toggleId, allRows, datasetsConfig) {
         const chartContainer = document.getElementById(canvasId);
         if (!chartContainer) {
@@ -2259,7 +2371,9 @@
                 sortedData = [...dataByDay.entries()].sort((a,b) => new Date(a[0]) - new Date(b[0]));
             }
             
-            const labels = sortedData.map(d => new Date(d[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+            // --- THIS IS THE START OF THE FIX ---
+            
+            // REMOVED: const labels = ... (We no longer use a separate labels array)
             
             // 3. Get Chart Options
             const isLightMode = document.body.classList.contains('light-mode');
@@ -2276,7 +2390,16 @@
 
             const datasets = datasetsConfig.map(config => ({
                 label: config.label,
-                data: sortedData.map(([key, rows]) => config.dataFn(rows)),
+                // MODIFIED: We now map sortedData ONCE.
+                // dataFn now receives the date (key) and returns the full {x, y, count} object.
+                data: sortedData.map(([key, rows]) => {
+                    const dataPoint = config.dataFn(rows); // This returns {y, count}
+                    return {
+                        x: key, // ADDED: The all-important X value (the date)
+                        y: dataPoint.y,
+                        count: dataPoint.count
+                    };
+                }),
                 borderColor: config.color,
                 backgroundColor: config.color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
                 borderWidth: isMobile ? 2 : 3,
@@ -2284,11 +2407,42 @@
                 pointHoverRadius: (days === 'all' || days > 90) ? 4 : (isMobile ? 6 : 7),
                 tension: 0.4,
                 fill: false, // FIX: Set fill to false to remove ugly blob
+                // REMOVED: parsing: { yAxisKey: 'y' } (No longer needed as we provide 'x' and 'y')
+                spanGaps: true // *** FIX: Set to true to connect the dots and form a trend line ***
             }));
+
+            // MODIFIED: Y-axis tick logic is now correct
+            const yAxisConfig = {
+                min: 0,
+                max: datasetsConfig[0].yMax || undefined,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { 
+                    color: tickColor, 
+                    font: { family: bodyFont }
+                }
+            };
+            
+            const label = datasetsConfig[0].label;
+            if (label.includes('%')) {
+                // For percentage charts
+                yAxisConfig.ticks.callback = (val) => val + '%';
+            } else if (!label.includes('Avg')) {
+                // For count charts, only show integer ticks
+                yAxisConfig.ticks.callback = (val) => {
+                    if (Number.isInteger(val)) {
+                        return val;
+                    }
+                    return null; // This hides non-integer ticks (e.g., 2.5)
+                };
+            }
+            // For 'Avg' charts, we don't add a callback, allowing default decimal ticks
 
             chartInstance.chart = new Chart(chartCtx, {
                 type: 'line',
-                data: { labels, datasets },
+                data: { 
+                    // REMOVED: labels: labels
+                    datasets: datasets 
+                },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -2310,26 +2464,40 @@
                                     if (label) label += ': ';
                                     let val = context.parsed.y;
                                     if (val !== null) {
-                                        label += val.toFixed(context.dataset.label.includes('%') ? 1 : 0);
+                                        // Use 'toFixed(1)' for avg rating, but not for others
+                                        // *** FIX: Use toLowerCase() to correctly find "avg" ***
+                                        let decimals = context.dataset.label.toLowerCase().includes('avg') ? 1 : (context.dataset.label.includes('%') ? 1 : 0);
+                                        label += val.toFixed(decimals);
                                         if (context.dataset.label.includes('%')) label += '%';
                                     }
                                     return label;
+                                },
+                                // This new callback adds the 'Total Feedback' line
+                                afterLabel: (context) => {
+                                    // MODIFIED: Read 'count' from the parsed data object
+                                    const dataPoint = context.raw;
+                                    // Check if the datapoint exists, has a 'count', and 'y' is not null
+                                    if (dataPoint && dataPoint.count !== undefined && dataPoint.y !== null) {
+                                        return `Total Feedback: ${dataPoint.count}`;
+                                    }
+                                    return null;
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            min: 0,
-                            max: datasetsConfig[0].yMax || undefined,
-                            grid: { color: gridColor, drawBorder: false },
-                            ticks: { 
-                                color: tickColor, 
-                                font: { family: bodyFont },
-                                callback: (val) => datasetsConfig[0].label.includes('%') ? val + '%' : (Number.isInteger(val) ? val : null)
-                            }
-                        },
+                        y: yAxisConfig, // USE THE NEW CONFIG OBJECT
                         x: {
+                            // ADDED: Define X-axis as a time scale
+                            type: 'time',
+                            time: {
+                                unit: (days === 'all' || days > 90) ? 'month' : 'day',
+                                displayFormats: {
+                                    day: 'd MMM', // e.g., '14 Sep'
+                                    month: 'MMM \'yy' // e.g., 'Sep \'25'
+                                },
+                                tooltipFormat: 'PP' // e.g., 'Sep 14, 2025'
+                            },
                             grid: { display: false },
                             ticks: { 
                                 color: tickColor, 
@@ -2341,6 +2509,7 @@
                 }
             });
         };
+        // *** END OF CHANGE ***
 
         if (toggleContainer) { // Add check
             toggleContainer.querySelectorAll('.timeline-btn').forEach(btn => {
@@ -2376,6 +2545,24 @@
         if (rating >= 5) return 'medium';
         if (rating > 0) return 'bad';
         return 'neutral';
+    }
+
+    // NEW: Function to control the footer text
+    function updateFooter(pageId, tabId = '') { // MODIFIED: Accept tabId
+        let text = '';
+        // MODIFIED: Check for both page and specific tab
+        if (pageId === 'batch-detail-section' && tabId === 'concerning') {
+            text = '<b>"Concerning Feedback"</b> is flagged for entries with at least one rating below 6 and a written comment of 2 or more words, helping to identify specific areas for improvement.';
+        }
+        
+        if (text) {
+            footerContent.innerHTML = text;
+            pageFooter.classList.remove('opacity-0', '-translate-y-4');
+        } else {
+            pageFooter.classList.add('opacity-0', '-translate-y-4');
+            // Use a timeout to clear text after fade out
+            setTimeout(() => { footerContent.innerHTML = ''; }, 500);
+        }
     }
 
     function showToast() {
